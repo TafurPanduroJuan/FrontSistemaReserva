@@ -1,6 +1,17 @@
 
+.container{
+  margin: 10px;
+  width: 100% !important;
+}
+.row{
+  margin: 0px;
+ padding: auto;
+  width: 100%;
+}
 
-
+.col-md-4{
+  padding-right:150px !important;
+}
 .custom-navbar {
   background: rgba(255, 255, 255, 0.85); 
   backdrop-filter: blur(6px);           

@@ -7,9 +7,11 @@ import Home from './pages/Home';
 import Catalog from './pages/Catalog';
 import About from './pages/About';
 import Form from './pages/Form';
+import Footer from './components/Footer';
 
 function App() {
   return(
+     <div className="d-flex flex-column min-vh-100">
     <Router>
       <Navbar />
         <main>
@@ -21,8 +23,9 @@ function App() {
 
           </Routes>
         </main>
-  
+      <Footer/>
     </Router>
+    </div>
   );
   
 }
