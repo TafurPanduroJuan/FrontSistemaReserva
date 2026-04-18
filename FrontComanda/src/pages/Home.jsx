@@ -102,7 +102,7 @@ useEffect(() => {
           <h5>Descubre una variedad de sabores increíbles</h5>
         </div>
         {/* Grid en PC/Tablet */}
-        <div className="row g-4 justify-content-center d-none d-md-flex">
+        <div className="row g-4 justify-content-center d-none d-lg-flex">
           {categorias.map((cat, index) => (
             <div key={index} className="col-lg-2 col-md-4 col-6 efecto text-center">
               <img
@@ -123,7 +123,7 @@ useEffect(() => {
         {/* Carrusel en móviles */}
         <div
           id="categoriasCarousel"
-          className="carousel slide d-block d-md-none"
+          className="carousel slide d-block d-lg-none"
           data-bs-ride="carousel"
         >
           <div className="carousel-inner text-center">
