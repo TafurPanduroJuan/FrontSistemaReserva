@@ -37,8 +37,8 @@ export const restaurantes = [
     img: italianaImg,
   },
   {
-    nombre: "Sakura Sushi Bar",
-    lugar: "Zona Rosa",
+    nombre: "Sushi Take",
+    lugar: "Miraflores, 2035",
     hora: "20:00",
     mesas: 3,
     precio: "$$$",
@@ -47,7 +47,7 @@ export const restaurantes = [
   },
   {
     nombre: "Le Petit Bistro",
-    lugar: "Polanco",
+    lugar: "La Marina",
     hora: "21:00",
     mesas: 7,
     precio: "$$$$",
@@ -55,8 +55,8 @@ export const restaurantes = [
     img: francesaImg,
   },
   {
-    nombre: "Mediterranean Delight",
-    lugar: "Condesa",
+    nombre: "Costa Azul",
+    lugar: "Santa Beatriz",
     hora: "18:00",
     mesas: 4,
     precio: "$$$",
@@ -65,7 +65,7 @@ export const restaurantes = [
   },
   {
     nombre: "Taquería El Sabor",
-    lugar: "Roma Norte",
+    lugar: "Centro de Lima, 5010",
     hora: "19:00",
     mesas: 8,
     precio: "$",
@@ -73,12 +73,33 @@ export const restaurantes = [
     img: mexicanaImg,
   },
   {
-    nombre: "The Modern Table",
-    lugar: "Santa Fe",
+    nombre: "Sabor al Paso",
+    lugar: "Miraflores, 345",
     hora: "20:30",
     mesas: 6,
     precio: "$$$$",
     etiqueta: "Mañana",
     img: modernaImg,
   },
+];
+
+export const testimonios = [
+  {
+    estrellas: 5,
+    texto: "La experiencia fue excelente, reservé rápido y sin problemas.",
+    autor: "María López Murillo",
+    rol: "Cliente frecuente"
+  },
+  {
+    estrellas: 4,
+    texto: "Tuve una buena experiencia a la hora de reservar.",
+    autor: "Carlos Pérez Rolando",
+    rol: "Nuevo usuario"
+  },
+  {
+    estrellas: 5,
+    texto: "Me encanta poder descubrir restaurantes nuevos.",
+    autor: "Ana Torres Paz",
+    rol: "Foodie"
+  }
 ];

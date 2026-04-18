@@ -4,4 +4,5 @@ html, body, #root{
   padding: 0;
   border: 0;
   background-color: rgb(255, 247, 236);
+  font-family: 'Poppins', 'Nunito', sans-serif;
 }

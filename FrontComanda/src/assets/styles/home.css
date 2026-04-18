@@ -73,6 +73,7 @@
 .card:hover{
   transform: translateY(-8px);
   background:rgba(255, 222, 190, 0.995);
+  box-shadow: 3px 10px 3px rgba(9, 9, 9, 0.109) !important;
 }
 .card:hover .card-img-top{
   
@@ -83,6 +84,7 @@
 }
 .card-img-top:hover{
   transform: scale(1.04);
+  
 }
 
 .card:hover .btnReserva{
@@ -166,6 +168,39 @@
   box-shadow: 0 4px 12px rgb(255, 255, 255) !important;
   color: black !important;
 }
+
+#seccionComentarios{
+  background-color: rgb(255, 247, 236);
+}
+
+#tituloComunidad {
+  background: none;
+  margin: 0px;
+  width: auto;
+  height: auto;
+  font-size: 2.2rem;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+
+#autorTestimonio {
+  background: white;
+  height: auto;
+  width: auto;
+  font-size: 1.1rem;
+  color: #333;
+  margin-top: 15px;
+}
+
+
+#rolTestimonio {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+
 /* --- AJUSTES RESPONSIVE --- */  
 @media (max-width: 768px) {
   #restauranteCarousel .carousel-item img {

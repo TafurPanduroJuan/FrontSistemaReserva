@@ -16,6 +16,8 @@ import modernaImg from "../assets/img/tipo8.jpg";
 import parrillaImg from "../assets/img/tipo9.jpg";
 import { categorias } from "../data/datos";
 import { restaurantes } from "../data/datos";
+import { testimonios } from "../data/datos";
+
 
 
 function Home() {
@@ -23,6 +25,8 @@ function Home() {
   return (
     <div className="container-fluid p-0">
 
+      {/*Sección para el Carrusel en home */}
+      <section>
       <div className="alert text-center" style={{ marginTop: "80px" }}>
         <h2>¡Bienvenido a Comanda!</h2>
         <h5> Reserva tu restaurante favorito aquí.</h5>
@@ -79,29 +83,85 @@ function Home() {
           <span className="visually-hidden">Siguiente</span>
         </button>
       </div>
+      </section>
 
       {/* Sección Categorías*/}
+     <section>
       <div className="variedad container-fluid">
         <div id="letraEfecto" className="text-center mb-4">
           <h2>Explora por Tipo de Comida</h2>
           <h5>Descubre una variedad de sabores increíbles</h5>
         </div>
-        <div className="row g-4 justify-content-center">
+        {/* Grid en PC/Tablet */}
+        <div className="row g-4 justify-content-center d-none d-md-flex">
           {categorias.map((cat, index) => (
             <div key={index} className="col-lg-2 col-md-4 col-6 efecto text-center">
               <img
                 src={cat.img}
                 className="img-fluid rounded-circle mb-2 img-efecto"
                 alt={cat.nombre}
-                style={{ width: "100%", maxWidth: "150px", aspectRatio: "1/1", objectFit: "cover" }}
+                style={{
+                  width: "100%",
+                  maxWidth: "150px",
+                  aspectRatio: "1/1",
+                  objectFit: "cover",
+                }}
               />
               <h5>{cat.nombre}</h5>
             </div>
           ))}
         </div>
+        {/* Carrusel en móviles */}
+        <div
+          id="categoriasCarousel"
+          className="carousel slide d-block d-md-none"
+          data-bs-ride="carousel"
+        >
+          <div className="carousel-inner text-center">
+            {categorias.map((cat, index) => (
+              <div
+                key={index}
+                className={`carousel-item ${index === 0 ? "active" : ""}`}
+              >
+                <img
+                  src={cat.img}
+                  className="img-fluid rounded-circle mb-2"
+                  alt={cat.nombre}
+                  style={{
+                    width: "200px",
+                    height: "200px",
+                    objectFit: "cover",
+                    margin: "0 auto",
+                  }}
+                />
+                <h5>{cat.nombre}</h5>
+              </div>
+            ))}
+          </div>
+
+          {/* Flechas */}
+          <button
+            className="carousel-control-prev"
+            type="button"
+            data-bs-target="#categoriasCarousel"
+            data-bs-slide="prev"
+          >
+            <i className="bi bi-arrow-left-circle-fill text-dark fs-1"></i>
+          </button>
+          <button
+            className="carousel-control-next"
+            type="button"
+            data-bs-target="#categoriasCarousel"
+            data-bs-slide="next"
+          >
+            <i className="bi bi-arrow-right-circle-fill text-dark fs-1"></i>
+          </button>
+        </div>
       </div>
+      </section>
 
       {/* Sección Restaurantes - miniCatalogo*/}
+      <section>
       <div className="container my-5">
         <div id="letraEfecto" className="text-center mb-4">
           <h2>Reservas Disponibles</h2>
@@ -140,17 +200,19 @@ function Home() {
           <Link to="/catalog" className="btn btn-primary w-30 verCatalogo">Explorar más Restaurantes</Link>
         </div>
       </div>
-      
+      </section>
+
       {/*Sección Registro Restaurantes - Envio al apartado Formulario */}
+      <section>
       <div className="container-fluid" id="contacto">
         <div
           className="row align-items-center p-5" id="contenedorInterno"
-         
+
         >
           {/* Columna izquierda */}
           <div className="col-lg-6 col-12">
             <div className="d-flex align-items-center">
-             
+
               <span className="fw-bold w-50 h-100 pb-2 mb-4" id="cuadro"><i className="bi bi-stars fs-4 me-2"></i>Para Restaurantes</span>
             </div>
 
@@ -166,9 +228,9 @@ function Home() {
               <li><i className="bi bi-check-circle-fill fs-4 me-2"></i> Incrementa tus reservas hasta 40%</li>
               <li><i className="bi bi-check-circle-fill fs-4 me-2"></i> Sin costos de instalación</li>
             </ul>
-           
-            <Link 
-              to="/form" 
+
+            <Link
+              to="/form"
               className="btn btn-light fw-bold btnRegistrar"
             >
               Registra tu Restaurante
@@ -181,19 +243,19 @@ function Home() {
           <div className="col-lg-6 col-12 mt-4 mt-lg-0">
             <div className="row text-center">
               <div className="col-6 mb-4">
-              <div className="p-4 text-white shadow-lg">
-                <div className="icono-cuadro mb-3">
-                  <i class="bi bi-graph-up-arrow fs-2"></i>
+                <div className="p-4 text-white shadow-lg">
+                  <div className="icono-cuadro mb-3">
+                    <i class="bi bi-graph-up-arrow fs-2"></i>
+                  </div>
+                  <h2 className="text-center">+40%</h2>
+                  <p className="mb-0">Más Reservas</p>
                 </div>
-                <h2 className="text-center">+40%</h2>
-                <p className="mb-0">Más Reservas</p>
-              </div>
               </div>
               <div className="col-6 mb-4">
                 <div className="p-4  text-white  shadow-lg">
                   <div className="icono-cuadro mb-3">
-                  <i className="bi bi-people fs-2"></i>
-                </div>
+                    <i className="bi bi-people fs-2"></i>
+                  </div>
                   <h2 className="text-center">50K+</h2>
                   <p className="mb-0">Usuarios</p>
                 </div>
@@ -201,8 +263,8 @@ function Home() {
               <div className="col-6 mb-4">
                 <div className="p-4  text-white  shadow-lg">
                   <div className="icono-cuadro mb-3">
-                  <i class="bi bi-award-fill fs-2 "></i>
-                </div>
+                    <i class="bi bi-award-fill fs-2 "></i>
+                  </div>
                   <h2 className="text-center">4.8★</h2>
                   <p className="mb-0">Calificación</p>
                 </div>
@@ -210,16 +272,67 @@ function Home() {
               <div className="col-6 mb-4">
                 <div className="p-4  text-white  shadow-lg">
                   <div className="icono-cuadro mb-3">
-                  <i class="bi bi-heart fs-2"></i>
-                </div>
+                    <i class="bi bi-heart fs-2"></i>
+                  </div>
                   <h2 className="text-center">500+</h2>
                   <p className="mb-0">Restaurantes</p>
-                </div> 
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      </section>
+      {/*Sección de Comentarios Comunidad*/}
+      <section className="py-5">
+        <div className="container-fluid text-center pt-4 pb-4" id="seccionComentarios">
+          <h2 className="fw-bold mb-4" id="tituloComunidad">¡Comunidad de Comanda!</h2>
+
+          <div
+            id="communityCarousel"
+            className="carousel slide"
+            data-bs-ride="carousel"
+          >
+            <div
+              className="carousel-inner p-5 bg-white shadow-lg rounded-4 mx-auto"
+              style={{ maxWidth: "800px" }}
+            >
+              {testimonios.map((t, i) => (
+                <div
+                  key={i}
+                  className={`carousel-item ${i === 0 ? "active" : ""}`}
+                >
+                  <div className="text-warning mb-3">
+                    {"★".repeat(t.estrellas)}
+                  </div>
+                  <p className="fs-5 fst-italic">"{t.texto}"</p>
+                  <h6 className="fw-bold mt-3" id="autorTestimonio">{t.autor}</h6>
+                  <small className="text-muted" id="rolTestimonio">{t.rol}</small>
+                </div>
+              ))}
+            </div>
+
+            {/* Controles */}
+            <button
+              className="carousel-control-prev"
+              type="button"
+              data-bs-target="#communityCarousel"
+              data-bs-slide="prev"
+            >
+              <i className="bi bi-arrow-left-circle-fill text-dark fs-1"></i>
+            </button>
+            <button
+              className="carousel-control-next"
+              type="button"
+              data-bs-target="#communityCarousel"
+              data-bs-slide="next"
+            >
+              <i className="bi bi-arrow-right-circle-fill text-dark fs-1"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
 
     </div>
   );
