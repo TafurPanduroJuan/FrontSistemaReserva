@@ -1,17 +1,10 @@
 
-.container{
-  margin: 10px;
-  width: 100% !important;
-}
 .row{
   margin: 0px;
  padding: auto;
   width: 100%;
 }
 
-.col-md-4{
-  padding-right:150px !important;
-}
 .custom-navbar {
   background: rgba(255, 255, 255, 0.85); 
   backdrop-filter: blur(6px);           
@@ -40,4 +33,22 @@
 .nav-link:hover{
   transform: scale(1.1);
   color: #d87c04 !important; 
+}
+
+
+
+.col-md-4 {
+  padding-right: 15px !important; 
+  padding-left: 15px !important;
+}
+
+
+@media (max-width: 991px) {
+  .nav-item {
+    margin-right: 0 !important;
+    text-align: center;
+  }
+  .custom-navbar {
+    border-radius: 0 !important; 
+  }
 }
