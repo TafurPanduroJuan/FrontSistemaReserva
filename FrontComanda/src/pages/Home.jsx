@@ -1,6 +1,6 @@
 import React from "react";
 import "../assets/styles/home.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import japonesaImg from "../assets/img/rest1.jpg";
 import mexicanaImg from "../assets/img/rest2.jpg";
@@ -22,6 +22,12 @@ import { testimonios } from "../data/datos";
 
 
 function Home() {
+const navigate = useNavigate();
+
+const irAlCatalogoConFiltro = (tipo) => {
+  navigate(`/catalog?tipo=${encodeURIComponent(tipo)}`);
+};
+
 useEffect(() => {
     const carousels = document.querySelectorAll('.carousel');
     carousels.forEach((carouselElement) => {
@@ -104,7 +110,12 @@ useEffect(() => {
         {/* Grid en PC/Tablet */}
         <div className="row g-4 justify-content-center d-none d-md-flex">
           {categorias.map((cat, index) => (
-            <div key={index} className="col-lg-2 col-md-4 col-6 efecto text-center">
+            <div
+              key={index}
+              className="col-lg-2 col-md-4 col-6 efecto text-center"
+              style={{ cursor: "pointer" }}
+              onClick={() => irAlCatalogoConFiltro(cat.nombre)}
+            >
               <img
                 src={cat.img}
                 className="img-fluid rounded-circle mb-2 img-efecto"

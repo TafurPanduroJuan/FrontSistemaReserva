@@ -5,7 +5,7 @@ function Navbar() {
     <nav className="navbar navbar-expand-lg fixed-top custom-navbar">
       <div className="container-fluid">
         <Link className="navbar-brand" to="/">
-          <i className="bi bi-tools"></i> Comoda
+          <i className="bi bi-tools"></i> Comanda
         </Link>
         <button
           className="navbar-toggler"

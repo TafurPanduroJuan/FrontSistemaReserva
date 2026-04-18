@@ -1,0 +1,517 @@
+/* ======= CATALOG PAGE STYLES ======= */
+
+/* Offset for fixed navbar */
+.catalog-wrapper {
+  margin-top: 80px;
+  padding: 0;
+  min-height: 100vh;
+  background-color: rgb(255, 247, 236);
+}
+
+/* -------- HERO BANNER -------- */
+.catalog-hero {
+  background: linear-gradient(135deg, rgb(255, 51, 0) 0%, rgb(255, 159, 34) 100%);
+  padding: 50px 40px 40px;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.catalog-hero::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -60px;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 50%;
+}
+
+.catalog-hero::after {
+  content: "";
+  position: absolute;
+  bottom: -80px;
+  left: -40px;
+  width: 250px;
+  height: 250px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+
+.catalog-hero h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.catalog-hero p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+/* -------- SEARCH BAR -------- */
+.catalog-search-bar {
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.catalog-search-bar input {
+  border: none;
+  border-radius: 50px;
+  padding: 14px 55px 14px 24px;
+  font-size: 1rem;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+.catalog-search-bar input:focus {
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
+}
+
+.catalog-search-bar .search-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: rgb(255, 100, 20);
+}
+
+/* -------- MAIN LAYOUT -------- */
+.catalog-layout {
+  display: flex;
+  gap: 0;
+  padding: 30px 30px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* -------- SIDEBAR FILTERS -------- */
+.catalog-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+  align-self: flex-start;
+  background: white;
+  border-radius: 20px;
+  padding: 28px 22px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-right: 24px;
+}
+
+.sidebar-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-section {
+  margin-bottom: 28px;
+}
+
+.filter-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+/* Tipo/Categoria chips */
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid #e8e8e8;
+  background: white;
+  color: #555;
+  transition: all 0.2s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.filter-chip:hover {
+  border-color: rgb(255, 100, 20);
+  color: rgb(255, 100, 20);
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, rgb(255, 51, 0), rgb(255, 159, 34));
+  border-color: transparent;
+  color: white;
+}
+
+/* Precio radio buttons */
+.price-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.price-option input[type="radio"] {
+  accent-color: rgb(255, 100, 20);
+  width: 16px;
+  height: 16px;
+}
+
+.price-option:hover {
+  color: rgb(255, 100, 20);
+}
+
+/* Disponibilidad toggle buttons */
+.availability-options {
+  display: flex;
+  gap: 8px;
+}
+
+.availability-btn {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid #e8e8e8;
+  background: white;
+  color: #555;
+  text-align: center;
+  transition: all 0.2s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.availability-btn:hover {
+  border-color: rgb(255, 100, 20);
+  color: rgb(255, 100, 20);
+}
+
+.availability-btn.active {
+  background: linear-gradient(135deg, rgb(255, 51, 0), rgb(255, 159, 34));
+  border-color: transparent;
+  color: white;
+}
+
+/* Reset button */
+.btn-reset-filters {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f5f5f5;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 10px;
+}
+
+.btn-reset-filters:hover {
+  background: #eee;
+  color: #222;
+}
+
+/* -------- CATALOG CONTENT -------- */
+.catalog-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.catalog-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.catalog-count {
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.catalog-count strong {
+  color: #1a1a1a;
+}
+
+/* Sort select */
+.sort-select {
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid #e8e8e8;
+  font-size: 0.88rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  color: #444;
+  background: white;
+  cursor: pointer;
+  outline: none;
+}
+
+.sort-select:focus {
+  border-color: rgb(255, 100, 20);
+}
+
+/* -------- RESTAURANT CARDS GRID -------- */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 22px;
+}
+
+/* Card */
+.catalog-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.catalog-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.catalog-card-img-wrapper {
+  position: relative;
+  overflow: hidden;
+  height: 190px;
+}
+
+.catalog-card-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s ease;
+}
+
+.catalog-card:hover .catalog-card-img-wrapper img {
+  transform: scale(1.07);
+}
+
+.catalog-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgb(255, 51, 0), rgb(255, 159, 34));
+  color: white;
+  z-index: 2;
+}
+
+.catalog-badge-tipo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+}
+
+.catalog-card-body {
+  padding: 18px 20px 20px;
+}
+
+.catalog-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.catalog-card-meta {
+  font-size: 0.83rem;
+  color: #777;
+  line-height: 1.9;
+  margin-bottom: 12px;
+}
+
+.catalog-card-meta span {
+  display: block;
+}
+
+.catalog-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.catalog-card-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.btn-catalog-reserva {
+  padding: 9px 18px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgb(255, 51, 0), rgb(255, 159, 34));
+  color: white;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.btn-catalog-reserva:hover {
+  opacity: 0.9;
+  transform: scale(1.03);
+}
+
+/* -------- EMPTY STATE -------- */
+.catalog-empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #888;
+}
+
+.catalog-empty i {
+  font-size: 4rem;
+  color: #ddd;
+  margin-bottom: 16px;
+}
+
+.catalog-empty h4 {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+/* -------- ACTIVE FILTERS TAG -------- */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.active-filter-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgb(255, 247, 236);
+  border: 2px solid rgb(255, 159, 34);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(200, 80, 0);
+}
+
+.active-filter-tag button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgb(200, 80, 0);
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* -------- MOBILE FILTER TOGGLE -------- */
+.mobile-filter-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 30px;
+  background: white;
+  border: 2px solid #e8e8e8;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.mobile-filter-btn:hover,
+.mobile-filter-btn.active {
+  border-color: rgb(255, 100, 20);
+  color: rgb(255, 100, 20);
+}
+
+/* -------- RESPONSIVE -------- */
+@media (max-width: 900px) {
+  .catalog-layout {
+    flex-direction: column;
+    padding: 20px 16px;
+  }
+
+  .catalog-sidebar {
+    width: 100%;
+    position: static;
+    margin-right: 0;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .catalog-sidebar.open {
+    display: block;
+  }
+
+  .mobile-filter-btn {
+    display: flex;
+  }
+}
+
+@media (max-width: 600px) {
+  .catalog-hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .catalog-grid {
+    grid-template-columns: 1fr;
+  }
+}
