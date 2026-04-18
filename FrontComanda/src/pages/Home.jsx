@@ -1,6 +1,7 @@
 import React from "react";
 import "../assets/styles/home.css";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import japonesaImg from "../assets/img/rest1.jpg";
 import mexicanaImg from "../assets/img/rest2.jpg";
 import peruanaImg from "../assets/img/rest5.jpg";
@@ -21,7 +22,15 @@ import { testimonios } from "../data/datos";
 
 
 function Home() {
-
+useEffect(() => {
+    const carousels = document.querySelectorAll('.carousel');
+    carousels.forEach((carouselElement) => {
+       new window.bootstrap.Carousel(carouselElement, {
+        interval: 3000, 
+        ride: 'carousel'
+    });
+  });
+  }, []);
   return (
     <div className="container-fluid p-0">
 
@@ -245,7 +254,7 @@ function Home() {
               <div className="col-6 mb-4">
                 <div className="p-4 text-white shadow-lg">
                   <div className="icono-cuadro mb-3">
-                    <i class="bi bi-graph-up-arrow fs-2"></i>
+                    <i className="bi bi-graph-up-arrow fs-2"></i>
                   </div>
                   <h2 className="text-center">+40%</h2>
                   <p className="mb-0">Más Reservas</p>
@@ -263,7 +272,7 @@ function Home() {
               <div className="col-6 mb-4">
                 <div className="p-4  text-white  shadow-lg">
                   <div className="icono-cuadro mb-3">
-                    <i class="bi bi-award-fill fs-2 "></i>
+                    <i className="bi bi-award-fill fs-2 "></i>
                   </div>
                   <h2 className="text-center">4.8★</h2>
                   <p className="mb-0">Calificación</p>
@@ -272,7 +281,7 @@ function Home() {
               <div className="col-6 mb-4">
                 <div className="p-4  text-white  shadow-lg">
                   <div className="icono-cuadro mb-3">
-                    <i class="bi bi-heart fs-2"></i>
+                    <i className="bi bi-heart fs-2"></i>
                   </div>
                   <h2 className="text-center">500+</h2>
                   <p className="mb-0">Restaurantes</p>
