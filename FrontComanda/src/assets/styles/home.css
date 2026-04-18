@@ -4,7 +4,7 @@
     width: 95%; 
 }
 .container-fluid{
-  padding-bottom: 30px;
+  padding-bottom: 10px;
 }
 
 #restauranteCarousel {
@@ -95,7 +95,6 @@
   text-align: center;
   justify-content: center;
   align-items: center;
-  /*background: rgb(255, 217, 148);*/
   background: linear-gradient(300deg, rgb(255, 175, 175), rgb(255, 203, 106));
   color: white;
   border: 0px;
@@ -105,6 +104,7 @@
   width: auto;
   padding: 15px;
   margin-top:40px;
+  margin-bottom: 40px;
   border-radius: 30px;
   background: black;
   border: none;
@@ -115,7 +115,58 @@
   background: black;
   transform: scale(1.025);
 }
-/* --- AJUSTES RESPONSIVE --- */
+
+
+#contacto{
+  border-top: 30px;
+  padding: 100px;
+  margin-bottom: 100px;
+  background: linear-gradient(500deg, rgb(255, 0, 0), rgb(251, 127, 38));
+}
+#contenedorInterno{
+  min-height: 500px;
+  max-width: auto;
+  background: rgba(255, 255, 255, 0.1); 
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25); 
+  border-radius: 45px;
+   padding: 60px; /* menos padding base */
+}
+#cuadro{
+  background: rgba(255, 255, 255, 0.3); 
+}
+.btnRegistrar {
+  width: auto;
+  height: auto;
+  background: white;
+  color: rgb(255, 0, 0);
+  font-size: 20px;
+  padding: 12px 32px;   
+  border-radius: 20px;
+  display: inline-block;   
+  text-align: center;     
+  white-space: nowrap;     
+  transition: transform 0.4s ease;
+}
+.btnRegistrar:hover{
+  background: white;
+  color: red;
+  transform: scale(1.025);
+  box-shadow: 0 4px 12px rgb(255, 255, 255);
+}
+
+.p-4{
+   border-radius: 20px;
+   background: rgba(255, 255, 255, 0.4);
+   transition: transform 0.3s ease;
+}
+
+.p-4:hover{
+  transform: scale(1.025);
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 12px rgb(255, 255, 255) !important;
+  color: black !important;
+}
+/* --- AJUSTES RESPONSIVE --- */  
 @media (max-width: 768px) {
   #restauranteCarousel .carousel-item img {
     height: 350px; 
@@ -137,5 +188,30 @@
   .col-md-4 {
     width: 100% !important;
     padding: 10px !important;
+  }
+  .btnRegistrar {
+    font-size: 16px;
+    padding: 10px 20px;
+    width: 100%;
+    white-space: normal;   
+  }
+   #contacto {
+    padding: 20px;          
+  }
+  #contenedorInterno {
+    min-height: 100vh;     
+    padding: 20px;          
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;    
+  }
+  .col-lg-6 .row .col-6 {
+    flex: 0 0 100%; 
+    max-width: 100%;
+  }
+
+  .col-lg-6 .row .col-6 .p-4 {
+    margin-bottom: 20px;   
   }
 }

@@ -21,8 +21,8 @@ import { restaurantes } from "../data/datos";
 function Home() {
 
   return (
-    <div className="container-fluid p-0"> 
-      
+    <div className="container-fluid p-0">
+
       <div className="alert text-center" style={{ marginTop: "80px" }}>
         <h2>¡Bienvenido a Comanda!</h2>
         <h5> Reserva tu restaurante favorito aquí.</h5>
@@ -80,7 +80,7 @@ function Home() {
         </button>
       </div>
 
-     {/* Sección Categorías*/}
+      {/* Sección Categorías*/}
       <div className="variedad container-fluid">
         <div id="letraEfecto" className="text-center mb-4">
           <h2>Explora por Tipo de Comida</h2>
@@ -107,13 +107,13 @@ function Home() {
           <h2>Reservas Disponibles</h2>
           <h5>Mesas disponibles para hoy y mañana</h5>
         </div>
-        <div className="row g-4"> 
+        <div className="row g-4">
           {restaurantes.slice(0, 6).map((rest, index) => (
             <div key={index} className="col-lg-4 col-md-6 col-12">
               <div className="card h-100 shadow-sm border-0 ">
                 <div className="position-relative ">
-                   <span className="badge bg-danger position-absolute m-2" style={{zIndex: 1}}>{rest.etiqueta}</span>
-                   <img
+                  <span className="badge bg-danger position-absolute m-2" style={{ zIndex: 1 }}>{rest.etiqueta}</span>
+                  <img
                     src={rest.img}
                     className="card-img-top"
                     alt={rest.nombre}
@@ -132,15 +132,94 @@ function Home() {
                     <button className="btn btn-primary w-50 btnReserva">Reserva Ahora</button>
                   </div>
                 </div>
-              </div>    
-            </div>           
+              </div>
+            </div>
           ))}
         </div>
-         <div className="d-flex justify-content-center mt-3">
+        <div className="d-flex justify-content-center mt-3">
           <Link to="/catalog" className="btn btn-primary w-30 verCatalogo">Explorar más Restaurantes</Link>
-          </div>
+        </div>
       </div>
-     
+      
+      {/*Sección Registro Restaurantes - Envio al apartado Formulario */}
+      <div className="container-fluid" id="contacto">
+        <div
+          className="row align-items-center p-5" id="contenedorInterno"
+         
+        >
+          {/* Columna izquierda */}
+          <div className="col-lg-6 col-12">
+            <div className="d-flex align-items-center">
+             
+              <span className="fw-bold w-50 h-100 pb-2 mb-4" id="cuadro"><i className="bi bi-stars fs-4 me-2"></i>Para Restaurantes</span>
+            </div>
+
+            <h2 className="mb-3 w-100 text-white">¿Tienes un Restaurante?</h2>
+            <p className="mb-4 text-white">
+              Únete a Comoda y conecta con miles de comensales.
+              <br />
+              Aumenta tus reservas y lleva tu negocio al siguiente nivel.
+            </p>
+            <ul className="list-unstyled mb-4 pt-2 text-white">
+              <li><i className="bi bi-check-circle-fill fs-4 me-2"></i>Sistema de reservas automatizado</li>
+              <li><i className="bi bi-check-circle-fill fs-4 me-2"></i> Dashboard de gestión completo</li>
+              <li><i className="bi bi-check-circle-fill fs-4 me-2"></i> Incrementa tus reservas hasta 40%</li>
+              <li><i className="bi bi-check-circle-fill fs-4 me-2"></i> Sin costos de instalación</li>
+            </ul>
+           
+            <Link 
+              to="/form" 
+              className="btn btn-light fw-bold btnRegistrar"
+            >
+              Registra tu Restaurante
+            </Link>
+
+
+          </div>
+
+          {/* Columna derecha */}
+          <div className="col-lg-6 col-12 mt-4 mt-lg-0">
+            <div className="row text-center">
+              <div className="col-6 mb-4">
+              <div className="p-4 text-white shadow-lg">
+                <div className="icono-cuadro mb-3">
+                  <i class="bi bi-graph-up-arrow fs-2"></i>
+                </div>
+                <h2 className="text-center">+40%</h2>
+                <p className="mb-0">Más Reservas</p>
+              </div>
+              </div>
+              <div className="col-6 mb-4">
+                <div className="p-4  text-white  shadow-lg">
+                  <div className="icono-cuadro mb-3">
+                  <i className="bi bi-people fs-2"></i>
+                </div>
+                  <h2 className="text-center">50K+</h2>
+                  <p className="mb-0">Usuarios</p>
+                </div>
+              </div>
+              <div className="col-6 mb-4">
+                <div className="p-4  text-white  shadow-lg">
+                  <div className="icono-cuadro mb-3">
+                  <i class="bi bi-award-fill fs-2 "></i>
+                </div>
+                  <h2 className="text-center">4.8★</h2>
+                  <p className="mb-0">Calificación</p>
+                </div>
+              </div>
+              <div className="col-6 mb-4">
+                <div className="p-4  text-white  shadow-lg">
+                  <div className="icono-cuadro mb-3">
+                  <i class="bi bi-heart fs-2"></i>
+                </div>
+                  <h2 className="text-center">500+</h2>
+                  <p className="mb-0">Restaurantes</p>
+                </div> 
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
   );
