@@ -250,3 +250,26 @@
     margin-bottom: 20px;   
   }
 }
+
+/* --- AJUSTES RESPONSIVE PARA TABLETS --- */
+@media (max-width: 991px) {
+  
+  #categoriasCarousel {
+    display: block !important;
+  }
+  .row.g-4.d-none.d-md-flex {
+    display: none !important;
+  }
+
+
+  .variedad {
+    padding: 30px 15px;
+    margin-top: 40px;
+  }
+
+  .btnRegistrar {
+    font-size: 18px;
+    padding: 12px 24px;
+    width: 100%;
+  }
+}
