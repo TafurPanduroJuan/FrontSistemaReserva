@@ -1,5 +1,5 @@
 import { useAuth } from './hooks/useAuth';
-import Login from './src/pages/Login.jsx';
+import Login from "./pages/Login";
 
 export default function App() {
   const { currentUser, login, logout } = useAuth();
