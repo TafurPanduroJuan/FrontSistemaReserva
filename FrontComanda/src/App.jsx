@@ -1,33 +1,33 @@
-import { useState } from 'react'
+import { useAuth } from './hooks/useAuth';
+import Login from './src/pages/Login.jsx';
 
-import './App.css'
-import {BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Catalog from './pages/Catalog';
-import About from './pages/About';
-import Form from './pages/Form';
-import Footer from './components/Footer';
+export default function App() {
+  const { currentUser, login, logout } = useAuth();
 
-function App() {
-  return(
-     <div className="d-flex flex-column min-vh-100">
-    <Router>
-      <Navbar />
-        <main>
-          <Routes>
-            <Route path='/' element={<Home/>}/>
-            <Route path='/catalog' element={<Catalog/>}/>
-            <Route path='/about' element={<About/>}/>
-            <Route path='/form' element={<Form/>}/>
+  if (currentUser) {
+    return (
+      <div style={{
+        minHeight: '100svh', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', background: '#0d0b08', color: '#f5f0e8',
+        fontFamily: 'sans-serif', flexDirection: 'column', gap: '16px'
+      }}>
+        <h2>Bienvenido, {currentUser.name} ✦</h2>
+        <p style={{ color: 'rgba(245,240,232,0.5)' }}>{currentUser.email}</p>
+        <button onClick={logout} style={{
+          padding: '8px 24px', background: 'none',
+          border: '1px solid rgba(201,168,76,0.4)', borderRadius: '8px',
+          color: '#c9a84c', cursor: 'pointer', marginTop: '8px'
+        }}>
+          Cerrar sesión
+        </button>
+      </div>
+    );
+  }
 
-          </Routes>
-        </main>
-      <Footer/>
-    </Router>
-    </div>
+  return (
+    <Login
+      onLogin={login}
+      onGoRegister={() => alert('Registro disponible en feature/register')}
+    />
   );
-  
 }
-
-export default App
