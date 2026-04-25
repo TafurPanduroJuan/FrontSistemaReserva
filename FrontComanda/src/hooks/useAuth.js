@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-const AUTH_KEY = 'reserva_auth_user';
-const USERS_KEY = 'reserva_users';
+const AUTH_KEY  = 'comanda_auth_user';
+const USERS_KEY = 'comanda_users';
 
 export function useAuth() {
   const [currentUser, setCurrentUser] = useState(() => {
@@ -23,9 +23,20 @@ export function useAuth() {
     if (users.find((u) => u.email === email)) {
       return { success: false, message: 'Este correo ya está registrado.' };
     }
-    const newUser = { id: Date.now().toString(), name, email, password };
+    const newUser = {
+      id:       Date.now().toString(),
+      name,
+      email,
+      password,
+      rol:      'usuario',
+    };
     localStorage.setItem(USERS_KEY, JSON.stringify([...users, newUser]));
-    const session = { id: newUser.id, email: newUser.email, name: newUser.name };
+    const session = {
+      id:    newUser.id,
+      email: newUser.email,
+      name:  newUser.name,
+      rol:   newUser.rol,
+    };
     localStorage.setItem(AUTH_KEY, JSON.stringify(session));
     setCurrentUser(session);
     return { success: true };
