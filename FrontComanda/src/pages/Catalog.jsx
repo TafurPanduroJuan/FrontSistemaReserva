@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import "../assets/styles/catalog.css";
 import { restaurantes } from "../data/datos";
+import BookingModal from "../components/BookingModal";
 
 // Tipos únicos
 const TIPOS = [...new Set(restaurantes.map((r) => r.tipo))].sort();
@@ -36,6 +37,14 @@ function Catalog() {
   );
   const [orden, setOrden] = useState("default");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRest, setSelectedRest] = useState(null);
+
+  const handleBooking = (restaurante) => {
+    setSelectedRest(restaurante);
+    setIsModalOpen(true);
+  };
 
   // Sincronizar si el usuario navega con nuevos params
   useEffect(() => {
@@ -313,7 +322,10 @@ function Catalog() {
                     </div>
                     <div className="catalog-card-footer">
                       <span className="catalog-card-price">{rest.precio}</span>
-                      <button className="btn-catalog-reserva">
+                      <button 
+                        className="btn-catalog-reserva"
+                        onClick={() => handleBooking(rest)}
+                      >
                         Reservar Ahora
                       </button>
                     </div>
@@ -324,6 +336,16 @@ function Catalog() {
           )}
         </div>
       </div>
+      {selectedRest && (
+        <BookingModal 
+          isOpen={isModalOpen} 
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedRest(null); 
+          }} 
+          restaurante={selectedRest} 
+        />
+      )}
     </div>
   );
 }
