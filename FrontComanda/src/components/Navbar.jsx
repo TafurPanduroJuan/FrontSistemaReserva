@@ -34,7 +34,7 @@ function Navbar() {
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/about">
+              <Link className="nav-link" to="/intranet">
                 <i className="bi bi-info-circle"></i> Acerca de
               </Link>
             </li>
