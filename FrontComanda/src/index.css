@@ -1,8 +1,7 @@
-html, body, #root{
+html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
   border: 0;
-  background-color: rgb(255, 247, 236);
   font-family: 'Poppins', 'Nunito', sans-serif;
 }
