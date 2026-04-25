@@ -8,10 +8,11 @@ function IntranetLayout() {
 
   const navItems = [
     { path: "/intranet", label: "Dashboard", icon: "bi-speedometer2", exact: true },
-    { path: "/intranet/restaurantes-solicitudes", label: "Solicitudes Restaurantes", icon: "bi-shop-window" },
+    { path: "/intranet/restaurantes", label: "Restaurantes", icon: "bi-shop" },
+    { path: "/intranet/restaurantesSolicitudes", label: "Solicitudes Restaurantes", icon: "bi-shop-window" },
     { path: "/intranet/comentarios", label: "Comentarios", icon: "bi-chat-square-text" },
     { path: "/intranet/usuarios", label: "Usuarios", icon: "bi-people" },
-    { path: "/intranet/nuevo-restaurante", label: "Nuevo Restaurante", icon: "bi-plus-circle" },
+    { path: "/intranet/nuevoRestaurante", label: "Nuevo Restaurante", icon: "bi-plus-circle" },
     { path: "/intranet/mesas", label: "Gestión de Mesas", icon: "bi-grid-3x3-gap" },
     { path: "/intranet/reservas", label: "Reservas", icon: "bi-calendar-check" },
   ];

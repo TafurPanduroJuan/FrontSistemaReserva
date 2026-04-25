@@ -18,6 +18,7 @@ import Usuarios from './pages/intranet/Usuarios';
 import NuevoRestaurante from './pages/intranet/NuevoRestaurante';
 import GestionMesas from './pages/intranet/GestionMesas';
 import Reservas from './pages/intranet/Reservas';
+import RestaurantesRegistrados from './pages/intranet/RestauranteRegistrados';
 
 
 
@@ -44,10 +45,11 @@ function App() {
             {/* ── Rutas de intranet (layout propio, sin Navbar público ni Footer) ── */}
             <Route path="/intranet" element={<IntranetLayout />}>
               <Route index                        element={<IntranetHome />} />
-              <Route path="restaurantes-solicitudes" element={<SolicitudesRestaurantes />} />
+              <Route path="restaurantes" element={<RestaurantesRegistrados />} />
+              <Route path="restaurantesSolicitudes" element={<SolicitudesRestaurantes />} />
               <Route path="comentarios"           element={<Comentarios />} />
               <Route path="usuarios"              element={<Usuarios />} />
-              <Route path="nuevo-restaurante"     element={<NuevoRestaurante />} />
+              <Route path="nuevoRestaurante"     element={<NuevoRestaurante />} />
               <Route path="mesas"                 element={<GestionMesas />} />
               <Route path="reservas"              element={<Reservas />} />
             </Route>
