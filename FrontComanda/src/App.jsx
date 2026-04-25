@@ -18,7 +18,7 @@ import Usuarios from './pages/intranet/Usuarios';
 import NuevoRestaurante from './pages/intranet/NuevoRestaurante';
 import GestionMesas from './pages/intranet/GestionMesas';
 import Reservas from './pages/intranet/Reservas';
-import RestaurantesRegistrados from './pages/intranet/RestauranteRegistrados';
+import RestaurantesRegistrados from './pages/intranet/RestaurantesRegistrados';
 
 
 
