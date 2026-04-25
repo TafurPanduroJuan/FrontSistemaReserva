@@ -1,44 +1,33 @@
-import React, { useState } from "react";
+import React from "react";
 import "../../assets/styles/IntranetHome.css";
-
-const mockSolicitudes = [
-  { id: 1, nombre: "El Rincón Criollo", propietario: "Carlos Mamani", tipo: "Criolla", ciudad: "Miraflores", fecha: "2026-04-20", estado: "pendiente" },
-  { id: 2, nombre: "Sushi Fusion Lima", propietario: "Ana Takahashi", tipo: "Japonesa", ciudad: "San Isidro", fecha: "2026-04-21", estado: "pendiente" },
-  { id: 3, nombre: "La Trattoria", propietario: "Marco Rossi", tipo: "Italiana", ciudad: "Barranco", fecha: "2026-04-22", estado: "pendiente" },
-];
+import { useRestaurantes } from "../../context/RestaurantesContext";
 
 const mockComentarios = [
-  { id: 1, usuario: "María López", tipo: "comentario", mensaje: "¡Excelente plataforma! Encontré mi restaurante favorito fácilmente.", fecha: "2026-04-23", restaurante: "Sushi Take" },
-  { id: 2, usuario: "Roberto Silva", tipo: "reclamo", mensaje: "La reserva no fue confirmada a tiempo. Tuve que esperar 30 minutos.", fecha: "2026-04-22", restaurante: "La Bella Italia" },
-  { id: 3, usuario: "Lucía Fernández", tipo: "experiencia", mensaje: "Muy buena experiencia reservando. El proceso fue sencillo y rápido.", fecha: "2026-04-21", restaurante: "El Huarike" },
-  { id: 4, usuario: "Diego Quispe", tipo: "reclamo", mensaje: "El restaurante estaba cerrado cuando llegué, pero la reserva estaba confirmada.", fecha: "2026-04-20", restaurante: "Mar y Tierra" },
+  { id: 1, usuario: "María López",    tipo: "comentario", mensaje: "¡Excelente plataforma! Encontré mi restaurante favorito fácilmente.", fecha: "2026-04-23", restaurante: "Sushi Take" },
+  { id: 2, usuario: "Roberto Silva",  tipo: "reclamo",    mensaje: "La reserva no fue confirmada a tiempo. Tuve que esperar 30 minutos.",  fecha: "2026-04-22", restaurante: "La Bella Italia" },
+  { id: 3, usuario: "Lucía Fernández",tipo: "experiencia",mensaje: "Muy buena experiencia reservando. El proceso fue sencillo y rápido.",  fecha: "2026-04-21", restaurante: "El Huarike" },
+  { id: 4, usuario: "Diego Quispe",   tipo: "reclamo",    mensaje: "El restaurante estaba cerrado cuando llegué, pero la reserva estaba confirmada.", fecha: "2026-04-20", restaurante: "Mar y Tierra" },
 ];
 
 const mockUsuarios = [
-  { id: 1, nombre: "Admin Principal", email: "admin@comanda.pe", rol: "administrador", fecha: "2026-01-10" },
-  { id: 2, nombre: "Carlos Mamani", email: "carlos@gmail.com", rol: "usuario", fecha: "2026-03-15" },
-  { id: 3, nombre: "Ana Takahashi", email: "ana@gmail.com", rol: "usuario", fecha: "2026-03-20" },
-  { id: 4, nombre: "Staff Restaurante", email: "staff@labellaitalia.pe", rol: "personal", fecha: "2026-02-01" },
-  { id: 5, nombre: "María López", email: "maria@gmail.com", rol: "usuario", fecha: "2026-04-10" },
+  { id: 1, nombre: "Admin Principal",  email: "admin@comanda.pe",       rol: "administrador", fecha: "2026-01-10" },
+  { id: 2, nombre: "Carlos Mamani",    email: "carlos@gmail.com",       rol: "usuario",       fecha: "2026-03-15" },
+  { id: 3, nombre: "Ana Takahashi",    email: "ana@gmail.com",          rol: "usuario",       fecha: "2026-03-20" },
+  { id: 4, nombre: "Staff Restaurante",email: "staff@labellaitalia.pe", rol: "personal",      fecha: "2026-02-01" },
+  { id: 5, nombre: "María López",      email: "maria@gmail.com",        rol: "usuario",       fecha: "2026-04-10" },
 ];
 
 const tipoIcono = { comentario: "bi-chat-left-text", reclamo: "bi-exclamation-triangle", experiencia: "bi-star" };
 const tipoColor = { comentario: "#3b82f6", reclamo: "#ef4444", experiencia: "#f59e0b" };
 
 function IntranetHome() {
-  const [solicitudes, setSolicitudes] = useState(mockSolicitudes);
-  const [comentarios] = useState(mockComentarios);
-
-  const handleSolicitud = (id, accion) => {
-    setSolicitudes(prev =>
-      prev.map(s => s.id === id ? { ...s, estado: accion } : s)
-    );
-  };
+  
+  const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurantes();
 
   const totales = {
     pendientes: solicitudes.filter(s => s.estado === "pendiente").length,
-    comentarios: comentarios.length,
-    reclamos: comentarios.filter(c => c.tipo === "reclamo").length,
+    comentarios: mockComentarios.length,
+    reclamos: mockComentarios.filter(c => c.tipo === "reclamo").length,
     usuarios: mockUsuarios.length,
   };
 
@@ -115,10 +104,10 @@ function IntranetHome() {
                 <div className="solicitud-actions">
                   {s.estado === "pendiente" ? (
                     <>
-                      <button className="btn-accion btn-aceptar" onClick={() => handleSolicitud(s.id, "aceptado")}>
+                      <button className="btn-accion btn-aceptar" onClick={() => aceptarSolicitud(s.id)}>
                         <i className="bi bi-check-lg"></i> Aceptar
                       </button>
-                      <button className="btn-accion btn-rechazar" onClick={() => handleSolicitud(s.id, "rechazado")}>
+                      <button className="btn-accion btn-rechazar" onClick={() => rechazarSolicitud(s.id)}>
                         <i className="bi bi-x-lg"></i> Rechazar
                       </button>
                     </>
@@ -134,7 +123,7 @@ function IntranetHome() {
           </div>
         </div>
 
-        {/* === COMENTARIOS CONTACTANOS === */}
+        {/* === COMENTARIOS === */}
         <div className="col-12 col-xl-5">
           <div className="intra-card p-4 h-100">
             <div className="d-flex align-items-center justify-content-between mb-3">
@@ -144,9 +133,8 @@ function IntranetHome() {
               </h6>
               <span className="status-badge badge-rechazado">{totales.reclamos} reclamo(s)</span>
             </div>
-
             <div className="comentarios-list">
-              {comentarios.map(c => (
+              {mockComentarios.map(c => (
                 <div key={c.id} className="comentario-item">
                   <div className="comentario-header">
                     <span className="comentario-tipo" style={{ color: tipoColor[c.tipo] }}>
@@ -168,7 +156,7 @@ function IntranetHome() {
           </div>
         </div>
 
-        {/* === USUARIOS REGISTRADOS (resumen) === */}
+        {/* === USUARIOS (resumen) === */}
         <div className="col-12">
           <div className="intra-card p-4">
             <div className="d-flex align-items-center justify-content-between mb-3">
@@ -183,9 +171,7 @@ function IntranetHome() {
             <div className="table-responsive">
               <table className="intra-table">
                 <thead>
-                  <tr>
-                    <th>#</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Registrado</th>
-                  </tr>
+                  <tr><th>#</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Registrado</th></tr>
                 </thead>
                 <tbody>
                   {mockUsuarios.slice(0, 4).map((u, i) => (
@@ -211,4 +197,5 @@ function IntranetHome() {
     </div>
   );
 }
+
 export default IntranetHome;
