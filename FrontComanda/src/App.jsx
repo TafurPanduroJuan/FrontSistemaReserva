@@ -11,6 +11,13 @@ import Footer from './components/Footer';
 
 //Import Intranet
 import IntranetLayout from './components/intranet/IntranetLayout';
+import IntranetHome from './pages/intranet/IntranetHome';
+import SolicitudesRestaurantes from './pages/intranet/SolicitudesRestaurantes';
+import Comentarios from './pages/intranet/Comentarios';
+import Usuarios from './pages/intranet/Usuarios';
+import NuevoRestaurante from './pages/intranet/NuevoRestaurante';
+import GestionMesas from './pages/intranet/GestionMesas';
+import Reservas from './pages/intranet/Reservas';
 
 
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
-import "../assets/styles/IntranetLayout.css";
+import "../../assets/styles/IntranetLayout.css";
 
 function IntranetLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
