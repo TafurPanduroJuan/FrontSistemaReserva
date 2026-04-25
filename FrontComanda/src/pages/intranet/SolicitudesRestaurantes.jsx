@@ -8,7 +8,7 @@ const mockSolicitudes = [
   { id: 5, nombre: "Veggie & Soul", propietario: "Sofía Vargas", email: "sofia@veggie.pe", tipo: "Vegana", ciudad: "Miraflores", telefono: "945612378", descripcion: "Cocina vegana de autor con ingredientes orgánicos.", fecha: "2026-04-15", estado: "rechazado" },
 ];
 
-export default function SolicitudesRestaurantes() {
+function SolicitudesRestaurantes() {
   const [solicitudes, setSolicitudes] = useState(mockSolicitudes);
   const [filtro, setFiltro] = useState("todos");
   const [selected, setSelected] = useState(null);
@@ -116,3 +116,4 @@ export default function SolicitudesRestaurantes() {
     </div>
   );
 }
+export default SolicitudesRestaurantes;
