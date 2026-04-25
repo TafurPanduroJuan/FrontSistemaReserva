@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import './Login.css';
 
+const ROLES = [
+  { id: 'usuario',       label: 'Usuario',      icon: '👤' },
+  { id: 'personal',      label: 'Personal',      icon: '🧑‍🍳' },
+  { id: 'administrador', label: 'Administrador', icon: '🛡️' },
+];
+
 export default function Login({ onLogin, onGoRegister }) {
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [errors, setErrors] = useState({});
+  const [rol, setRol]           = useState('usuario');
+  const [form, setForm]         = useState({ email: '', password: '' });
+  const [errors, setErrors]     = useState({});
   const [apiError, setApiError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]   = useState(false);
   const [showPass, setShowPass] = useState(false);
 
   const validate = () => {
@@ -32,13 +39,10 @@ export default function Login({ onLogin, onGoRegister }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) {
-      setErrors(errs);
-      return;
-    }
+    if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
     await new Promise((r) => setTimeout(r, 700));
-    const result = onLogin(form.email, form.password);
+    const result = onLogin(form.email, form.password, rol);
     setLoading(false);
     if (!result.success) setApiError(result.message);
   };
@@ -52,14 +56,29 @@ export default function Login({ onLogin, onGoRegister }) {
 
       <div className="auth-card">
         <div className="auth-card__brand">
-          <span className="auth-card__brand-icon">✦</span>
-          <p className="auth-card__brand-label">Sistema de Reservas</p>
+          <div className="auth-card__logo">🍽️</div>
+          <span className="auth-card__brand-name">Comanda</span>
         </div>
 
-        <h1 className="auth-card__title">Bienvenido</h1>
-        <p className="auth-card__subtitle">Ingresa a tu cuenta para continuar</p>
+        <h1 className="auth-card__title">Bienvenido de vuelta</h1>
+        <p className="auth-card__subtitle">Selecciona tu perfil e ingresa</p>
+
+        <div className="auth-roles">
+          {ROLES.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              className={`auth-role ${rol === r.id ? 'auth-role--active' : ''}`}
+              onClick={() => { setRol(r.id); setApiError(''); }}
+            >
+              <span className="auth-role__icon">{r.icon}</span>
+              <span className="auth-role__label">{r.label}</span>
+            </button>
+          ))}
+        </div>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
+
           <div className={`auth-field ${errors.email ? 'auth-field--error' : ''}`}>
             <label className="auth-field__label" htmlFor="email">Correo electrónico</label>
             <div className="auth-field__input-wrap">
@@ -137,7 +156,10 @@ export default function Login({ onLogin, onGoRegister }) {
             Regístrate aquí
           </button>
         </p>
-        <div className="auth-card__divider"><span>✦</span></div>
+
+        <div className="auth-card__divider">
+          <span>Comanda © 2025</span>
+        </div>
       </div>
     </div>
   );
