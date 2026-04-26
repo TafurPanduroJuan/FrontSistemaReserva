@@ -1,11 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import "../assets/styles/catalog.css";
-import { restaurantes } from "../data/datos";
-import BookingModal from "../components/BookingModal";
+import { useRestaurantes } from "../context/RestaurantesContext";
+import { restaurantes as restaurantesEstaticos } from "../data/datos";
 
-// Tipos únicos
-const TIPOS = [...new Set(restaurantes.map((r) => r.tipo))].sort();
 const PRECIOS = ["$", "$$", "$$$", "$$$$"];
 const DISPONIBILIDADES = ["Todos", "Hoy", "Mañana"];
 const ORDENAR = [
@@ -16,11 +14,66 @@ const ORDENAR = [
   { value: "mesas", label: "Más mesas disponibles" },
 ];
 
-// Convierte precio string a número para comparar
-const precioNum = (p) => p.length;
+// Convierte restaurante del contexto (formato intranet/NuevoRestaurante) al formato del catálogo
+function normalizarRestaurante(r) {
+  // Si ya tiene el formato del catálogo (viene de datos.js vía contexto), lo respeta
+  if (r.img && r.lugar) {
+    return {
+      id: r.id || r.nombre,
+      nombre: r.nombre,
+      lugar: r.lugar,
+      hora: r.hora || "—",
+      mesas: r.mesas ?? 0,
+      precio: r.precio || "$",
+      etiqueta: r.etiqueta || "Hoy",
+      tipo: r.tipo || "Otro",
+      img: r.img,
+      rating: r.rating ?? 4.0,
+      reseñas: r.reseñas ?? 0,
+    };
+  }
+  // Formato intranet/NuevoRestaurante → normalizar al formato del catálogo
+  return {
+    id: r.id || r.nombre,
+    nombre: r.nombre,
+    lugar: r.distrito || r.direccion || "Lima",
+    hora: r.horario_apertura || "—",
+    mesas: r.mesas ?? 0,
+    precio: r.precio || "$",
+    etiqueta: r.etiqueta || "Hoy",
+    tipo: r.tipo || "Otro",
+    img:
+      r.imagen ||
+      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400",
+    rating: r.rating ?? 4.0,
+    reseñas: r.reseñas ?? 0,
+  };
+}
+
+const precioNum = (p) => (p || "").length;
 
 function Catalog() {
   const [searchParams] = useSearchParams();
+  const { restaurantes: restaurantesContexto } = useRestaurantes();
+
+  // Combinar restaurantes del contexto con los estáticos sin duplicar
+  const todosLosRestaurantes = useMemo(() => {
+    const normalizados = restaurantesContexto.map(normalizarRestaurante);
+    const nombresEnContexto = new Set(
+      normalizados.map((r) => r.nombre.toLowerCase())
+    );
+    const estaticosExtra = restaurantesEstaticos
+      .filter((r) => !nombresEnContexto.has(r.nombre.toLowerCase()))
+      .map(normalizarRestaurante);
+
+    return [...normalizados, ...estaticosExtra];
+  }, [restaurantesContexto]);
+
+  // Tipos únicos derivados de todos los restaurantes disponibles
+  const TIPOS = useMemo(
+    () => [...new Set(todosLosRestaurantes.map((r) => r.tipo))].sort(),
+    [todosLosRestaurantes]
+  );
 
   // Inicializar filtros desde URL params (viene desde Home)
   const [busqueda, setBusqueda] = useState(searchParams.get("busqueda") || "");
@@ -38,15 +91,6 @@ function Catalog() {
   const [orden, setOrden] = useState("default");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRest, setSelectedRest] = useState(null);
-
-  const handleBooking = (restaurante) => {
-    setSelectedRest(restaurante);
-    setIsModalOpen(true);
-  };
-
-  // Sincronizar si el usuario navega con nuevos params
   useEffect(() => {
     const tipo = searchParams.get("tipo");
     const precio = searchParams.get("precio");
@@ -58,14 +102,12 @@ function Catalog() {
     if (disp) setDisponibilidad(disp);
   }, [searchParams]);
 
-  // Toggle tipo
   const toggleTipo = (tipo) => {
     setTiposSeleccionados((prev) =>
       prev.includes(tipo) ? prev.filter((t) => t !== tipo) : [...prev, tipo]
     );
   };
 
-  // Toggle precio
   const togglePrecio = (precio) => {
     setPreciosSeleccionados((prev) =>
       prev.includes(precio)
@@ -74,7 +116,6 @@ function Catalog() {
     );
   };
 
-  // Reset filtros
   const resetFiltros = () => {
     setBusqueda("");
     setTiposSeleccionados([]);
@@ -83,42 +124,46 @@ function Catalog() {
     setOrden("default");
   };
 
-  // Filtrar y ordenar
   const resultado = useMemo(() => {
-    let lista = restaurantes.filter((r) => {
+    let lista = todosLosRestaurantes.filter((r) => {
       const matchBusqueda =
         !busqueda ||
         r.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
         r.lugar.toLowerCase().includes(busqueda.toLowerCase()) ||
         r.tipo.toLowerCase().includes(busqueda.toLowerCase());
-
       const matchTipo =
-        tiposSeleccionados.length === 0 ||
-        tiposSeleccionados.includes(r.tipo);
-
+        tiposSeleccionados.length === 0 || tiposSeleccionados.includes(r.tipo);
       const matchPrecio =
         preciosSeleccionados.length === 0 ||
         preciosSeleccionados.includes(r.precio);
-
       const matchDisponibilidad =
         disponibilidad === "Todos" || r.etiqueta === disponibilidad;
-
       return matchBusqueda && matchTipo && matchPrecio && matchDisponibilidad;
     });
 
-    // Ordenar
-    if (orden === "rating") lista = [...lista].sort((a, b) => b.rating - a.rating);
+    if (orden === "rating")
+      lista = [...lista].sort((a, b) => b.rating - a.rating);
     else if (orden === "precio-asc")
-      lista = [...lista].sort((a, b) => precioNum(a.precio) - precioNum(b.precio));
+      lista = [...lista].sort(
+        (a, b) => precioNum(a.precio) - precioNum(b.precio)
+      );
     else if (orden === "precio-desc")
-      lista = [...lista].sort((a, b) => precioNum(b.precio) - precioNum(a.precio));
+      lista = [...lista].sort(
+        (a, b) => precioNum(b.precio) - precioNum(a.precio)
+      );
     else if (orden === "mesas")
       lista = [...lista].sort((a, b) => b.mesas - a.mesas);
 
     return lista;
-  }, [busqueda, tiposSeleccionados, preciosSeleccionados, disponibilidad, orden]);
+  }, [
+    busqueda,
+    tiposSeleccionados,
+    preciosSeleccionados,
+    disponibilidad,
+    orden,
+    todosLosRestaurantes,
+  ]);
 
-  // Filtros activos para mostrar tags
   const hayFiltrosActivos =
     busqueda ||
     tiposSeleccionados.length > 0 ||
@@ -149,8 +194,6 @@ function Catalog() {
           <div className="sidebar-title">
             <i className="bi bi-sliders"></i> Filtros
           </div>
-
-          {/* Tipo de comida */}
           <div className="filter-section">
             <div className="filter-label">Tipo de comida</div>
             <div className="filter-chips">
@@ -167,8 +210,6 @@ function Catalog() {
               ))}
             </div>
           </div>
-
-          {/* Precio */}
           <div className="filter-section">
             <div className="filter-label">Precio</div>
             <div className="filter-chips">
@@ -185,8 +226,6 @@ function Catalog() {
               ))}
             </div>
           </div>
-
-          {/* Disponibilidad */}
           <div className="filter-section">
             <div className="filter-label">Disponibilidad</div>
             <div className="availability-options">
@@ -203,7 +242,6 @@ function Catalog() {
               ))}
             </div>
           </div>
-
           <button className="btn-reset-filters" onClick={resetFiltros}>
             <i className="bi bi-x-circle me-1"></i> Limpiar filtros
           </button>
@@ -211,10 +249,15 @@ function Catalog() {
 
         {/* Content */}
         <div className="catalog-content">
-          {/* Top bar */}
           <div className="catalog-top-bar">
-            <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
-              {/* Mobile filter toggle */}
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
               <button
                 className={`mobile-filter-btn ${sidebarOpen ? "active" : ""}`}
                 onClick={() => setSidebarOpen((prev) => !prev)}
@@ -224,7 +267,9 @@ function Catalog() {
               </button>
               <span className="catalog-count">
                 <strong>{resultado.length}</strong>{" "}
-                {resultado.length === 1 ? "restaurante encontrado" : "restaurantes encontrados"}
+                {resultado.length === 1
+                  ? "restaurante encontrado"
+                  : "restaurantes encontrados"}
               </span>
             </div>
             <select
@@ -240,7 +285,6 @@ function Catalog() {
             </select>
           </div>
 
-          {/* Active filter tags */}
           {hayFiltrosActivos && (
             <div className="active-filters">
               {busqueda && (
@@ -277,7 +321,11 @@ function Catalog() {
               )}
               <button
                 className="active-filter-tag"
-                style={{ cursor: "pointer", border: "none", background: "#ffeee0" }}
+                style={{
+                  cursor: "pointer",
+                  border: "none",
+                  background: "#ffeee0",
+                }}
                 onClick={resetFiltros}
               >
                 Limpiar todo
@@ -285,7 +333,6 @@ function Catalog() {
             </div>
           )}
 
-          {/* Grid */}
           {resultado.length === 0 ? (
             <div className="catalog-empty">
               <div>
@@ -303,8 +350,8 @@ function Catalog() {
             </div>
           ) : (
             <div className="catalog-grid">
-              {resultado.map((rest, index) => (
-                <div key={index} className="catalog-card">
+              {resultado.map((rest) => (
+                <div key={rest.id || rest.nombre} className="catalog-card">
                   <div className="catalog-card-img-wrapper">
                     <img src={rest.img} alt={rest.nombre} />
                     <span className="catalog-badge">{rest.etiqueta}</span>
@@ -317,15 +364,13 @@ function Catalog() {
                       <span>🕒 {rest.hora}</span>
                       <span>🍽️ {rest.mesas} mesas disponibles</span>
                       <span>
-                        ⭐ {rest.rating} ({rest.reseñas}+ reseñas)
+                        ⭐ {rest.rating}{" "}
+                        {rest.reseñas > 0 && `(${rest.reseñas}+ reseñas)`}
                       </span>
                     </div>
                     <div className="catalog-card-footer">
                       <span className="catalog-card-price">{rest.precio}</span>
-                      <button 
-                        className="btn-catalog-reserva"
-                        onClick={() => handleBooking(rest)}
-                      >
+                      <button className="btn-catalog-reserva">
                         Reservar Ahora
                       </button>
                     </div>
@@ -336,16 +381,6 @@ function Catalog() {
           )}
         </div>
       </div>
-      {selectedRest && (
-        <BookingModal 
-          isOpen={isModalOpen} 
-          onClose={() => {
-            setIsModalOpen(false);
-            setSelectedRest(null); 
-          }} 
-          restaurante={selectedRest} 
-        />
-      )}
     </div>
   );
 }
