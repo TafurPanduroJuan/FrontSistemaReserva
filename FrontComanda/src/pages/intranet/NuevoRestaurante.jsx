@@ -24,7 +24,17 @@ function NuevoRestaurante() {
     setForm(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
   };
-
+  // Solo permite 9 dígitos numéricos en el teléfono
+  const handleTelefono = (e) => {
+    const valor = e.target.value.replace(/\D/g, "").slice(0, 9);
+    setForm(prev => ({ ...prev, telefono: valor }));
+  
+    // Limpia el error de teléfono mientras el usuario escribe
+    if (errors.telefono) {
+      setErrors(prev => ({ ...prev, telefono: "" }));
+    }
+  };
+  const telefonoValido = form.telefono.length === 9;
   const handleImagen = (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -45,6 +55,11 @@ function NuevoRestaurante() {
     if (!form.direccion.trim()) e.direccion = "La dirección es requerida";
     if (!form.telefono.trim()) e.telefono = "El teléfono es requerido";
     if (!form.email.trim()) e.email = "El email es requerido";
+    if (!form.telefono.trim()) {
+      e.telefono = "El teléfono es requerido";
+    } else if (form.telefono.length !== 9) {
+      e.telefono = "El teléfono debe tener 9 dígitos";
+    }
     return e;
   };
 
@@ -169,8 +184,27 @@ function NuevoRestaurante() {
               <div className="col-md-6">
                 <div style={{ marginBottom:"15px" }}>
                   <label style={labelStyle}>Teléfono de Reservas *</label>
-                  <input name="telefono" value={form.telefono} onChange={handle} style={inputStyle("telefono")} placeholder="900 000 000" />
-                  {errors.telefono && <small style={{color:"#ef4444"}}>{errors.telefono}</small>}
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="999 123 456"
+                    className={`modern-field ${form.telefono.length > 0 && !telefonoValido ? "field-error" : ""}`}
+                    value={form.telefono}
+                    onChange={handleTelefono}
+                    maxLength={9}
+                  />
+                  {errors.telefono ? (
+                    <small style={{ color: "#ef4444", display: "block", marginTop: "4px" }}>
+                      <i className="bi bi-exclamation-circle me-1" />
+                      {errors.telefono}
+                    </small>
+                  ) : form.telefono.length > 0 && telefonoValido ? (
+                    <small style={{ color: "#2ecc71", display: "block", marginTop: "4px" }}>
+                      <i className="bi bi-check-circle me-1" />
+                      Teléfono válido
+                    </small>
+                  ) : null}
+
                 </div>
                 <div>
                   <label style={labelStyle}>Email de Gestión *</label>

@@ -1,9 +1,60 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import '../assets/styles/miCuenta.css'
 
 const TABS = ["reservas", "favoritos", "perfil"];
+
+// Lee reservas del maestro filtradas por email y estado confirmada
+function loadReservasConfirmadas(email) {
+  try {
+    const raw = localStorage.getItem("comanda_reservas_maestro");
+    const todas = raw ? JSON.parse(raw) : [];
+    return todas.filter(
+      (r) => r.email === email && r.estado === "confirmada"
+    );
+  } catch {
+    return [];
+  }
+}
+
+// Devuelve true si todavía se puede cancelar (faltan más de 2h para la reserva)
+function puedeCancel(reserva) {
+  try {
+    const ahora = new Date();
+    const fechaHoraReserva = new Date(`${reserva.fecha}T${reserva.hora}:00`);
+    const diffMs = fechaHoraReserva - ahora;
+    const diffHoras = diffMs / (1000 * 60 * 60);
+    return diffHoras > 2;
+  } catch {
+    return false;
+  }
+}
+
+// Cancela la reserva en localStorage y libera la mesa
+function cancelarReservaEnStorage(reservaId) {
+  try {
+    const raw = localStorage.getItem("comanda_reservas_maestro");
+    const todas = raw ? JSON.parse(raw) : [];
+    const actualizadas = todas.map((r) =>
+      r.id === reservaId ? { ...r, estado: "cancelada_cliente" } : r
+    );
+    localStorage.setItem("comanda_reservas_maestro", JSON.stringify(actualizadas));
+
+    // Liberar la mesa en comanda_mesas_v2
+    const reserva = todas.find((r) => r.id === reservaId);
+    if (reserva?.restaurante && reserva?.mesa) {
+      const mesasRaw = localStorage.getItem("comanda_mesas_v2");
+      const mesasData = mesasRaw ? JSON.parse(mesasRaw) : {};
+      const mesasRest = mesasData[reserva.restaurante] || [];
+      const mesasActualizadas = mesasRest.map((m) =>
+        m.id === reserva.mesa ? { ...m, estado: "disponible" } : m
+      );
+      mesasData[reserva.restaurante] = mesasActualizadas;
+      localStorage.setItem("comanda_mesas_v2", JSON.stringify(mesasData));
+    }
+  } catch {}
+}
 
 export default function MiCuenta() {
   const { user, logout, updateProfile } = useAuth();
@@ -15,13 +66,30 @@ export default function MiCuenta() {
     email: user?.email || "",
   });
   const [saveMsg, setSaveMsg] = useState("");
+  const [reservasConfirmadas, setReservasConfirmadas] = useState([]);
+
+  // Modal de confirmación de cancelación
+  const [modalCancel, setModalCancel] = useState(null); // null | reservaObj
+
+  useEffect(() => {
+    if (user?.email) {
+      setReservasConfirmadas(loadReservasConfirmadas(user.email));
+    }
+  }, [user]);
+
+  // Recarga al volver a la pestaña de reservas
+  useEffect(() => {
+    if (tab === "reservas" && user?.email) {
+      setReservasConfirmadas(loadReservasConfirmadas(user.email));
+    }
+  }, [tab]);
 
   if (!user) {
     navigate("/login");
     return null;
-  }   
+  }
 
-  const reservas = user.reservas || [];
+  const reservas = reservasConfirmadas;
   const favoritos = user.favoritos || [];
 
   function handleSaveProfile(e) {
@@ -32,14 +100,52 @@ export default function MiCuenta() {
     setTimeout(() => setSaveMsg(""), 3000);
   }
 
-  const estadoColor = {
-    confirmada: "#4caf50",
-    pendiente: "#ff9f22",
-    cancelada: "#ff3300",
-  };
+  function handleSolicitarCancel(reserva) {
+    if (!puedeCancel(reserva)) return; // botón deshabilitado pero por seguridad
+    setModalCancel(reserva);
+  }
+
+  function handleConfirmarCancel() {
+    if (!modalCancel) return;
+    cancelarReservaEnStorage(modalCancel.id);
+    setModalCancel(null);
+    setReservasConfirmadas(loadReservasConfirmadas(user.email));
+  }
 
   return (
     <div className="mi-cuenta-page">
+
+      {/* ── Modal de confirmación de cancelación ── */}
+      {modalCancel && (
+        <div className="cancel-modal-overlay" onClick={() => setModalCancel(null)}>
+          <div className="cancel-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="cancel-modal-icon">
+              <i className="bi bi-exclamation-triangle-fill" />
+            </div>
+            <h4 className="cancel-modal-title">¿Cancelar esta reserva?</h4>
+            <p className="cancel-modal-body">
+              Estás a punto de cancelar tu reserva en <strong>{modalCancel.restaurante}</strong> el{" "}
+              <strong>{modalCancel.fecha}</strong> a las <strong>{modalCancel.hora}</strong>.
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="cancel-modal-actions">
+              <button
+                className="cancel-modal-btn-no"
+                onClick={() => setModalCancel(null)}
+              >
+                Mantener reserva
+              </button>
+              <button
+                className="cancel-modal-btn-yes"
+                onClick={handleConfirmarCancel}
+              >
+                <i className="bi bi-x-circle me-1" />
+                Sí, cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="cuenta-header">
         <div className="cuenta-header-inner">
@@ -81,7 +187,7 @@ export default function MiCuenta() {
         <div className="stat-card">
           <i className="bi bi-calendar-check stat-icon" />
           <span className="stat-num">{reservas.length}</span>
-          <span className="stat-label">Reservas</span>
+          <span className="stat-label">Confirmadas</span>
         </div>
         <div className="stat-card">
           <i className="bi bi-heart stat-icon" />
@@ -91,9 +197,9 @@ export default function MiCuenta() {
         <div className="stat-card">
           <i className="bi bi-clock-history stat-icon" />
           <span className="stat-num">
-            {reservas.filter((r) => r.estado === "confirmada").length}
+            {reservas.length}
           </span>
-          <span className="stat-label">Confirmadas</span>
+          <span className="stat-label">Reservas</span>
         </div>
         <div className="stat-card">
           <i className="bi bi-person-check stat-icon" />
@@ -135,42 +241,69 @@ export default function MiCuenta() {
             {reservas.length === 0 ? (
               <div className="cuenta-empty">
                 <i className="bi bi-calendar-x" />
-                <p>Aún no tienes reservas.</p>
+                <p>Aún no tienes reservas confirmadas.</p>
                 <Link to="/catalog" className="btn-nueva-reserva">
                   Explorar restaurantes
                 </Link>
               </div>
             ) : (
               <div className="reservas-list">
-                {reservas.map((r) => (
-                  <div key={r.id} className="reserva-card">
-                    <div className="reserva-restaurante">
-                      <i className="bi bi-shop me-2" />
-                      <strong>{r.restaurante}</strong>
+                {reservas.map((r) => {
+                  const cancelable = puedeCancel(r);
+                  return (
+                    <div key={r.id} className="reserva-card">
+                      <div className="reserva-restaurante">
+                        <i className="bi bi-shop me-2" />
+                        <strong>{r.restaurante}</strong>
+                      </div>
+                      <div className="reserva-details">
+                        <span>
+                          <i className="bi bi-calendar3 me-1" />
+                          {r.fecha}
+                        </span>
+                        <span>
+                          <i className="bi bi-clock me-1" />
+                          {r.hora}
+                        </span>
+                        <span>
+                          <i className="bi bi-people me-1" />
+                          {r.personas} persona{r.personas > 1 ? "s" : ""}
+                        </span>
+                        {r.mesa && (
+                          <span>
+                            <i className="bi bi-grid me-1" />
+                            Mesa {r.mesa}{r.zona ? ` · ${r.zona}` : ""}
+                          </span>
+                        )}
+                      </div>
+                      <div className="reserva-card-right">
+                        <span className="reserva-estado" style={{ color: "#4caf50" }}>
+                          <i className="bi bi-circle-fill me-1" style={{ fontSize: "0.5rem" }} />
+                          Confirmada
+                        </span>
+                        <button
+                          className={`btn-cancelar-reserva ${!cancelable ? "disabled" : ""}`}
+                          onClick={() => cancelable && handleSolicitarCancel(r)}
+                          title={
+                            cancelable
+                              ? "Cancelar esta reserva"
+                              : "Ya no es posible cancelar (menos de 2 horas para la reserva)"
+                          }
+                          disabled={!cancelable}
+                        >
+                          <i className="bi bi-x-circle me-1" />
+                          {cancelable ? "Cancelar" : "No cancelable"}
+                        </button>
+                        {!cancelable && (
+                          <span className="reserva-no-cancel-hint">
+                            <i className="bi bi-lock-fill me-1" />
+                            Menos de 2h para la reserva
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="reserva-details">
-                      <span>
-                        <i className="bi bi-calendar3 me-1" />
-                        {r.fecha}
-                      </span>
-                      <span>
-                        <i className="bi bi-clock me-1" />
-                        {r.hora}
-                      </span>
-                      <span>
-                        <i className="bi bi-people me-1" />
-                        {r.personas} persona{r.personas > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    <span
-                      className="reserva-estado"
-                      style={{ color: estadoColor[r.estado] }}
-                    >
-                      <i className="bi bi-circle-fill me-1" style={{ fontSize: "0.5rem" }} />
-                      {r.estado.charAt(0).toUpperCase() + r.estado.slice(1)}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

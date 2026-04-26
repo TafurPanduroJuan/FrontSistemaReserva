@@ -3,9 +3,10 @@ import { useMesas } from "../../context/MesasContext";
 import { useRestaurantes } from "../../context/RestaurantesContext";
 
 const ESTADO_CONFIG = {
-  pendiente:  { label: "Pendiente",  color: "#f59e0b", bg: "#fffaf0", icon: "bi-clock" },
-  confirmada: { label: "Confirmada", color: "#22c55e", bg: "#f0fdf4", icon: "bi-check-circle-fill" },
-  cancelada:  { label: "Cancelada",  color: "#dc3545", bg: "#fff5f5", icon: "bi-x-circle-fill" },
+  pendiente:         { label: "Pendiente",            color: "#f59e0b", bg: "#fffaf0", icon: "bi-clock" },
+  confirmada:        { label: "Confirmada",            color: "#22c55e", bg: "#f0fdf4", icon: "bi-check-circle-fill" },
+  cancelada:         { label: "Cancelada",             color: "#dc3545", bg: "#fff5f5", icon: "bi-x-circle-fill" },
+  cancelada_cliente: { label: "Cancelada por cliente", color: "#7c3aed", bg: "#f5f3ff", icon: "bi-person-x-fill" },
 };
 
 function Reservas() {
@@ -83,7 +84,15 @@ function Reservas() {
       {/* FILTROS */}
       <div className="d-flex gap-3 mb-4 flex-wrap align-items-center" style={{ background: "#f8f9fa", padding: "15px", borderRadius: "15px" }}>
         <div className="d-flex gap-2">
-          {["todos", "pendiente", "confirmada", "cancelada"].map(f => (
+          {["todos", "pendiente", "confirmada", "cancelada", "cancelada_cliente"].map(f => {
+            const labelMap = {
+              todos: "TODOS",
+              pendiente: "PENDIENTE",
+              confirmada: "CONFIRMADA",
+              cancelada: "CANCELADA",
+              cancelada_cliente: "CANCEL. CLIENTE",
+            };
+            return (
             <button key={f} onClick={() => setFiltroEstado(f)}
               style={{
                 padding: "8px 16px", borderRadius: "10px", border: "none",
@@ -91,9 +100,10 @@ function Reservas() {
                 color: filtroEstado === f ? "white" : "#666",
                 fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
               }}>
-              {f.toUpperCase()} ({obtenerConteo(f)})
+              {labelMap[f]} ({obtenerConteo(f)})
             </button>
-          ))}
+            );
+          })}
         </div>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "10px" }}>
           <i className="bi bi-filter text-muted"></i>
@@ -111,7 +121,7 @@ function Reservas() {
       {/* TARJETAS */}
       <div className="row g-4">
         {filtradas.map(r => {
-          const ec = ESTADO_CONFIG[r.estado];
+          const ec = ESTADO_CONFIG[r.estado] || ESTADO_CONFIG["cancelada"];
           return (
             <div className="col-12 col-xl-6" key={r.id}>
               <div style={{ background: "white", borderRadius: "20px", padding: "25px", border: "1px solid #eee", borderLeft: `6px solid ${ec.color}`, boxShadow: "0 5px 15px rgba(0,0,0,0.02)", position: "relative" }}>

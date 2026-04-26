@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import "../assets/styles/bookingModal.css";
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
@@ -39,6 +40,7 @@ const STEPS = [
 ];
 
 const BookingModal = ({ isOpen, onClose, restaurante }) => {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
 
   const minDate = useMemo(() => {
@@ -53,8 +55,8 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
     personas: 2,
     mesa: null,
     zona: '',
-    nombre: '',
-    email: '',
+    nombre: user?.nombre || '',
+    email: user?.email || '',
     telefono: '',
     notas: '',
   });
@@ -63,8 +65,15 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
   const mesas = useMemo(() => generarMesas(restaurante?.mesas), [restaurante]);
   const zonas = useMemo(() => [...new Set(mesas.map(m => m.zona))], [mesas]);
   const mesasFiltradas = formData.zona ? mesas.filter(m => m.zona === formData.zona) : mesas;
-
+  
+  const handleTelefono = (e) => {
+    const valor = e.target.value.replace(/\D/g, "").slice(0, 9);
+    setFormData({ ...formData, telefono: valor });
+  };
+  const telefonoValido = formData.telefono.length === 9;
+  
   if (!isOpen || !restaurante) return null;
+  
 
   const canProceed = () => {
     if (step === 2) return !!formData.fecha && !!formData.hora;
@@ -250,10 +259,29 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                 </div>
                 <div className="input-group">
                   <label>Teléfono</label>
-                  <input type="tel" placeholder="+51 999 123 456" className="modern-field"
-                    value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="999 123 456"
+                    className={`modern-field ${formData.telefono.length > 0 && !telefonoValido ? "field-error" : ""}`}
+                    value={formData.telefono}
+                    onChange={handleTelefono}
+                    maxLength={9}
+                  />
+                  {formData.telefono.length > 0 && !telefonoValido && (
+                    <small className="field-hint-error">
+                      <i className="bi bi-exclamation-circle me-1" />
+                      Debe tener exactamente 9 dígitos ({formData.telefono.length}/9)
+                    </small>
+                  )}
+                  {telefonoValido && (
+                    <small className="field-hint-ok">
+                      <i className="bi bi-check-circle me-1" />
+                      Teléfono válido
+                    </small>
+                  )}
                 </div>
-                <div className="input-group">
+                <div className="input-group full-width">
                   <label>Observaciones (opcional)</label>
                   <textarea placeholder="Cumpleaños, alergias, preferencias de ubicación..."
                     className="modern-field" rows={3} value={formData.notas}
