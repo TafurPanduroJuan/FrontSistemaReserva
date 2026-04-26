@@ -98,12 +98,32 @@ export function MesasProvider({ children }) {
     }
   };
 
-  // ── Sincronización: leer reservas nuevas del localStorage ─────────────────
-  // Cada vez que el componente monta (o el usuario navega a la intranet),
-  // reconciliamos el estado en memoria con lo escrito por el catálogo.
+  // ── Sincronización en tiempo real con el catálogo público ────────────────
+  // Escucha el evento "storage" que dispara el navegador cuando OTRA pestaña
+  // (la del catálogo) escribe en localStorage. Así la intranet se actualiza
+  // automáticamente sin necesidad de recargar la página.
   useEffect(() => {
-    const stored = load("comanda_reservas_maestro", []);
-    setReservas(stored);
+    function handleStorageChange(e) {
+      if (e.key === "comanda_reservas_maestro" && e.newValue) {
+        try {
+          const actualizadas = JSON.parse(e.newValue);
+          setReservas(actualizadas);
+        } catch {}
+      }
+    }
+    // Evento cross-tab (cuando el catálogo está en otra pestaña del navegador)
+    window.addEventListener("storage", handleStorageChange);
+
+    // Evento mismo-tab (cuando el catálogo y la intranet están en la misma SPA)
+    function handleMismaTab(e) {
+      if (e.detail) setReservas(e.detail);
+    }
+    window.addEventListener("comanda_nueva_reserva", handleMismaTab);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("comanda_nueva_reserva", handleMismaTab);
+    };
   }, []);
 
   return (
