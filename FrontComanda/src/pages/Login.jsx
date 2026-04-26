@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Login.css';
 
 const ROLES = [
@@ -7,7 +8,9 @@ const ROLES = [
   { id: 'administrador', label: 'Administrador', icon: '🛡️' },
 ];
 
-export default function Login({ onLogin, onGoRegister }) {
+export default function Login({ onLogin }) {
+  const navigate = useNavigate();
+
   const [rol, setRol]           = useState('usuario');
   const [form, setForm]         = useState({ email: '', password: '' });
   const [errors, setErrors]     = useState({});
@@ -44,7 +47,15 @@ export default function Login({ onLogin, onGoRegister }) {
     await new Promise((r) => setTimeout(r, 700));
     const result = onLogin(form.email, form.password, rol);
     setLoading(false);
-    if (!result.success) setApiError(result.message);
+    if (!result.success) {
+      setApiError(result.message);
+    } else {
+      if (rol === 'administrador' || rol === 'personal') {
+        navigate('/intranet');
+      } else {
+        navigate('/');
+      }
+    }
   };
 
   return (
@@ -53,6 +64,16 @@ export default function Login({ onLogin, onGoRegister }) {
         <div className="auth-bg__overlay" />
         <div className="auth-bg__gradient" />
       </div>
+
+      {/* Botón volver al home */}
+      <Link to="/" className="auth-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 12H5" />
+          <path d="M12 19l-7-7 7-7" />
+        </svg>
+        Volver al inicio
+      </Link>
 
       <div className="auth-card">
         <div className="auth-card__brand">
@@ -152,9 +173,9 @@ export default function Login({ onLogin, onGoRegister }) {
 
         <p className="auth-card__footer">
           ¿No tienes cuenta?{' '}
-          <button className="auth-card__link" onClick={onGoRegister}>
+          <Link to="/register" className="auth-card__link">
             Regístrate aquí
-          </button>
+          </Link>
         </p>
 
         <div className="auth-card__divider">
