@@ -342,3 +342,117 @@
   .auth-card { padding: 28px 20px; }
   .auth-demo-pills { flex-wrap: wrap; }
 }
+
+
+/* --- Contenedor Principal (Split Screen) --- */
+.auth-split-wrapper {
+  display: flex;
+  width: 1050px; /* Ancho ajustado */
+  max-width: 95vw;
+  min-height: 750px; /* Altura aumentada como pediste */
+  background: white;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.18);
+  z-index: 5;
+}
+
+/* --- Lado Izquierdo (Imagen) --- */
+.auth-image-side {
+  flex: 1.2;
+  position: relative;
+}
+
+.auth-image-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.auth-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255, 107, 0, 0.3), rgba(0, 0, 0, 0.75));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 40px;
+  color: white;
+}
+
+/* --- Lado Derecho (Formulario) --- */
+.auth-form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: white;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* --- Estilos de Inputs y Botones --- */
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px 40px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-alt);
+  outline: none;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #bbb;
+}
+
+.auth-eye-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  .auth-image-side {
+    display: none;
+  }
+  .auth-split-wrapper {
+    width: 450px;
+    min-height: auto;
+    box-shadow: none;
+    background: transparent;
+  }
+  .auth-form-side {
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+}

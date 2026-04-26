@@ -177,17 +177,18 @@
   background: #f8f9fa;
   border: 1px solid #eee;
   border-radius: 12px;
-  padding: 4px;
+  padding: 6px;
   width: fit-content; 
   height: 42px;
   box-sizing: border-box;
+  border-radius: 15px;
 }
 
 .people-selector button {
   width: 34px;
   height: 34px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: white;
   cursor: pointer;
   font-weight: bold;
@@ -208,9 +209,10 @@
   width: 100%;
   max-width: 280px; 
   height: 42px;
-  border-radius: 10px;
+  border-radius: 15px;
   border: 1px solid #ddd;
   padding: 0 12px;
+  
 }
 /* --- Títulos de sección --- */
 .section-title {

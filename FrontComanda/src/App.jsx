@@ -31,13 +31,13 @@ import RestaurantesRegistrados from './pages/intranet/RestaurantesRegistrados';
 // ── Context ─────────────────────────────────────────────────────────────────
 import { RestaurantesProvider } from './context/RestaurantesContext';
 import { MesasProvider } from './context/MesasContext';
-
+import { ComentariosProvider } from './context/ComentariosContext';
 function App() {
   return (
     <AuthProvider>
       <RestaurantesProvider>
         <MesasProvider>
-          
+            <ComentariosProvider>
             <Router>
               <Routes>
 
@@ -152,7 +152,7 @@ function App() {
 
               </Routes>
             </Router>
-         
+          </ComentariosProvider>          
         </MesasProvider>
       </RestaurantesProvider>
     </AuthProvider>

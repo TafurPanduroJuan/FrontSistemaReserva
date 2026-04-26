@@ -118,6 +118,7 @@
   align-items: center;
   gap: 6px;
   transition: background 0.2s;
+  border: none;
 }
 .topbar-exit-btn:hover {
   background: rgba(255,255,255,0.35);

@@ -71,7 +71,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
     setFormData({ ...formData, telefono: valor });
   };
   const telefonoValido = formData.telefono.length === 9;
-  
+
   if (!isOpen || !restaurante) return null;
   
 
@@ -168,7 +168,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
 
           {/* PASO 2 */}
           {step === 2 && (
-            <div className="step-container anim-fade-in">
+            <div className="step-container anim-fade-in p-1">
               <h3 className="section-title mb-2">📅 ¿Cuándo nos visitas?</h3>
               <div className="row-inputs">
                 <div className="input-group">
