@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
+import "../App.css"
 export default function Navbar() {
   const { user, logout, isAdmin, isPersonal } = useAuth();
   const navigate = useNavigate();
@@ -37,6 +37,11 @@ export default function Navbar() {
                 <i className="bi bi-grid" /> Catálogo
               </Link>
             </li>
+             <li className="nav-item">
+              <Link className="nav-link" to="/form">
+                <i className="bi bi-info-circle" /> Formulario
+              </Link>
+            </li>
             <li className="nav-item">
               <Link className="nav-link" to="/about">
                 <i className="bi bi-info-circle" /> Nosotros
@@ -53,11 +58,12 @@ export default function Navbar() {
                 </li>
                 <li className="nav-item ms-1">
                   <Link
-                    className="nav-link btn btn-sm px-3 py-1 text-white"
+                    className="nav-link btn btn-sm px-3 py-1" id="registro"
                     to="/register"
                     style={{
                       background: "linear-gradient(135deg,#ff9f22,#ff3300)",
                       borderRadius: "20px",
+                      
                     }}
                   >
                     Registrarse

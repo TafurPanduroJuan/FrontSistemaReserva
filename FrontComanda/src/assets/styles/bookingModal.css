@@ -150,48 +150,75 @@
   margin-bottom: 14px;
   font-weight: 700;
 }
-
-.row-inputs { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.input-group { flex: 1; min-width: 140px; margin-bottom: 12px; }
-
-.input-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: #555;
+/* --- Contenedor de la fila --- */
+.row-inputs {
+  display: flex;
+  gap: 30px;           /* Aumentamos la separación entre Fecha y Personas */
+  margin-bottom: 24px;
+  align-items: flex-start; /* Alinea los labels arriba */
 }
 
-.modern-field {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  transition: border-color 0.3s;
-  box-sizing: border-box;
+/* --- Grupos de Input --- */
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
-.modern-field:focus { outline: none; border-color: #ff4500; }
 
-/* --- Selector de Personas --- */
+/* Clase específica para centrar el contenido de la columna de personas */
+.input-group.center-content {
+  align-items: center; /* Centra el label y el selector horizontalmente */
+}
+
+/* --- Ajustes del Selector de Personas --- */
 .people-selector {
   display: flex;
   align-items: center;
-  background: #f0f0f0;
+  background: #f8f9fa;
+  border: 1px solid #eee;
   border-radius: 12px;
   padding: 4px;
-  width: fit-content;
+  width: fit-content;  /* Para que no se estire y se mantenga centrado */
+  height: 42px;
+  box-sizing: border-box;
 }
-.people-selector button {
-  width: 34px; height: 34px;
-  border: none; border-radius: 8px;
-  background: white; cursor: pointer;
-  font-weight: bold; font-size: 1.1rem;
-  transition: background 0.2s;
-}
-.people-selector button:hover { background: #ff4500; color: white; }
-.people-selector span { padding: 0 16px; font-weight: bold; font-size: 1rem; }
 
+.people-selector button {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.people-selector span {
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  min-width: 30px;
+  text-align: center;
+}
+
+/* Aseguramos que el input de fecha ocupe su ancho pero no invada */
+.modern-field {
+  width: 100%;
+  max-width: 280px; /* Evita que la fecha sea gigante */
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 0 12px;
+}
+/* --- Títulos de sección --- */
+.section-title {
+  font-size: 1.15rem;
+  margin-bottom: 20px;
+  border-left: 4px solid #ff4500; /* Detalle elegante al lado del título */
+  padding-left: 12px;
+}
 /* --- Grid de Horarios --- */
 .time-grid {
   display: grid;

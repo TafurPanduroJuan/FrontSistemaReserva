@@ -8,18 +8,23 @@
   --brand-mid: #ff6b00;
   --dark: #1a1a2e;
 }
-
+/* ── CONTENEDOR PRINCIPAL ── */
 .mi-cuenta-page {
-  min-height: 100vh;
-  background: #fdf8f3;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  max-width: 1000px;
+  margin: 40px auto; /* Centra la página y da aire arriba/abajo */
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Espacio uniforme entre secciones (Header, Stats, Tabs) */
 }
 
 /* ── Header ───────────────────────────────────────────────── */
 .cuenta-header {
   background: linear-gradient(135deg, var(--dark) 0%, #2d2d4e 100%);
-  padding: 40px 0 30px;
+  padding: 25px;
+  border-radius: 16px;
   color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 .cuenta-header-inner {
   max-width: 900px;
@@ -27,7 +32,7 @@
   padding: 0 24px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 .cuenta-avatar {
@@ -45,7 +50,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .cuenta-nombre {
   font-size: 1.5rem;
@@ -111,22 +116,18 @@
 
 /* ── Stats ────────────────────────────────────────────────── */
 .cuenta-stats {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 24px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  transform: translateY(-28px);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px; /* Espacio entre las 4 tarjetas */
 }
 .stat-card {
   background: white;
-  border-radius: 14px;
-  padding: 18px;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.07);
   border: 1px solid #f0e8e0;
   transition: transform 0.2s;
@@ -157,20 +158,20 @@
   margin: -8px auto 0;
   padding: 0 24px;
   display: flex;
-  gap: 4px;
+  gap: 15px;
   border-bottom: 2px solid #f0e8e0;
 }
 .cuenta-tab {
   background: none;
   border: none;
-  padding: 12px 20px;
+  padding: 10px 20px;
   font-size: 0.9rem;
   font-weight: 600;
   color: #aaa;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
-  transition: all 0.2s;
+  transition: all 0.3s;
   display: flex;
   align-items: center;
   border-radius: 8px 8px 0 0;
@@ -184,15 +185,17 @@
 
 /* ── Content area ─────────────────────────────────────────── */
 .cuenta-content {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 28px 24px 60px;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  min-height: 300px;
 }
 .cuenta-section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px; /* Separa el título del listado */
 }
 .cuenta-section-header h3 {
   font-size: 1.15rem;
@@ -233,19 +236,16 @@
 .reservas-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 .reserva-card {
-  background: white;
-  border-radius: 14px;
-  padding: 18px 20px;
-  border: 1px solid #f0e8e0;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  transition: box-shadow 0.2s;
+  padding: 18px 24px;
+  background: #fdfdfd;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
 }
 .reserva-card:hover {
   box-shadow: 0 6px 20px rgba(255,100,0,0.08);
@@ -259,7 +259,7 @@
 }
 .reserva-details {
   display: flex;
-  gap: 16px;
+  gap: 25px;
   flex: 1;
   color: #666;
   font-size: 0.88rem;
@@ -280,7 +280,7 @@
 .favoritos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 .fav-card {
   background: white;
@@ -290,7 +290,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   transition: transform 0.2s, box-shadow 0.2s;
@@ -323,7 +323,7 @@
 .fav-reserva-btn:hover { opacity: 0.88; color: white; }
 
 /* ── Perfil ─────────────────────────────────────────────────── */
-.perfil-section { max-width: 520px; }
+.perfil-section { max-width: 520px; margin:  0 auto;}
 .perfil-form { display: flex; flex-direction: column; gap: 16px; }
 .perfil-info-list {
   background: white;
@@ -340,6 +340,7 @@
 }
 .perfil-info-row:last-child { border-bottom: none; }
 .perfil-info-label {
+  font-weight: 500;
   min-width: 140px;
   font-size: 0.85rem;
   color: #888;
@@ -351,7 +352,17 @@
   color: var(--dark);
   font-size: 0.92rem;
 }
-
+.me-1 { margin-right: 4px; }
+.me-2 { margin-right: 8px; }
+.btn-nueva-reserva, .auth-submit-btn, .btn-cuenta-outline, .btn-cuenta-logout {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 680px) {
   .cuenta-stats { grid-template-columns: repeat(2, 1fr); }

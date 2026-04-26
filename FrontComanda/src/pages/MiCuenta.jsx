@@ -19,7 +19,7 @@ export default function MiCuenta() {
   if (!user) {
     navigate("/login");
     return null;
-  }
+  }   
 
   const reservas = user.reservas || [];
   const favoritos = user.favoritos || [];
@@ -121,7 +121,7 @@ export default function MiCuenta() {
       </div>
 
       {/* Contenido */}
-      <div className="cuenta-content">
+      <div className="cuenta-content content-center">
         {/* ── RESERVAS ──────────────────────────────────────── */}
         {tab === "reservas" && (
           <div>

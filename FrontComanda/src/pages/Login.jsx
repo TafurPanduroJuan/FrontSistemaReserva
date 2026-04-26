@@ -41,7 +41,13 @@ export default function Login() {
   }
 
   return (
+
     <div className="auth-page">
+      <div className="auth-top-right">
+        <Link to="/" className="auth-home-btn">
+          <i className="bi bi-house-door" /> Volver
+        </Link>
+      </div>
       {/* Fondo decorativo */}
       <div className="auth-bg">
         <div className="auth-bg-blob blob1" />

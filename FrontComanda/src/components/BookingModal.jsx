@@ -100,6 +100,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
   };
 
   return (
+    <div id="comanda-booking-modal">
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card wide" onClick={(e) => e.stopPropagation()}>
         <button className="close-btn-top" onClick={onClose}>&times;</button>
@@ -159,14 +160,14 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
           {/* PASO 2 */}
           {step === 2 && (
             <div className="step-container anim-fade-in">
-              <h3 className="section-title">📅 ¿Cuándo nos visitas?</h3>
+              <h3 className="section-title mb-2">📅 ¿Cuándo nos visitas?</h3>
               <div className="row-inputs">
                 <div className="input-group">
                   <label>📅 Fecha</label>
                   <input type="date" className="modern-field" min={minDate} value={formData.fecha}
                     onChange={(e) => setFormData({ ...formData, fecha: e.target.value })} />
                 </div>
-                <div className="input-group">
+                <div className="input-group center-content">
                   <label>👥 Personas</label>
                   <div className="people-selector">
                     <button onClick={() => setFormData({ ...formData, personas: Math.max(1, formData.personas - 1) })}>-</button>
@@ -306,6 +307,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

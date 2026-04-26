@@ -18,6 +18,9 @@
   font-weight: 500;
   transition: transform 0.3s ease;
 }
+#registro{
+  color: black  !important;
+}
 .nav-item{
   margin-right: 50px;
   padding: 5px;

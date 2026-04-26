@@ -18,7 +18,7 @@ import parrillaImg from "../assets/img/tipo9.jpg";
 import { categorias } from "../data/datos";
 import { restaurantes } from "../data/datos";
 import { testimonios } from "../data/datos";
-
+import BookingModal from "../components/BookingModal";
 
 
 function Home() {

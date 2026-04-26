@@ -29,6 +29,11 @@ export default function ForgotPassword() {
 
   return (
     <div className="auth-page">
+      <div className="auth-top-right">
+        <Link to="/" className="auth-home-btn">
+          <i className="bi bi-house-door" /> Volver
+        </Link>
+      </div>
       <div className="auth-bg">
         <div className="auth-bg-blob blob1" />
         <div className="auth-bg-blob blob2" />
