@@ -365,3 +365,38 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
+/* ── Botón volver al home ── */
+.auth-back {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px 8px 12px;
+  background: rgba(250, 248, 245, 0.15);
+  border: 1px solid rgba(250, 248, 245, 0.25);
+  border-radius: 99px;
+  color: rgba(250, 248, 245, 0.9);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.auth-back:hover {
+  background: rgba(250, 248, 245, 0.25);
+  border-color: rgba(250, 248, 245, 0.45);
+  color: #fff;
+}
+
+.auth-back svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
