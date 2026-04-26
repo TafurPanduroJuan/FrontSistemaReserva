@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 // ── Auth ────────────────────────────────────────────────────────────────────
@@ -8,7 +9,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import MiCuenta from './pages/MiCuenta';
 
-// ── Componentes públicos ────────────────────────────────────────────────────
+// ── Componentes Publicos ────────────────────────────────────────────────────────────────
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -31,127 +32,130 @@ import RestaurantesRegistrados from './pages/intranet/RestaurantesRegistrados';
 import { RestaurantesProvider } from './context/RestaurantesContext';
 import { MesasProvider } from './context/MesasContext';
 
-export default function App() {
+function App() {
   return (
     <AuthProvider>
       <RestaurantesProvider>
         <MesasProvider>
-          <Router>
-            <Routes>
+          
+            <Router>
+              <Routes>
 
-              {/* ── Rutas de autenticación (sin Navbar/Footer) ────────── */}
-              <Route path="/login"           element={<Login />} />
-              <Route path="/register"        element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+                {/* ── Rutas de autenticación (sin Navbar/Footer) ────────── */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
-              {/* ── Área de usuario autenticado (rol: usuario) ────────── */}
-              <Route
-                path="/mi-cuenta"
-                element={
-                  <ProtectedRoute allowedRoles={["usuario"]}>
-                    <MiCuenta />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* ── Rutas públicas (web) ──────────────────────────────── */}
-              <Route path="/*" element={
-                <div className="d-flex flex-column min-vh-100">
-                  <Navbar />
-                  <main className="flex-grow-1">
-                    <Routes>
-                      <Route path="/"        element={<Home />} />
-                      <Route path="/catalog" element={<Catalog />} />
-                      <Route path="/about"   element={<About />} />
-                      <Route path="/form"    element={<Form />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                </div>
-              } />
-
-              {/* ── Intranet (admin + personal) ───────────────────────── */}
-              <Route
-                path="/intranet"
-                element={
-                  <ProtectedRoute allowedRoles={["administrador", "personal"]}>
-                    <IntranetLayout />
-                  </ProtectedRoute>
-                }
-              >
-                {/* Rutas solo para administrador */}
+                {/* ── Área de usuario autenticado (rol: usuario) ────────── */}
                 <Route
-                  index
+                  path="/mi-cuenta"
                   element={
-                    <ProtectedRoute allowedRoles={["administrador"]}>
-                      <IntranetHome />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="restaurantes"
-                  element={
-                    <ProtectedRoute allowedRoles={["administrador"]}>
-                      <RestaurantesRegistrados />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="restaurantesSolicitudes"
-                  element={
-                    <ProtectedRoute allowedRoles={["administrador"]}>
-                      <SolicitudesRestaurantes />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="comentarios"
-                  element={
-                    <ProtectedRoute allowedRoles={["administrador"]}>
-                      <Comentarios />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="usuarios"
-                  element={
-                    <ProtectedRoute allowedRoles={["administrador"]}>
-                      <Usuarios />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="nuevoRestaurante"
-                  element={
-                    <ProtectedRoute allowedRoles={["administrador"]}>
-                      <NuevoRestaurante />
+                    <ProtectedRoute allowedRoles={["usuario"]}>
+                      <MiCuenta />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* Rutas accesibles por admin Y personal */}
+                {/* ── Rutas públicas (web) ──────────────────────────────── */}
+                <Route path="/*" element={
+                  <div className="d-flex flex-column min-vh-100">
+                    <Navbar />
+                    <main className="flex-grow-1">
+                      <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/catalog" element={<Catalog />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/form" element={<Form />} />
+                      </Routes>
+                    </main>
+                    <Footer />
+                  </div>
+                } />
+
+                {/* ── Intranet (admin + personal) ───────────────────────── */}
                 <Route
-                  path="mesas"
+                  path="/intranet"
                   element={
                     <ProtectedRoute allowedRoles={["administrador", "personal"]}>
-                      <GestionMesas />
+                      <IntranetLayout />
                     </ProtectedRoute>
                   }
-                />
-                <Route
-                  path="reservas"
-                  element={
-                    <ProtectedRoute allowedRoles={["administrador", "personal"]}>
-                      <Reservas />
-                    </ProtectedRoute>
-                  }
-                />
-              </Route>
+                >
+                  {/* Rutas solo para administrador */}
+                  <Route
+                    index
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador"]}>
+                        <IntranetHome />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="restaurantes"
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador"]}>
+                        <RestaurantesRegistrados />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="restaurantesSolicitudes"
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador"]}>
+                        <SolicitudesRestaurantes />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="comentarios"
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador"]}>
+                        <Comentarios />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="usuarios"
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador"]}>
+                        <Usuarios />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="nuevoRestaurante"
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador"]}>
+                        <NuevoRestaurante />
+                      </ProtectedRoute>
+                    }
+                  />
 
-            </Routes>
-          </Router>
+                  {/* Rutas accesibles por admin Y personal */}
+                  <Route
+                    path="mesas"
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador", "personal"]}>
+                        <GestionMesas />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="reservas"
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador", "personal"]}>
+                        <Reservas />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Route>
+
+              </Routes>
+            </Router>
+         
         </MesasProvider>
       </RestaurantesProvider>
     </AuthProvider>
   );
 }
+export default App;
