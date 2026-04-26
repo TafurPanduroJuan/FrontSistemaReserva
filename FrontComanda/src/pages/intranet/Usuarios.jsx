@@ -1,260 +1,383 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 
-const STORAGE_KEY = "comanda_usuarios";
-
-const initialUsuarios = [
-  { id: 1, nombre: "Admin Principal",      email: "admin@comanda.pe",        rol: "administrador", telefono: "999000001", fecha: "2026-01-10", activo: true },
-  { id: 2, nombre: "Carlos Mamani",        email: "carlos@gmail.com",        rol: "usuario",       telefono: "987654321", fecha: "2026-03-15", activo: true },
-  { id: 3, nombre: "Ana Takahashi",        email: "ana@gmail.com",           rol: "usuario",       telefono: "998877665", fecha: "2026-03-20", activo: true },
-  { id: 4, nombre: "Staff La Bella Italia",email: "staff@labellaitalia.pe",  rol: "personal",      telefono: "912345678", fecha: "2026-02-01", activo: true },
-  { id: 5, nombre: "María López",          email: "maria@gmail.com",         rol: "usuario",       telefono: "945612378", fecha: "2026-04-10", activo: true },
-  { id: 6, nombre: "Roberto Silva",        email: "roberto@gmail.com",       rol: "usuario",       telefono: "976543210", fecha: "2026-04-12", activo: false },
-  { id: 7, nombre: "Staff El Huarike",     email: "staff@huarike.pe",        rol: "personal",      telefono: "934567891", fecha: "2026-02-15", activo: true },
-  { id: 8, nombre: "Lucía Fernández",      email: "lucia@gmail.com",         rol: "usuario",       telefono: "956781234", fecha: "2026-04-18", activo: true },
-  { id: 9, nombre: "Diego Quispe",         email: "diego@gmail.com",         rol: "usuario",       telefono: "923456781", fecha: "2026-04-19", activo: true },
-  { id: 10,nombre: "Sub Admin",            email: "subadmin@comanda.pe",     rol: "administrador", telefono: "999000002", fecha: "2026-01-15", activo: true },
+const ROLES = ["usuario", "personal", "administrador"];
+const RESTAURANTES = [
+  "La Bella Italia",
+  "Sushi Take",
+  "Le Petit Bistro",
+  "Costa Azul",
+  "Taquería El Sabor",
+  "Sabor al Paso",
 ];
 
-const rolConfig = {
-  administrador: { label: "Administrador", icon: "bi-shield-fill",       cls: "badge-admin" },
-  usuario:       { label: "Usuario",       icon: "bi-person-fill",        cls: "badge-usuario" },
-  personal:      { label: "Personal",      icon: "bi-person-badge-fill",  cls: "badge-personal" },
-};
-
-function loadUsuarios() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : initialUsuarios;
-  } catch {
-    return initialUsuarios;
-  }
+function getRolBadge(rol) {
+  const map = {
+    administrador: { color: "#ff3300", bg: "#fff0ed", icon: "bi-shield-check" },
+    personal:      { color: "#ff9f22", bg: "#fff8ee", icon: "bi-person-badge" },
+    usuario:       { color: "#4a90d9", bg: "#eff6ff", icon: "bi-person"       },
+  };
+  return map[rol] || map.usuario;
 }
 
-function Usuarios() {
-  const [listaUsuarios, setListaUsuarios] = useState(loadUsuarios);
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroRol, setFiltroRol] = useState("todos");
-  const [showModal, setShowModal] = useState(false);
-  const [usuarioEditando, setUsuarioEditando] = useState(null);
+export default function Usuarios() {
+  const { changeUserRole, user: adminUser } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({ rol: "", restaurante: "" });
+  const [savedMsg, setSavedMsg] = useState("");
 
-  // Persistir en localStorage cada vez que cambia la lista
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(listaUsuarios));
-    } catch {}
-  }, [listaUsuarios]);
+  // Cargar usuarios del localStorage
+  function loadUsers() {
+    const stored = localStorage.getItem("comanda_users");
+    if (stored) setUsers(JSON.parse(stored));
+  }
 
-  const eliminarUsuario = (id) => {
-    if (window.confirm("¿Estás seguro de eliminar este usuario permanentemente?")) {
-      setListaUsuarios(listaUsuarios.filter(u => u.id !== id));
-    }
-  };
+  useEffect(() => { loadUsers(); }, []);
 
-  const abrirEditar = (usuario) => {
-    setUsuarioEditando({ ...usuario });
-    setShowModal(true);
-  };
+  const filtered = users.filter(
+    (u) =>
+      u.nombre.toLowerCase().includes(search.toLowerCase()) ||
+      u.email.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const guardarCambios = (e) => {
-    e.preventDefault();
-    setListaUsuarios(listaUsuarios.map(u =>
-      u.id === usuarioEditando.id ? usuarioEditando : u
-    ));
-    setShowModal(false);
-  };
+  function startEdit(u) {
+    setEditingId(u.id);
+    setEditForm({ rol: u.rol, restaurante: u.restaurante || "" });
+  }
 
-  const filtrados = listaUsuarios.filter(u => {
-    const matchBusq = u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-                      u.email.toLowerCase().includes(busqueda.toLowerCase());
-    const matchRol = filtroRol === "todos" || u.rol === filtroRol;
-    return matchBusq && matchRol;
-  });
+  function cancelEdit() {
+    setEditingId(null);
+    setEditForm({ rol: "", restaurante: "" });
+  }
 
-  const conteos = {
-    todos: listaUsuarios.length,
-    ...Object.fromEntries(["administrador", "usuario", "personal"].map(r => [
-      r, listaUsuarios.filter(u => u.rol === r).length
-    ]))
-  };
+  function saveEdit(userId) {
+    const restaurante =
+      editForm.rol === "personal" ? editForm.restaurante : null;
+    changeUserRole(userId, editForm.rol, restaurante);
+    loadUsers(); // re-leer localStorage para actualizar la tabla
+    cancelEdit();
+    setSavedMsg("✅ Rol actualizado correctamente");
+    setTimeout(() => setSavedMsg(""), 3000);
+  }
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", padding: "20px" }}>
-      <div className="intra-page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "25px" }}>
-        <div className="intra-page-title" style={{ fontSize: "1.5rem", fontWeight: "700", color: "#1a1a2e" }}>
-          <i className="bi bi-people" style={{ marginRight: "10px", color: "#ff6b00" }}></i>
-          Usuarios Registrados
+    <div style={{ padding: "28px 32px" }}>
+      {/* Header */}
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#1a1a2e", margin: 0 }}>
+          <i className="bi bi-people me-2" style={{ color: "#ff6b00" }} />
+          Gestión de Usuarios
+        </h2>
+        <p style={{ color: "#888", marginTop: 4, marginBottom: 0 }}>
+          Administra roles y permisos de acceso
+        </p>
+      </div>
+
+      {savedMsg && (
+        <div
+          style={{
+            background: "#f0fff4",
+            border: "1px solid #b7f7cb",
+            borderRadius: 10,
+            padding: "10px 16px",
+            marginBottom: 16,
+            color: "#1a7a3f",
+            fontWeight: 600,
+          }}
+        >
+          {savedMsg}
         </div>
-      </div>
+      )}
 
-      {/* Stats Cards */}
-      <div className="row g-3 mb-4" style={{ display: "flex", gap: "15px" }}>
-        {[
-          { rol: "administrador", icon: "bi-shield-fill",      bg: "linear-gradient(135deg,#ff9f22,#ff3300)", label: "Administradores" },
-          { rol: "personal",      icon: "bi-person-badge-fill",bg: "linear-gradient(135deg,#60a5fa,#1d4ed8)", label: "Personal" },
-          { rol: "usuario",       icon: "bi-person-fill",      bg: "linear-gradient(135deg,#94a3b8,#475569)", label: "Usuarios" },
-        ].map(r => (
-          <div style={{ flex: 1, background: r.bg, borderRadius: 12, padding: "14px 18px", color: "white", display: "flex", alignItems: "center", gap: 12 }} key={r.rol}>
-            <i className={`bi ${r.icon}`} style={{ fontSize: "1.6rem" }}></i>
-            <div>
-              <div style={{ fontSize: "1.5rem", fontWeight: 800, lineHeight: 1 }}>{conteos[r.rol]}</div>
-              <div style={{ fontSize: "0.78rem", opacity: 0.85 }}>{r.label}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filtros */}
-      <div className="d-flex gap-3 mb-4 flex-wrap align-items-center" style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
+      {/* Buscador */}
+      <div style={{ position: "relative", maxWidth: 360, marginBottom: 20 }}>
+        <i
+          className="bi bi-search"
+          style={{
+            position: "absolute",
+            left: 12,
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#bbb",
+          }}
+        />
         <input
           type="text"
-          placeholder="Buscar por nombre o email..."
-          value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
-          style={{ padding: "10px 15px", borderRadius: "10px", border: "1px solid #e8e0d8", flex: "1" }}
+          placeholder="Buscar usuario..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "10px 12px 10px 36px",
+            border: "1.5px solid #e8ddd3",
+            borderRadius: 10,
+            fontSize: "0.9rem",
+            outline: "none",
+            background: "#fdf8f3",
+          }}
         />
-        <div style={{ display: "flex", gap: "8px" }}>
-          {["todos", "administrador", "personal", "usuario"].map(r => (
-            <button
-              key={r}
-              onClick={() => setFiltroRol(r)}
-              style={{
-                padding: "8px 15px", borderRadius: "20px",
-                border: `1px solid ${filtroRol === r ? "#ff6b00" : "#e8e0d8"}`,
-                background: filtroRol === r ? "#ff6b00" : "white",
-                color: filtroRol === r ? "white" : "#555",
-                cursor: "pointer", fontSize: "0.85rem", fontWeight: "600"
-              }}
-            >
-              {r.charAt(0).toUpperCase() + r.slice(1)} ({conteos[r] ?? listaUsuarios.length})
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Tabla */}
-      <div className="intra-card" style={{ background: "white", borderRadius: "15px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", overflow: "hidden" }}>
-        <div className="table-responsive">
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-            <thead style={{ background: "#f8f9fa", borderBottom: "2px solid #eee" }}>
-              <tr>
-                <th style={{ padding: "15px" }}>#</th>
-                <th>Usuario</th>
-                <th>Email</th>
-                <th>Teléfono</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtrados.map((u, i) => (
-                <tr key={u.id} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: "15px", color: "#888" }}>{i + 1}</td>
-                  <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ width: "35px", height: "35px", borderRadius: "50%", background: "#eee", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.8rem" }}>
-                        {u.nombre.charAt(0)}
+      <div
+        style={{
+          background: "white",
+          borderRadius: 16,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+          overflow: "hidden",
+          border: "1px solid #f0e8e0",
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "#fdf8f3", borderBottom: "2px solid #f0e8e0" }}>
+              {["Usuario", "Email", "Rol actual", "Restaurante", "Acciones"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      color: "#888",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    {h}
+                  </th>
+                )
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((u) => {
+              const badge = getRolBadge(u.rol);
+              const isEditing = editingId === u.id;
+              const isMe = u.id === adminUser?.id;
+
+              return (
+                <tr
+                  key={u.id}
+                  style={{
+                    borderBottom: "1px solid #f5ede4",
+                    background: isMe ? "#fffdf5" : "white",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isMe) e.currentTarget.style.background = "#fdfaf7";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = isMe ? "#fffdf5" : "white";
+                  }}
+                >
+                  {/* Nombre */}
+                  <td style={{ padding: "14px 16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          background: `linear-gradient(135deg, #ff9f22, #ff3300)`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "white",
+                          fontSize: "0.9rem",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {u.nombre.charAt(0).toUpperCase()}
                       </div>
-                      <span style={{ fontWeight: "600" }}>{u.nombre}</span>
+                      <div>
+                        <div style={{ fontWeight: 700, color: "#1a1a2e", fontSize: "0.9rem" }}>
+                          {u.nombre}
+                          {isMe && (
+                            <span style={{ marginLeft: 6, fontSize: "0.7rem", color: "#ff6b00" }}>
+                              (tú)
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "#aaa" }}>
+                          Desde {u.fechaRegistro}
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td>{u.email}</td>
-                  <td>{u.telefono}</td>
-                  <td>
-                    <span style={{ padding: "4px 10px", borderRadius: "8px", fontSize: "0.75rem", background: "#f0f0f0", fontWeight: "600" }}>
-                      {rolConfig[u.rol].label}
-                    </span>
+
+                  {/* Email */}
+                  <td style={{ padding: "14px 16px", color: "#666", fontSize: "0.88rem" }}>
+                    {u.email}
                   </td>
-                  <td>
-                    <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "700", background: u.activo ? "#d1fae5" : "#fee2e2", color: u.activo ? "#065f46" : "#991b1b" }}>
-                      {u.activo ? "ACTIVO" : "INACTIVO"}
-                    </span>
+
+                  {/* Rol */}
+                  <td style={{ padding: "14px 16px" }}>
+                    {isEditing ? (
+                      <select
+                        value={editForm.rol}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, rol: e.target.value, restaurante: "" })
+                        }
+                        style={{
+                          border: "1.5px solid #ff9f22",
+                          borderRadius: 8,
+                          padding: "5px 10px",
+                          fontSize: "0.85rem",
+                          outline: "none",
+                        }}
+                      >
+                        {ROLES.map((r) => (
+                          <option key={r} value={r}>
+                            {r.charAt(0).toUpperCase() + r.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span
+                        style={{
+                          background: badge.bg,
+                          color: badge.color,
+                          padding: "4px 12px",
+                          borderRadius: 20,
+                          fontSize: "0.78rem",
+                          fontWeight: 700,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
+                        <i className={`bi ${badge.icon}`} />
+                        {u.rol.charAt(0).toUpperCase() + u.rol.slice(1)}
+                      </span>
+                    )}
                   </td>
-                  <td>
-                    <button onClick={() => abrirEditar(u)} style={{ border: "none", background: "#eff6ff", color: "#1d4ed8", padding: "6px 10px", borderRadius: "8px", marginRight: "5px", cursor: "pointer" }}>
-                      <i className="bi bi-pencil"></i>
-                    </button>
-                    <button onClick={() => eliminarUsuario(u.id)} style={{ border: "none", background: "#fef2f2", color: "#dc2626", padding: "6px 10px", borderRadius: "8px", cursor: "pointer" }}>
-                      <i className="bi bi-trash"></i>
-                    </button>
+
+                  {/* Restaurante */}
+                  <td style={{ padding: "14px 16px", color: "#666", fontSize: "0.88rem" }}>
+                    {isEditing && editForm.rol === "personal" ? (
+                      <select
+                        value={editForm.restaurante}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, restaurante: e.target.value })
+                        }
+                        style={{
+                          border: "1.5px solid #ff9f22",
+                          borderRadius: 8,
+                          padding: "5px 10px",
+                          fontSize: "0.85rem",
+                          outline: "none",
+                          minWidth: 160,
+                        }}
+                      >
+                        <option value="">Seleccionar...</option>
+                        {RESTAURANTES.map((r) => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      u.restaurante || (
+                        <span style={{ color: "#ccc", fontSize: "0.8rem" }}>—</span>
+                      )
+                    )}
+                  </td>
+
+                  {/* Acciones */}
+                  <td style={{ padding: "14px 16px" }}>
+                    {isEditing ? (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={() => saveEdit(u.id)}
+                          disabled={
+                            editForm.rol === "personal" && !editForm.restaurante
+                          }
+                          style={{
+                            background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 8,
+                            padding: "6px 14px",
+                            fontSize: "0.8rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <i className="bi bi-check-lg me-1" />
+                          Guardar
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          style={{
+                            background: "#f5f5f5",
+                            color: "#888",
+                            border: "none",
+                            borderRadius: 8,
+                            padding: "6px 12px",
+                            fontSize: "0.8rem",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEdit(u)}
+                        style={{
+                          background: "#fff5ee",
+                          color: "#ff6b00",
+                          border: "1.5px solid #ffd4b3",
+                          borderRadius: 8,
+                          padding: "6px 14px",
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
+                        <i className="bi bi-pencil" />
+                        Cambiar rol
+                      </button>
+                    )}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {filtered.length === 0 && (
+          <div style={{ padding: "40px", textAlign: "center", color: "#bbb" }}>
+            <i className="bi bi-people" style={{ fontSize: "2rem", display: "block", marginBottom: 8 }} />
+            No se encontraron usuarios
+          </div>
+        )}
       </div>
 
-      {/* MODAL DE EDICIÓN */}
-      {showModal && (
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-          <div style={{ background: "white", width: "450px", borderRadius: "20px", overflow: "hidden", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
-            <div style={{ padding: "20px", background: "#f8f9fa", borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h5 style={{ margin: 0, fontWeight: "700" }}>Editar Información</h5>
-              <button onClick={() => setShowModal(false)} style={{ border: "none", background: "none", fontSize: "1.2rem", cursor: "pointer" }}>&times;</button>
+      {/* Leyenda de roles */}
+      <div style={{ marginTop: 20, display: "flex", gap: 16, flexWrap: "wrap" }}>
+        {[
+          { rol: "administrador", desc: "Acceso total a la intranet" },
+          { rol: "personal", desc: "Solo Mesas y Reservas" },
+          { rol: "usuario", desc: "Acceso a la web pública y Mi cuenta" },
+        ].map(({ rol, desc }) => {
+          const b = getRolBadge(rol);
+          return (
+            <div key={rol} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.8rem", color: "#888" }}>
+              <span style={{ background: b.bg, color: b.color, padding: "3px 10px", borderRadius: 20, fontWeight: 700, fontSize: "0.75rem" }}>
+                <i className={`bi ${b.icon} me-1`} />
+                {rol.charAt(0).toUpperCase() + rol.slice(1)}
+              </span>
+              — {desc}
             </div>
-            <form onSubmit={guardarCambios} style={{ padding: "25px" }}>
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: "700", marginBottom: "5px", color: "#666" }}>NOMBRE COMPLETO</label>
-                <input type="text" style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #ddd", boxSizing: "border-box" }}
-                  value={usuarioEditando.nombre}
-                  onChange={e => setUsuarioEditando({...usuarioEditando, nombre: e.target.value})}
-                  required />
-              </div>
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: "700", marginBottom: "5px", color: "#666" }}>CORREO ELECTRÓNICO</label>
-                <input type="email" style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #ddd", boxSizing: "border-box" }}
-                  value={usuarioEditando.email}
-                  onChange={e => setUsuarioEditando({...usuarioEditando, email: e.target.value})}
-                  required />
-              </div>
-              <div style={{ marginBottom: "15px" }}>
-                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: "700", marginBottom: "5px", color: "#666" }}>TELÉFONO</label>
-                <input type="text" style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #ddd", boxSizing: "border-box" }}
-                  value={usuarioEditando.telefono}
-                  onChange={e => setUsuarioEditando({...usuarioEditando, telefono: e.target.value})} />
-              </div>
-              <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: "700", marginBottom: "5px", color: "#666" }}>ROL</label>
-                  <select style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #ddd" }}
-                    value={usuarioEditando.rol}
-                    onChange={e => setUsuarioEditando({...usuarioEditando, rol: e.target.value})}>
-                    <option value="administrador">Administrador</option>
-                    <option value="personal">Personal</option>
-                    <option value="usuario">Usuario</option>
-                  </select>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: "700", marginBottom: "5px", color: "#666" }}>ESTADO</label>
-                  <select style={{ width: "100%", padding: "10px", borderRadius: "10px", border: "1px solid #ddd" }}
-                    value={usuarioEditando.activo}
-                    onChange={e => setUsuarioEditando({...usuarioEditando, activo: e.target.value === "true"})}>
-                    <option value="true">Activo</option>
-                    <option value="false">Inactivo</option>
-                  </select>
-                </div>
-              </div>
-              <div style={{ background: "#fff3e0", padding: "10px", borderRadius: "10px", marginBottom: "20px", fontSize: "0.75rem", color: "#e65100" }}>
-                <i className="bi bi-info-circle me-2"></i>
-                ID: {usuarioEditando.id} | Registrado el: {usuarioEditando.fecha}
-              </div>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button type="button" onClick={() => setShowModal(false)}
-                  style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "1px solid #ddd", background: "white", cursor: "pointer", fontWeight: "600" }}>
-                  Cancelar
-                </button>
-                <button type="submit"
-                  style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "none", background: "#ff6b00", color: "white", cursor: "pointer", fontWeight: "600" }}>
-                  Guardar Cambios
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }
-
-export default Usuarios;
