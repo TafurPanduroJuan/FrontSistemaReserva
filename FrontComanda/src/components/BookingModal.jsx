@@ -1,313 +1,365 @@
-import React, { useState, useMemo } from 'react';
-import "../assets/styles/bookingModal.css";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import "../assets/styles/catalog.css";
+import { restaurantes as restaurantesEstaticos } from "../data/datos";
+import { useRestaurantes } from "../context/RestaurantesContext";
+import BookingModal from "../components/BookingModal";
 
-// ── localStorage helpers ──────────────────────────────────────────────────────
-function loadReservas() {
-  try {
-    const raw = localStorage.getItem("comanda_reservas_maestro");
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveReserva(reserva) {
-  try {
-    const todas = loadReservas();
-    const nueva = { ...reserva, id: Date.now() };
-    localStorage.setItem("comanda_reservas_maestro", JSON.stringify([...todas, nueva]));
-    return nueva;
-  } catch { return reserva; }
-}
-
-// ── Genera mesas según la capacidad del restaurante ───────────────────────────
-function generarMesas(totalMesas) {
-  const zonas = ["Terraza", "Salón Interior", "VIP"];
-  const n = Math.max(totalMesas || 6, 3);
-  return Array.from({ length: n }, (_, i) => ({
-    id: i + 1,
-    numero: i + 1,
-    zona: zonas[Math.floor(i / Math.ceil(n / 3))] || "Salón Interior",
-    capacidad: [2, 4, 4, 6, 2, 4, 2, 8, 4, 4, 2, 4][i] || 4,
-  }));
-}
-
-const STEPS = [
-  { label: "Restaurante" },
-  { label: "Fecha y Hora" },
-  { label: "Tu Mesa" },
-  { label: "Tus Datos" },
-  { label: "Confirmar" },
+const PRECIOS = ["$", "$$", "$$$", "$$$$"];
+const DISPONIBILIDADES = ["Todos", "Hoy", "Mañana"];
+const ORDENAR = [
+  { value: "default", label: "Destacados" },
+  { value: "rating", label: "Mejor calificación" },
+  { value: "precio-asc", label: "Precio: menor a mayor" },
+  { value: "precio-desc", label: "Precio: mayor a menor" },
+  { value: "mesas", label: "Más mesas disponibles" },
 ];
 
-const BookingModal = ({ isOpen, onClose, restaurante }) => {
-  const [step, setStep] = useState(1);
+const precioNum = (p) => (p || "").length;
 
-  const minDate = useMemo(() => {
-    const m = new Date();
-    m.setDate(m.getDate() + 1);
-    return m.toISOString().split('T')[0];
-  }, []);
+// Convierte restaurante del contexto (formato intranet) al formato del catálogo
+function normalizarRestaurante(r) {
+  if (r.img && r.lugar) {
+    return {
+      id: r.id || r.nombre,
+      nombre: r.nombre,
+      lugar: r.lugar,
+      hora: r.hora || "—",
+      mesas: r.mesas ?? 0,
+      precio: r.precio || "$",
+      etiqueta: r.etiqueta || "Hoy",
+      tipo: r.tipo || "Otro",
+      img: r.img,
+      rating: r.rating ?? 4.0,
+      reseñas: r.reseñas ?? 0,
+    };
+  }
+  // Formato intranet/NuevoRestaurante → normalizar al formato del catálogo
+  return {
+    id: r.id || r.nombre,
+    nombre: r.nombre,
+    lugar: r.distrito || r.direccion || "Lima",
+    hora: r.horario_apertura || "—",
+    mesas: r.mesas ?? 0,
+    precio: r.precio || "$",
+    etiqueta: r.etiqueta || "Hoy",
+    tipo: r.tipo || "Otro",
+    img:
+      r.imagen ||
+      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400",
+    rating: r.rating ?? 4.0,
+    reseñas: r.reseñas ?? 0,
+  };
+}
 
-  const [formData, setFormData] = useState({
-    fecha: minDate,
-    hora: '18:00',
-    personas: 2,
-    mesa: null,
-    zona: '',
-    nombre: '',
-    email: '',
-    telefono: '',
-    notas: '',
+function Catalog() {
+  const [searchParams] = useSearchParams();
+  const { restaurantes: restaurantesContexto } = useRestaurantes();
+
+  // Fusionar restaurantes del contexto con los estáticos sin duplicar
+  const todosLosRestaurantes = useMemo(() => {
+    const normalizados = restaurantesContexto.map(normalizarRestaurante);
+    const nombresEnContexto = new Set(
+      normalizados.map((r) => r.nombre.toLowerCase())
+    );
+    const estaticosExtra = restaurantesEstaticos
+      .filter((r) => !nombresEnContexto.has(r.nombre.toLowerCase()))
+      .map(normalizarRestaurante);
+    return [...normalizados, ...estaticosExtra];
+  }, [restaurantesContexto]);
+
+  // Tipos únicos dinámicos (incluye tipos de restaurantes nuevos)
+  const TIPOS = useMemo(
+    () => [...new Set(todosLosRestaurantes.map((r) => r.tipo))].sort(),
+    [todosLosRestaurantes]
+  );
+
+  const [busqueda, setBusqueda] = useState(searchParams.get("busqueda") || "");
+  const [tiposSeleccionados, setTiposSeleccionados] = useState(() => {
+    const tipo = searchParams.get("tipo");
+    return tipo ? [tipo] : [];
   });
+  const [preciosSeleccionados, setPreciosSeleccionados] = useState(() => {
+    const precio = searchParams.get("precio");
+    return precio ? [precio] : [];
+  });
+  const [disponibilidad, setDisponibilidad] = useState(
+    searchParams.get("disponibilidad") || "Todos"
+  );
+  const [orden, setOrden] = useState("default");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const horarios = ["12:00", "13:00", "14:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
-  const mesas = useMemo(() => generarMesas(restaurante?.mesas), [restaurante]);
-  const zonas = useMemo(() => [...new Set(mesas.map(m => m.zona))], [mesas]);
-  const mesasFiltradas = formData.zona ? mesas.filter(m => m.zona === formData.zona) : mesas;
+  // Modal de reserva
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRest, setSelectedRest] = useState(null);
 
-  if (!isOpen || !restaurante) return null;
-
-  const canProceed = () => {
-    if (step === 2) return !!formData.fecha && !!formData.hora;
-    if (step === 3) return formData.mesa !== null;
-    if (step === 4) return formData.nombre.trim() && formData.email.trim() && formData.telefono.trim();
-    return true;
+  const handleBooking = (restaurante) => {
+    setSelectedRest(restaurante);
+    setIsModalOpen(true);
   };
 
-  const handleNext = () => {
-    if (step === 5) {
-      saveReserva({
-        cliente: formData.nombre,
-        email: formData.email,
-        tel: formData.telefono,
-        restaurante: restaurante.nombre,
-        fecha: formData.fecha,
-        hora: formData.hora,
-        personas: formData.personas,
-        mesa: formData.mesa,
-        zona: formData.zona,
-        notas: formData.notas,
-        estado: "pendiente",
-      });
-      onClose();
-    } else {
-      setStep(prev => prev + 1);
-    }
+  useEffect(() => {
+    const tipo = searchParams.get("tipo");
+    const precio = searchParams.get("precio");
+    const busq = searchParams.get("busqueda");
+    const disp = searchParams.get("disponibilidad");
+    if (tipo) setTiposSeleccionados([tipo]);
+    if (precio) setPreciosSeleccionados([precio]);
+    if (busq) setBusqueda(busq);
+    if (disp) setDisponibilidad(disp);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const toggleTipo = (tipo) => {
+    setTiposSeleccionados((prev) =>
+      prev.includes(tipo) ? prev.filter((t) => t !== tipo) : [...prev, tipo]
+    );
   };
 
-  const handleBack = () => {
-    if (step === 1) onClose();
-    else setStep(prev => prev - 1);
+  const togglePrecio = (precio) => {
+    setPreciosSeleccionados((prev) =>
+      prev.includes(precio)
+        ? prev.filter((p) => p !== precio)
+        : [...prev, precio]
+    );
   };
+
+  const resetFiltros = () => {
+    setBusqueda("");
+    setTiposSeleccionados([]);
+    setPreciosSeleccionados([]);
+    setDisponibilidad("Todos");
+    setOrden("default");
+  };
+
+  const resultado = useMemo(() => {
+    let lista = todosLosRestaurantes.filter((r) => {
+      const matchBusqueda =
+        !busqueda ||
+        r.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+        r.lugar.toLowerCase().includes(busqueda.toLowerCase()) ||
+        r.tipo.toLowerCase().includes(busqueda.toLowerCase());
+      const matchTipo =
+        tiposSeleccionados.length === 0 || tiposSeleccionados.includes(r.tipo);
+      const matchPrecio =
+        preciosSeleccionados.length === 0 ||
+        preciosSeleccionados.includes(r.precio);
+      const matchDisponibilidad =
+        disponibilidad === "Todos" || r.etiqueta === disponibilidad;
+      return matchBusqueda && matchTipo && matchPrecio && matchDisponibilidad;
+    });
+
+    if (orden === "rating") lista = [...lista].sort((a, b) => b.rating - a.rating);
+    else if (orden === "precio-asc")
+      lista = [...lista].sort((a, b) => precioNum(a.precio) - precioNum(b.precio));
+    else if (orden === "precio-desc")
+      lista = [...lista].sort((a, b) => precioNum(b.precio) - precioNum(a.precio));
+    else if (orden === "mesas")
+      lista = [...lista].sort((a, b) => b.mesas - a.mesas);
+
+    return lista;
+  }, [busqueda, tiposSeleccionados, preciosSeleccionados, disponibilidad, orden, todosLosRestaurantes]);
+
+  const hayFiltrosActivos =
+    busqueda ||
+    tiposSeleccionados.length > 0 ||
+    preciosSeleccionados.length > 0 ||
+    disponibilidad !== "Todos";
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card wide" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn-top" onClick={onClose}>&times;</button>
-
-        {/* STEPPER */}
-        <div className="modal-header-stepper">
-          <h2>Reserva tu Mesa</h2>
-          <div className="stepper-visual">
-            {STEPS.map((s, i) => {
-              const n = i + 1;
-              const done = step > n;
-              const active = step === n;
-              return (
-                <div key={n} className={`step-item ${done ? 'completed' : active ? 'active' : ''}`}>
-                  <div className="step-circle">{done ? '✓' : n}</div>
-                  <span className="step-label">{s.label}</span>
-                  {n < STEPS.length && <div className="step-line"></div>}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="modal-body-content">
-          {/* Banner siempre visible */}
-          <div className="res-hero-banner">
-            <img src={restaurante.img} alt={restaurante.nombre} />
-            <div className="res-hero-info">
-              <h4>{restaurante.nombre}</h4>
-              <p>{restaurante.tipo} · {restaurante.lugar}</p>
-            </div>
-          </div>
-
-          {/* PASO 1 */}
-          {step === 1 && (
-            <div className="step-container anim-fade-in">
-              <h3 className="section-title">🍽️ ¡Has elegido bien!</h3>
-              <div className="rest-confirm-box">
-                {[
-                  ["📍 Ubicación", restaurante.lugar],
-                  ["🏷️ Tipo de cocina", restaurante.tipo],
-                  ["⭐ Calificación", `${restaurante.rating} (${restaurante.reseñas}+ reseñas)`],
-                  ["💰 Precio", restaurante.precio],
-                  ["🍽️ Mesas disponibles", restaurante.mesas],
-                ].map(([label, val]) => (
-                  <div key={label} className="rest-confirm-row">
-                    <span>{label}</span><strong>{val}</strong>
-                  </div>
-                ))}
-              </div>
-              <p style={{ color: '#888', fontSize: '0.88rem', marginTop: '16px', textAlign: 'center' }}>
-                Presiona <strong>Siguiente</strong> para continuar con tu reserva.
-              </p>
-            </div>
-          )}
-
-          {/* PASO 2 */}
-          {step === 2 && (
-            <div className="step-container anim-fade-in">
-              <h3 className="section-title">📅 ¿Cuándo nos visitas?</h3>
-              <div className="row-inputs">
-                <div className="input-group">
-                  <label>📅 Fecha</label>
-                  <input type="date" className="modern-field" min={minDate} value={formData.fecha}
-                    onChange={(e) => setFormData({ ...formData, fecha: e.target.value })} />
-                </div>
-                <div className="input-group">
-                  <label>👥 Personas</label>
-                  <div className="people-selector">
-                    <button onClick={() => setFormData({ ...formData, personas: Math.max(1, formData.personas - 1) })}>-</button>
-                    <span>{formData.personas}</span>
-                    <button onClick={() => setFormData({ ...formData, personas: formData.personas + 1 })}>+</button>
-                  </div>
-                </div>
-              </div>
-              <label className="label-margin">🕒 Horarios disponibles</label>
-              <div className="time-grid">
-                {horarios.map((h) => (
-                  <button key={h} className={`time-chip ${formData.hora === h ? 'selected' : ''}`}
-                    onClick={() => setFormData({ ...formData, hora: h })}>{h}</button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* PASO 3: Mesa y ubicación */}
-          {step === 3 && (
-            <div className="step-container anim-fade-in">
-              <h3 className="section-title">📍 Elige tu Ubicación</h3>
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem', color: '#555' }}>🏠 Filtrar por zona</label>
-                <div className="zona-chips">
-                  <button className={`zona-chip ${formData.zona === '' ? 'active' : ''}`}
-                    onClick={() => setFormData({ ...formData, zona: '', mesa: null })}>Todas</button>
-                  {zonas.map(z => (
-                    <button key={z} className={`zona-chip ${formData.zona === z ? 'active' : ''}`}
-                      onClick={() => setFormData({ ...formData, zona: z, mesa: null })}>{z}</button>
-                  ))}
-                </div>
-              </div>
-              <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, fontSize: '0.9rem', color: '#555' }}>🪑 Selecciona una mesa</label>
-              <div className="mesas-grid">
-                {mesasFiltradas.map(m => {
-                  const isSelected = formData.mesa === m.id;
-                  const tooSmall = m.capacidad < formData.personas;
-                  const emoji = m.capacidad >= 6 ? '🏯' : m.capacidad >= 4 ? '🍽️' : '☕';
-                  return (
-                    <div key={m.id}
-                      className={`mesa-card ${isSelected ? 'selected' : ''} ${tooSmall ? 'too-small' : ''}`}
-                      onClick={() => !tooSmall && setFormData({ ...formData, mesa: m.id, zona: m.zona })}
-                    >
-                      {isSelected && <div className="mesa-check">✓</div>}
-                      <div className="mesa-emoji">{emoji}</div>
-                      <div className="mesa-num">Mesa {m.numero}</div>
-                      <div className="mesa-info">{m.zona}</div>
-                      <div className="mesa-cap">
-                        {tooSmall
-                          ? <span style={{ color: '#e74c3c', fontSize: '0.65rem' }}>Cap. insuficiente</span>
-                          : `${m.capacidad} pers.`}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {formData.mesa && (
-                <p style={{ color: '#2ecc71', fontWeight: 600, marginTop: '14px', textAlign: 'center', fontSize: '0.9rem' }}>
-                  ✓ Mesa {formData.mesa} — {formData.zona}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* PASO 4 */}
-          {step === 4 && (
-            <div className="step-container anim-fade-in">
-              <h3 className="section-title">👤 Tus Datos de Contacto</h3>
-              <div className="form-stack">
-                <div className="input-group">
-                  <label>Nombre Completo</label>
-                  <input type="text" placeholder="Ej. Juan Pérez" className="modern-field"
-                    value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} />
-                </div>
-                <div className="input-group">
-                  <label>Correo Electrónico</label>
-                  <input type="email" placeholder="juan@ejemplo.com" className="modern-field"
-                    value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
-                </div>
-                <div className="input-group">
-                  <label>Teléfono</label>
-                  <input type="tel" placeholder="+51 999 123 456" className="modern-field"
-                    value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} />
-                </div>
-                <div className="input-group">
-                  <label>Observaciones (opcional)</label>
-                  <textarea placeholder="Cumpleaños, alergias, preferencias de ubicación..."
-                    className="modern-field" rows={3} value={formData.notas}
-                    onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                    style={{ resize: 'vertical' }} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PASO 5 */}
-          {step === 5 && (
-            <div className="step-container anim-fade-in confirmation-view">
-              <div className="success-icon">✓</div>
-              <h3 className="section-title">¡Todo listo para tu reserva!</h3>
-              <div className="summary-card">
-                {[
-                  ["Restaurante", restaurante.nombre],
-                  ["Fecha", formData.fecha],
-                  ["Hora", formData.hora],
-                  ["Personas", formData.personas],
-                  ["Mesa", `Mesa ${formData.mesa} — ${formData.zona}`],
-                  ["Nombre", formData.nombre],
-                  ["Contacto", `${formData.email} · ${formData.telefono}`],
-                  ...(formData.notas ? [["Notas", formData.notas]] : []),
-                ].map(([label, val]) => (
-                  <div key={label} className="summary-item">
-                    <span>{label}:</span><strong>{val}</strong>
-                  </div>
-                ))}
-              </div>
-              <p style={{ marginTop: '14px', color: '#888', fontSize: '0.82rem', textAlign: 'center' }}>
-                Tu reserva quedará en estado <strong>pendiente</strong> hasta que el restaurante la confirme.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* FOOTER */}
-        <div className="modal-footer-actions">
-          <button className="btn-back" onClick={handleBack}>
-            {step === 1 ? '✕ Cerrar' : '← Atrás'}
-          </button>
-          <button
-            className="btn-next-red"
-            onClick={handleNext}
-            disabled={!canProceed()}
-            style={{ opacity: canProceed() ? 1 : 0.5, cursor: canProceed() ? 'pointer' : 'not-allowed' }}
-          >
-            {step === 5 ? '✓ Confirmar Reserva' : 'Siguiente →'}
-          </button>
+    <div className="catalog-wrapper">
+      {/* Hero Banner */}
+      <div className="catalog-hero">
+        <h1>🍽️ Catálogo de Restaurantes</h1>
+        <p>Encuentra el lugar perfecto para tu próxima reserva</p>
+        <div className="catalog-search-bar">
+          <input
+            type="text"
+            placeholder="Busca por nombre, lugar o tipo de comida..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+          <i className="bi bi-search search-icon"></i>
         </div>
       </div>
+
+      {/* Layout */}
+      <div className="catalog-layout">
+        {/* Sidebar */}
+        <aside className={`catalog-sidebar ${sidebarOpen ? "open" : ""}`}>
+          <div className="sidebar-title">
+            <i className="bi bi-sliders"></i> Filtros
+          </div>
+
+          <div className="filter-section">
+            <div className="filter-label">Tipo de comida</div>
+            <div className="filter-chips">
+              {TIPOS.map((tipo) => (
+                <button
+                  key={tipo}
+                  className={`filter-chip ${tiposSeleccionados.includes(tipo) ? "active" : ""}`}
+                  onClick={() => toggleTipo(tipo)}
+                >
+                  {tipo}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-section">
+            <div className="filter-label">Precio</div>
+            <div className="filter-chips">
+              {PRECIOS.map((p) => (
+                <button
+                  key={p}
+                  className={`filter-chip ${preciosSeleccionados.includes(p) ? "active" : ""}`}
+                  onClick={() => togglePrecio(p)}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-section">
+            <div className="filter-label">Disponibilidad</div>
+            <div className="availability-options">
+              {DISPONIBILIDADES.map((d) => (
+                <button
+                  key={d}
+                  className={`availability-btn ${disponibilidad === d ? "active" : ""}`}
+                  onClick={() => setDisponibilidad(d)}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button className="btn-reset-filters" onClick={resetFiltros}>
+            <i className="bi bi-x-circle me-1"></i> Limpiar filtros
+          </button>
+        </aside>
+
+        {/* Content */}
+        <div className="catalog-content">
+          <div className="catalog-top-bar">
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+              <button
+                className={`mobile-filter-btn ${sidebarOpen ? "active" : ""}`}
+                onClick={() => setSidebarOpen((prev) => !prev)}
+              >
+                <i className="bi bi-sliders"></i>
+                {sidebarOpen ? "Ocultar filtros" : "Filtros"}
+              </button>
+              <span className="catalog-count">
+                <strong>{resultado.length}</strong>{" "}
+                {resultado.length === 1 ? "restaurante encontrado" : "restaurantes encontrados"}
+              </span>
+            </div>
+            <select
+              className="sort-select"
+              value={orden}
+              onChange={(e) => setOrden(e.target.value)}
+            >
+              {ORDENAR.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {hayFiltrosActivos && (
+            <div className="active-filters">
+              {busqueda && (
+                <span className="active-filter-tag">
+                  🔍 "{busqueda}"
+                  <button onClick={() => setBusqueda("")}><i className="bi bi-x"></i></button>
+                </span>
+              )}
+              {tiposSeleccionados.map((t) => (
+                <span key={t} className="active-filter-tag">
+                  {t}
+                  <button onClick={() => toggleTipo(t)}><i className="bi bi-x"></i></button>
+                </span>
+              ))}
+              {preciosSeleccionados.map((p) => (
+                <span key={p} className="active-filter-tag">
+                  {p}
+                  <button onClick={() => togglePrecio(p)}><i className="bi bi-x"></i></button>
+                </span>
+              ))}
+              {disponibilidad !== "Todos" && (
+                <span className="active-filter-tag">
+                  {disponibilidad}
+                  <button onClick={() => setDisponibilidad("Todos")}><i className="bi bi-x"></i></button>
+                </span>
+              )}
+              <button
+                className="active-filter-tag"
+                style={{ cursor: "pointer", border: "none", background: "#ffeee0" }}
+                onClick={resetFiltros}
+              >
+                Limpiar todo
+              </button>
+            </div>
+          )}
+
+          {resultado.length === 0 ? (
+            <div className="catalog-empty">
+              <div><i className="bi bi-search"></i></div>
+              <h4>No se encontraron restaurantes</h4>
+              <p>Intenta con otros filtros o términos de búsqueda.</p>
+              <button className="btn-catalog-reserva" style={{ marginTop: "16px" }} onClick={resetFiltros}>
+                Ver todos
+              </button>
+            </div>
+          ) : (
+            <div className="catalog-grid">
+              {resultado.map((rest) => (
+                <div key={rest.id || rest.nombre} className="catalog-card">
+                  <div className="catalog-card-img-wrapper">
+                    <img src={rest.img} alt={rest.nombre} />
+                    <span className="catalog-badge">{rest.etiqueta}</span>
+                    <span className="catalog-badge-tipo">{rest.tipo}</span>
+                  </div>
+                  <div className="catalog-card-body">
+                    <div className="catalog-card-title">{rest.nombre}</div>
+                    <div className="catalog-card-meta">
+                      <span>📍 {rest.lugar}</span>
+                      <span>🕒 {rest.hora}</span>
+                      <span>🍽️ {rest.mesas} mesas disponibles</span>
+                      <span>⭐ {rest.rating} ({rest.reseñas}+ reseñas)</span>
+                    </div>
+                    <div className="catalog-card-footer">
+                      <span className="catalog-card-price">{rest.precio}</span>
+                      <button
+                        className="btn-catalog-reserva"
+                        onClick={() => handleBooking(rest)}
+                      >
+                        Reservar Ahora
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal de reserva */}
+      {selectedRest && (
+        <BookingModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedRest(null);
+          }}
+          restaurante={selectedRest}
+        />
+      )}
     </div>
   );
-};
+}
 
-export default BookingModal;
+export default Catalog;
