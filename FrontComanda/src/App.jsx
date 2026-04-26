@@ -1,15 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
-import Register from './pages/Register';
+import { AuthProvider } from './context/AuthContext';
+import Register from './pages/auth/Register';
+import './App.css';
 
-export default function App() {
-  const { register } = useAuth();
-
+// App temporal para desarrollo aislado de feature/register.
+// Al mergear a dev, este App.jsx será reemplazado por el de dev.
+function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/*" element={<Register onRegister={register} />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="*" element={<Register />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
+
+export default App;

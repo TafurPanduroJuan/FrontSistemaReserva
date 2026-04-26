@@ -20,23 +20,16 @@ export function useAuth() {
 
   const register = ({ name, email, password }) => {
     const users = getUsers();
-    if (users.find((u) => u.email === email)) {
+    if (users.find((u) => u.email === email))
       return { success: false, message: 'Este correo ya está registrado.' };
-    }
     const newUser = {
-      id:       Date.now().toString(),
-      name,
-      email,
-      password,
-      rol:      'usuario',
+      id: Date.now().toString(),
+      name, email,
+      password, // TODO: hashear al conectar API real
+      rol: 'usuario',
     };
     localStorage.setItem(USERS_KEY, JSON.stringify([...users, newUser]));
-    const session = {
-      id:    newUser.id,
-      email: newUser.email,
-      name:  newUser.name,
-      rol:   newUser.rol,
-    };
+    const session = { id: newUser.id, email: newUser.email, name: newUser.name, rol: newUser.rol };
     localStorage.setItem(AUTH_KEY, JSON.stringify(session));
     setCurrentUser(session);
     return { success: true };
