@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Register.css';
 
-export default function Register({ onRegister, onGoLogin }) {
+export default function Register({ onRegister }) {
+  const navigate = useNavigate();
+
   const [form, setForm]         = useState({ name: '', email: '', password: '', confirm: '' });
   const [errors, setErrors]     = useState({});
   const [apiError, setApiError] = useState('');
@@ -11,15 +14,15 @@ export default function Register({ onRegister, onGoLogin }) {
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim())                e.name     = 'El nombre es obligatorio.';
-    else if (form.name.trim().length < 2) e.name     = 'Mínimo 2 caracteres.';
-    if (!form.email.trim())               e.email    = 'El correo es obligatorio.';
+    if (!form.name.trim())                   e.name     = 'El nombre es obligatorio.';
+    else if (form.name.trim().length < 2)    e.name     = 'Mínimo 2 caracteres.';
+    if (!form.email.trim())                  e.email    = 'El correo es obligatorio.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Correo inválido.';
-    if (!form.password)                   e.password = 'La contraseña es obligatoria.';
-    else if (form.password.length < 6)    e.password = 'Mínimo 6 caracteres.';
+    if (!form.password)                      e.password = 'La contraseña es obligatoria.';
+    else if (form.password.length < 6)       e.password = 'Mínimo 6 caracteres.';
     else if (!/(?=.*[A-Za-z])(?=.*\d)/.test(form.password)) e.password = 'Incluye letra y número.';
-    if (!form.confirm)                    e.confirm  = 'Confirma tu contraseña.';
-    else if (form.confirm !== form.password) e.confirm = 'Las contraseñas no coinciden.';
+    if (!form.confirm)                       e.confirm  = 'Confirma tu contraseña.';
+    else if (form.confirm !== form.password) e.confirm  = 'Las contraseñas no coinciden.';
     return e;
   };
 
@@ -41,7 +44,11 @@ export default function Register({ onRegister, onGoLogin }) {
       password: form.password,
     });
     setLoading(false);
-    if (!result.success) setApiError(result.message);
+    if (!result.success) {
+      setApiError(result.message);
+    } else {
+      navigate('/');
+    }
   };
 
   const getStrength = () => {
@@ -81,6 +88,16 @@ export default function Register({ onRegister, onGoLogin }) {
         <div className="auth-bg__overlay" />
         <div className="auth-bg__gradient" />
       </div>
+
+      {/* Botón volver al home */}
+      <Link to="/" className="auth-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 12H5" />
+          <path d="M12 19l-7-7 7-7" />
+        </svg>
+        Volver al inicio
+      </Link>
 
       <div className="auth-card auth-card--register">
         <div className="auth-card__brand">
@@ -213,9 +230,9 @@ export default function Register({ onRegister, onGoLogin }) {
 
         <p className="auth-card__footer">
           ¿Ya tienes cuenta?{' '}
-          <button className="auth-card__link" onClick={onGoLogin}>
+          <Link to="/login" className="auth-card__link">
             Inicia sesión
-          </button>
+          </Link>
         </p>
 
         <div className="auth-card__divider">
