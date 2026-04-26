@@ -1,0 +1,423 @@
+/* =============================
+   ABOUT PAGE - ESTILOS
+   ============================= */
+
+/* Hero Section */
+.about-hero {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin-top: 76px;
+}
+
+.about-hero::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  left: -80px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 100, 0, 0.25), transparent 70%);
+  border-radius: 50%;
+}
+
+.about-hero::after {
+  content: "";
+  position: absolute;
+  bottom: -100px;
+  right: -60px;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(255, 180, 0, 0.18), transparent 70%);
+  border-radius: 50%;
+}
+
+.about-hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.about-hero-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6400, #ffb400);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 8px 22px;
+  border-radius: 50px;
+  margin-bottom: 24px;
+}
+
+.about-hero h1 {
+  color: #ffffff;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+
+.about-hero h1 span {
+  background: linear-gradient(135deg, #ff6400, #ffb400);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.about-hero p {
+  color: #cccccc;
+  font-size: 1.15rem;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* =============================
+   MISIÓN & VISIÓN
+   ============================= */
+.about-mv-section {
+  padding: 80px 0;
+  background-color: #fff;
+}
+
+.about-mv-card {
+  border-radius: 24px;
+  padding: 40px 36px;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-mv-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+.about-mv-card.mision {
+  background: linear-gradient(145deg, #fff5ec, #fff);
+  border: 2px solid rgba(255, 100, 0, 0.15);
+}
+
+.about-mv-card.vision {
+  background: linear-gradient(145deg, #fffbec, #fff);
+  border: 2px solid rgba(255, 180, 0, 0.2);
+}
+
+.about-mv-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  margin-bottom: 22px;
+}
+
+.about-mv-icon.orange {
+  background: linear-gradient(135deg, #ff6400, #ff9000);
+  color: white;
+}
+
+.about-mv-icon.yellow {
+  background: linear-gradient(135deg, #ffb400, #ffd000);
+  color: white;
+}
+
+.about-mv-card h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 14px;
+}
+
+.about-mv-card p {
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* =============================
+   VALORES
+   ============================= */
+.about-values-section {
+  padding: 80px 0;
+  background: linear-gradient(180deg, #f9f9f9 0%, #ffffff 100%);
+}
+
+.about-section-title {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.about-section-title span {
+  background: linear-gradient(135deg, #ff6400, #ffb400);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.about-section-subtitle {
+  color: #777;
+  font-size: 1.05rem;
+  max-width: 540px;
+  margin: 0 auto 50px;
+  line-height: 1.65;
+}
+
+.about-value-item {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  height: 100%;
+}
+
+.about-value-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(255, 100, 0, 0.12);
+  border-color: rgba(255, 100, 0, 0.3);
+}
+
+.about-value-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff5ec, #ffe5cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 20px;
+  transition: background 0.3s ease;
+}
+
+.about-value-item:hover .about-value-icon {
+  background: linear-gradient(135deg, #ff6400, #ffb400);
+  color: white;
+}
+
+.about-value-item h5 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.about-value-item p {
+  color: #666;
+  font-size: 0.93rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* =============================
+   EQUIPO
+   ============================= */
+.about-team-section {
+  padding: 80px 0;
+  background: #fff;
+}
+
+.about-team-card {
+  border-radius: 24px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+}
+
+.about-team-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.about-team-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6400, #ffb400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  margin: 32px auto 20px;
+  color: white;
+  font-weight: 800;
+}
+
+.about-team-card h5 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+  padding: 0 20px;
+}
+
+.about-team-role {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6400, #ffb400);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 5px 16px;
+  border-radius: 50px;
+  margin-bottom: 14px;
+}
+
+.about-team-card p {
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  padding: 0 24px 32px;
+  margin: 0;
+}
+
+/* =============================
+   ESTADÍSTICAS
+   ============================= */
+.about-stats-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  position: relative;
+  overflow: hidden;
+}
+
+.about-stats-section::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 100, 0, 0.15), transparent 70%);
+  border-radius: 50%;
+}
+
+.about-stat-item {
+  text-align: center;
+  padding: 20px;
+}
+
+.about-stat-number {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 800;
+  background: linear-gradient(135deg, #ff6400, #ffb400);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.about-stat-label {
+  color: #cccccc;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* =============================
+   CTA SECTION
+   ============================= */
+.about-cta-section {
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #ff6400, #ffb400);
+  text-align: center;
+}
+
+.about-cta-section h2 {
+  color: #fff;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.about-cta-section p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  max-width: 520px;
+  margin: 0 auto 32px;
+  line-height: 1.65;
+}
+
+.about-btn-white {
+  background: #ffffff;
+  color: #ff6400;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 14px 36px;
+  border-radius: 50px;
+  border: none;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 6px;
+  width: auto;
+}
+
+.about-btn-white:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  color: #ff6400;
+  background: white;
+}
+
+.about-btn-outline {
+  background: transparent;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 13px 36px;
+  border-radius: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.3s ease, background 0.3s ease;
+  margin: 6px;
+  width: auto;
+}
+
+.about-btn-outline:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+/* =============================
+   RESPONSIVE
+   ============================= */
+@media (max-width: 768px) {
+  .about-hero {
+    min-height: 320px;
+  }
+
+  .about-mv-section,
+  .about-values-section,
+  .about-team-section,
+  .about-stats-section,
+  .about-cta-section {
+    padding: 50px 16px;
+  }
+
+  .about-mv-card {
+    padding: 28px 22px;
+    margin-bottom: 20px;
+  }
+}
