@@ -23,8 +23,8 @@ export const generarMesasIniciales = () =>
 
 // ── Reservas iniciales de ejemplo ─────────────────────────────────────────────
 const INITIAL_RESERVAS = [
-  { id: 1, cliente: "María López",   email: "maria@gmail.com",   tel: "987654321", restaurante: "La Bella Italia", fecha: "2026-04-25", hora: "19:30", personas: 2, mesa: 3, notas: "Aniversario", estado: "pendiente" },
-  { id: 2, cliente: "Roberto Silva", email: "roberto@gmail.com", tel: "976543210", restaurante: "La Bella Italia", fecha: "2026-04-25", hora: "20:00", personas: 4, mesa: 7, notas: "",             estado: "confirmada" },
+  { id: 1, cliente: "María López",   email: "maria@gmail.com",   tel: "987654321", restaurante: "La Bella Italia", fecha: "2026-04-25", hora: "19:30", personas: 2, mesa: 3, zona: "Terraza",        notas: "Aniversario", estado: "pendiente" },
+  { id: 2, cliente: "Roberto Silva", email: "roberto@gmail.com", tel: "976543210", restaurante: "La Bella Italia", fecha: "2026-04-25", hora: "20:00", personas: 4, mesa: 7, zona: "Salón Interior", notas: "",            estado: "confirmada" },
 ];
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -56,22 +56,36 @@ export function MesasProvider({ children }) {
   };
 
   // ── Reservas ──────────────────────────────────────────────────────────────
-  
-  
+
+  /**
+   * Agrega una nueva reserva (llamado desde el catálogo público).
+   * El localStorage ya fue escrito directamente por el catálogo,
+   * pero actualizamos el estado en memoria para que la intranet
+   * lo refleje sin recargar.
+   */
+  const agregarReserva = (nuevaReserva) => {
+    const conId = nuevaReserva.id
+      ? nuevaReserva
+      : { ...nuevaReserva, id: Date.now() };
+    setReservas(prev => {
+      // Evitar duplicados si ya vino del storage
+      const yaExiste = prev.some(r => r.id === conId.id);
+      return yaExiste ? prev : [...prev, conId];
+    });
+  };
+
   const cambiarEstadoReserva = (reservaId, nuevoEstado) => {
     const reserva = reservas.find(r => r.id === reservaId);
     if (!reserva) return;
 
-    // Actualizar reserva
     setReservas(prev =>
       prev.map(r => r.id === reservaId ? { ...r, estado: nuevoEstado } : r)
     );
 
-    // Sincronizar mesa
+    // Sincronizar estado de la mesa
     if (nuevoEstado === "confirmada") {
       cambiarEstadoMesa(reserva.restaurante, reserva.mesa, "reservada");
     } else if (nuevoEstado === "cancelada") {
-      // Solo liberar si no hay otra reserva confirmada en esa mesa
       const otraConfirmada = reservas.some(
         r => r.id !== reservaId &&
              r.restaurante === reserva.restaurante &&
@@ -84,12 +98,21 @@ export function MesasProvider({ children }) {
     }
   };
 
+  // ── Sincronización: leer reservas nuevas del localStorage ─────────────────
+  // Cada vez que el componente monta (o el usuario navega a la intranet),
+  // reconciliamos el estado en memoria con lo escrito por el catálogo.
+  useEffect(() => {
+    const stored = load("comanda_reservas_maestro", []);
+    setReservas(stored);
+  }, []);
+
   return (
     <MesasContext.Provider value={{
       datosGlobales,
       getMesas,
       cambiarEstadoMesa,
       reservas,
+      agregarReserva,
       cambiarEstadoReserva,
     }}>
       {children}

@@ -8,6 +8,31 @@ import rest4 from "../assets/img/rest4.jpg";
 import rest5 from "../assets/img/rest5.jpg";
 import rest6 from "../assets/img/rest6.jpg";
 
+// ── Restaurantes del catálogo público ────────────────────────────────────────
+// Se importan para sincronizarlos como restaurantes activos en la intranet.
+import { restaurantes as restaurantesCatalogo } from "../data/datos";
+
+// Convierte un restaurante del catálogo al formato de la intranet
+function catalogoToIntranet(r, index) {
+  return {
+    id: `catalogo_${r.nombre.replace(/\s+/g, "_").toLowerCase()}`,
+    nombre: r.nombre,
+    tipo: r.tipo,
+    distrito: r.lugar,
+    direccion: r.lugar,
+    mensaje_personalizado: `${r.tipo} · ${r.precio}`,
+    mesas: r.mesas,
+    telefono: "",
+    email: "",
+    imagen: r.img,
+    horario_apertura: r.hora,
+    horario_cierre: "23:00",
+    origen: "catalogo",
+    rating: r.rating,
+    precio: r.precio,
+  };
+}
+
 // ── Datos iniciales de restaurantes registrados ──────────────────────────────
 const INITIAL_RESTAURANTES = [
   {
@@ -53,7 +78,7 @@ const INITIAL_SOLICITUDES = [
     ciudad: "Miraflores",
     telefono: "987654321",
     descripcion: "Restaurante familiar con 20 años de tradición criolla.",
-    fecha: "2026-04-20",
+    fecha: "2026-04-25",
     estado: "pendiente",
     imagen: rest3,
   },
@@ -66,7 +91,7 @@ const INITIAL_SOLICITUDES = [
     ciudad: "San Isidro",
     telefono: "998877665",
     descripcion: "Fusión de cocina japonesa con toques peruanos únicos.",
-    fecha: "2026-04-21",
+    fecha: "2026-04-25",
     estado: "pendiente",
     imagen: rest1,
   },
@@ -79,7 +104,7 @@ const INITIAL_SOLICITUDES = [
     ciudad: "Barranco",
     telefono: "912345678",
     descripcion: "Pastas artesanales y pizzas al horno de leña.",
-    fecha: "2026-04-22",
+    fecha: "2026-04-25",
     estado: "pendiente",
     imagen: rest2,
   },
@@ -92,7 +117,7 @@ const INITIAL_SOLICITUDES = [
     ciudad: "Chorrillos",
     telefono: "976543210",
     descripcion: "Los mejores ceviches y tiraditos de Lima.",
-    fecha: "2026-04-18",
+    fecha: "2026-04-25",
     estado: "aceptado",
     imagen: rest4,
   },
@@ -105,7 +130,7 @@ const INITIAL_SOLICITUDES = [
     ciudad: "Miraflores",
     telefono: "945612378",
     descripcion: "Cocina vegana de autor con ingredientes orgánicos.",
-    fecha: "2026-04-15",
+    fecha: "2026-04-25",
     estado: "rechazado",
     imagen: rest5,
   },
@@ -124,24 +149,44 @@ function loadFromStorage(key, fallback) {
 function saveToStorage(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // storage full or unavailable — silently ignore
+  } catch {}
+}
+
+/**
+ * Fusiona los restaurantes del catálogo con los que ya existen en la intranet.
+ * - Los del catálogo se identifican por origen === "catalogo" o por id con prefijo "catalogo_"
+ * - Si ya existe uno con el mismo nombre (de cualquier origen), no se duplica
+ * - Los del catálogo se añaden al final para no alterar el orden de los registrados
+ */
+function fusionarConCatalogo(almacenados) {
+  const catalogoConvertido = restaurantesCatalogo.map(catalogoToIntranet);
+  const resultado = [...almacenados];
+
+  for (const restCat of catalogoConvertido) {
+    const yaExiste = resultado.some(
+      (r) => r.nombre.toLowerCase() === restCat.nombre.toLowerCase()
+    );
+    if (!yaExiste) {
+      resultado.push(restCat);
+    }
   }
+
+  return resultado;
 }
 
 // ── Context ───────────────────────────────────────────────────────────────────
 const RestaurantesContext = createContext(null);
 
 export function RestaurantesProvider({ children }) {
-  const [restaurantes, setRestaurantes] = useState(() =>
-    loadFromStorage("comanda_restaurantes", INITIAL_RESTAURANTES)
-  );
+  const [restaurantes, setRestaurantes] = useState(() => {
+    const almacenados = loadFromStorage("comanda_restaurantes", INITIAL_RESTAURANTES);
+    return fusionarConCatalogo(almacenados);
+  });
 
   const [solicitudes, setSolicitudes] = useState(() =>
     loadFromStorage("comanda_solicitudes", INITIAL_SOLICITUDES)
   );
 
-  // Persistir cada vez que cambian
   useEffect(() => {
     saveToStorage("comanda_restaurantes", restaurantes);
   }, [restaurantes]);
@@ -152,8 +197,7 @@ export function RestaurantesProvider({ children }) {
 
   // ── Acciones sobre solicitudes ──────────────────────────────────────────────
 
-  /** Acepta una solicitud: cambia su estado y la añade a restaurantes */
-  const aceptarSolicitud = (id) => {  
+  const aceptarSolicitud = (id) => {
     setSolicitudes((prev) =>
       prev.map((s) => (s.id === id ? { ...s, estado: "aceptado" } : s))
     );
@@ -161,7 +205,6 @@ export function RestaurantesProvider({ children }) {
     const solicitud = solicitudes.find((s) => s.id === id);
     if (!solicitud) return;
 
-    // Construir objeto restaurante a partir de la solicitud
     const nuevoRestaurante = {
       id: Date.now(),
       nombre: solicitud.nombre,
@@ -180,13 +223,11 @@ export function RestaurantesProvider({ children }) {
     };
 
     setRestaurantes((prev) => {
-      // Evitar duplicados si ya fue aceptada antes
       const yaExiste = prev.some((r) => r.nombre === nuevoRestaurante.nombre);
       return yaExiste ? prev : [...prev, nuevoRestaurante];
     });
   };
 
-  /** Rechaza una solicitud */
   const rechazarSolicitud = (id) => {
     setSolicitudes((prev) =>
       prev.map((s) => (s.id === id ? { ...s, estado: "rechazado" } : s))
@@ -195,24 +236,17 @@ export function RestaurantesProvider({ children }) {
 
   // ── Acciones sobre restaurantes ─────────────────────────────────────────────
 
-  /** Agrega un restaurante (desde NuevoRestaurante) */
   const agregarRestaurante = (data) => {
-    const nuevo = {
-      ...data,
-      id: Date.now(),
-      origen: "manual",
-    };
+    const nuevo = { ...data, id: Date.now(), origen: "manual" };
     setRestaurantes((prev) => [...prev, nuevo]);
   };
 
-  /** Edita un restaurante existente */
   const editarRestaurante = (updated) => {
     setRestaurantes((prev) =>
       prev.map((r) => (r.id === updated.id ? updated : r))
     );
   };
 
-  /** Elimina un restaurante */
   const eliminarRestaurante = (id) => {
     setRestaurantes((prev) => prev.filter((r) => r.id !== id));
   };

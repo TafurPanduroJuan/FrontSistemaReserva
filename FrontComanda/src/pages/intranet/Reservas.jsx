@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMesas } from "../../context/MesasContext";
+import { useRestaurantes } from "../../context/RestaurantesContext";
 
 const ESTADO_CONFIG = {
   pendiente:  { label: "Pendiente",  color: "#f59e0b", bg: "#fffaf0", icon: "bi-clock" },
@@ -10,19 +11,19 @@ const ESTADO_CONFIG = {
 function Reservas() {
   const { reservas, cambiarEstadoReserva } = useMesas();
 
-  const [listaRestaurantes, setListaRestaurantes] = useState([]);
+  const { restaurantes: restaurantesCtx } = useRestaurantes();
   const [restauranteActivo, setRestauranteActivo] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [fechaFiltro, setFechaFiltro] = useState("");
 
+  // Lista desde el contexto (catálogo + registrados + manuales)
+  const listaRestaurantes = restaurantesCtx.map(r => r.nombre);
+
   useEffect(() => {
-    const registrados = JSON.parse(localStorage.getItem("comanda_restaurantes") || "[]");
-    const nombres = registrados.length > 0
-      ? registrados.map(r => r.nombre)
-      : ["La Bella Italia"];
-    setListaRestaurantes(nombres);
-    if (!restauranteActivo) setRestauranteActivo(nombres[0]);
-  }, []);
+    if (listaRestaurantes.length > 0 && !restauranteActivo) {
+      setRestauranteActivo(listaRestaurantes[0]);
+    }
+  }, [listaRestaurantes]);
 
   const filtradas = reservas.filter(r => {
     const matchRestaurante = r.restaurante === restauranteActivo;
@@ -135,7 +136,7 @@ function Reservas() {
                     { icon: "bi-calendar-event", val: r.fecha,          label: "Fecha" },
                     { icon: "bi-clock",           val: r.hora,           label: "Hora" },
                     { icon: "bi-people",          val: `${r.personas}p`, label: "Pax" },
-                    { icon: "bi-hash",            val: `Mesa ${r.mesa}`, label: "Ubicación" },
+                    { icon: "bi-hash",            val: r.mesa ? `Mesa ${r.mesa}${r.zona ? " · " + r.zona : ""}` : "—", label: "Ubicación" },
                   ].map((item, i) => (
                     <div key={i} style={{ background: "#fdfdfd", border: "1px solid #f0f0f0", borderRadius: "12px", padding: "10px", textAlign: "center" }}>
                       <i className={`bi ${item.icon}`} style={{ color: "#ff6b00", fontSize: "0.9rem", display: "block", marginBottom: "4px" }}></i>

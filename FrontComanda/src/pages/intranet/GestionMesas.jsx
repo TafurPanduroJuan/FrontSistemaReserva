@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMesas } from "../../context/MesasContext";
+import { useRestaurantes } from "../../context/RestaurantesContext";
 
 const ESTADOS = {
   disponible: { label: "Disponible", color: "#10b981", bg: "#ecfdf5", icon: "bi-check-circle-fill" },
@@ -9,20 +10,20 @@ const ESTADOS = {
 
 function GestionMesas() {
   const { getMesas, cambiarEstadoMesa } = useMesas();
+  const { restaurantes: restaurantesCtx } = useRestaurantes();
 
-  const [listaRestaurantes, setListaRestaurantes] = useState([]);
-  const [restauranteActivo, setRestauranteActivo] = useState("");
   const [filtroZona, setFiltroZona] = useState("Todas");
   const [mesaSeleccionada, setMesaSeleccionada] = useState(null);
 
+  // Lista de nombres desde el contexto (incluye catálogo + registrados + manuales)
+  const listaRestaurantes = restaurantesCtx.map(r => r.nombre);
+  const [restauranteActivo, setRestauranteActivo] = useState("");
+
   useEffect(() => {
-    const guardados = JSON.parse(localStorage.getItem("comanda_restaurantes") || "[]");
-    const nombres = guardados.length > 0
-      ? guardados.map(r => r.nombre)
-      : ["La Bella Italia", "Parrillas Don Julio"];
-    setListaRestaurantes(nombres);
-    if (!restauranteActivo) setRestauranteActivo(nombres[0]);
-  }, []);
+    if (listaRestaurantes.length > 0 && !restauranteActivo) {
+      setRestauranteActivo(listaRestaurantes[0]);
+    }
+  }, [listaRestaurantes]);
 
   const mesasActuales = restauranteActivo ? getMesas(restauranteActivo) : [];
   const filtradas = mesasActuales.filter(m => filtroZona === "Todas" || m.zona === filtroZona);

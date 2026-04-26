@@ -101,6 +101,11 @@ function RestaurantesRegistrados() {
                       Via Solicitud
                     </span>
                   )}
+                  {res.origen === "catalogo" && (
+                    <span style={{ fontSize:"0.65rem", background:"#fef3c7", color:"#92400e", padding:"2px 8px", borderRadius:"10px", fontWeight:700 }}>
+                      🌐 Catálogo
+                    </span>
+                  )}
                 </div>
                 <h4 style={{ fontWeight:"700", margin:"5px 0" }}>{res.nombre}</h4>
                 <p style={{ fontSize:"0.85rem", color:"#777" }}>
