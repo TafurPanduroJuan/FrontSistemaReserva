@@ -1,17 +1,20 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
 import './App.css';
 
-// App temporal para desarrollo aislado de feature/login.
-// Al mergear a dev, este App.jsx será reemplazado por el de dev
-// que incluye todas las rutas, AuthProvider, PrivateRoute e intranet.
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="*" element={<Login />} />
+          {/* Definimos las rutas para ambas funcionalidades */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Redirección por defecto: si no conoce la ruta, va al login */}
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Router>
     </AuthProvider>
