@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import "../assets/styles/catalog.css";
-import { useRestaurantes } from "../context/RestaurantesContext";
 import { restaurantes as restaurantesEstaticos } from "../data/datos";
+import { useRestaurantes } from "../context/RestaurantesContext";
+import BookingModal from "../components/BookingModal";
 
 const PRECIOS = ["$", "$$", "$$$", "$$$$"];
 const DISPONIBILIDADES = ["Todos", "Hoy", "Mañana"];
@@ -14,9 +15,10 @@ const ORDENAR = [
   { value: "mesas", label: "Más mesas disponibles" },
 ];
 
-// Convierte restaurante del contexto (formato intranet/NuevoRestaurante) al formato del catálogo
+const precioNum = (p) => (p || "").length;
+
+// Convierte restaurante del contexto (formato intranet) al formato del catálogo
 function normalizarRestaurante(r) {
-  // Si ya tiene el formato del catálogo (viene de datos.js vía contexto), lo respeta
   if (r.img && r.lugar) {
     return {
       id: r.id || r.nombre,
@@ -50,13 +52,11 @@ function normalizarRestaurante(r) {
   };
 }
 
-const precioNum = (p) => (p || "").length;
-
 function Catalog() {
   const [searchParams] = useSearchParams();
   const { restaurantes: restaurantesContexto } = useRestaurantes();
 
-  // Combinar restaurantes del contexto con los estáticos sin duplicar
+  // Fusionar restaurantes del contexto con los estáticos sin duplicar
   const todosLosRestaurantes = useMemo(() => {
     const normalizados = restaurantesContexto.map(normalizarRestaurante);
     const nombresEnContexto = new Set(
@@ -65,17 +65,15 @@ function Catalog() {
     const estaticosExtra = restaurantesEstaticos
       .filter((r) => !nombresEnContexto.has(r.nombre.toLowerCase()))
       .map(normalizarRestaurante);
-
     return [...normalizados, ...estaticosExtra];
   }, [restaurantesContexto]);
 
-  // Tipos únicos derivados de todos los restaurantes disponibles
+  // Tipos únicos dinámicos (incluye tipos de restaurantes nuevos)
   const TIPOS = useMemo(
     () => [...new Set(todosLosRestaurantes.map((r) => r.tipo))].sort(),
     [todosLosRestaurantes]
   );
 
-  // Inicializar filtros desde URL params (viene desde Home)
   const [busqueda, setBusqueda] = useState(searchParams.get("busqueda") || "");
   const [tiposSeleccionados, setTiposSeleccionados] = useState(() => {
     const tipo = searchParams.get("tipo");
@@ -91,6 +89,15 @@ function Catalog() {
   const [orden, setOrden] = useState("default");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Modal de reserva
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRest, setSelectedRest] = useState(null);
+
+  const handleBooking = (restaurante) => {
+    setSelectedRest(restaurante);
+    setIsModalOpen(true);
+  };
+
   useEffect(() => {
     const tipo = searchParams.get("tipo");
     const precio = searchParams.get("precio");
@@ -100,6 +107,7 @@ function Catalog() {
     if (precio) setPreciosSeleccionados([precio]);
     if (busq) setBusqueda(busq);
     if (disp) setDisponibilidad(disp);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const toggleTipo = (tipo) => {
@@ -141,28 +149,16 @@ function Catalog() {
       return matchBusqueda && matchTipo && matchPrecio && matchDisponibilidad;
     });
 
-    if (orden === "rating")
-      lista = [...lista].sort((a, b) => b.rating - a.rating);
+    if (orden === "rating") lista = [...lista].sort((a, b) => b.rating - a.rating);
     else if (orden === "precio-asc")
-      lista = [...lista].sort(
-        (a, b) => precioNum(a.precio) - precioNum(b.precio)
-      );
+      lista = [...lista].sort((a, b) => precioNum(a.precio) - precioNum(b.precio));
     else if (orden === "precio-desc")
-      lista = [...lista].sort(
-        (a, b) => precioNum(b.precio) - precioNum(a.precio)
-      );
+      lista = [...lista].sort((a, b) => precioNum(b.precio) - precioNum(a.precio));
     else if (orden === "mesas")
       lista = [...lista].sort((a, b) => b.mesas - a.mesas);
 
     return lista;
-  }, [
-    busqueda,
-    tiposSeleccionados,
-    preciosSeleccionados,
-    disponibilidad,
-    orden,
-    todosLosRestaurantes,
-  ]);
+  }, [busqueda, tiposSeleccionados, preciosSeleccionados, disponibilidad, orden, todosLosRestaurantes]);
 
   const hayFiltrosActivos =
     busqueda ||
@@ -194,15 +190,14 @@ function Catalog() {
           <div className="sidebar-title">
             <i className="bi bi-sliders"></i> Filtros
           </div>
+
           <div className="filter-section">
             <div className="filter-label">Tipo de comida</div>
             <div className="filter-chips">
               {TIPOS.map((tipo) => (
                 <button
                   key={tipo}
-                  className={`filter-chip ${
-                    tiposSeleccionados.includes(tipo) ? "active" : ""
-                  }`}
+                  className={`filter-chip ${tiposSeleccionados.includes(tipo) ? "active" : ""}`}
                   onClick={() => toggleTipo(tipo)}
                 >
                   {tipo}
@@ -210,15 +205,14 @@ function Catalog() {
               ))}
             </div>
           </div>
+
           <div className="filter-section">
             <div className="filter-label">Precio</div>
             <div className="filter-chips">
               {PRECIOS.map((p) => (
                 <button
                   key={p}
-                  className={`filter-chip ${
-                    preciosSeleccionados.includes(p) ? "active" : ""
-                  }`}
+                  className={`filter-chip ${preciosSeleccionados.includes(p) ? "active" : ""}`}
                   onClick={() => togglePrecio(p)}
                 >
                   {p}
@@ -226,15 +220,14 @@ function Catalog() {
               ))}
             </div>
           </div>
+
           <div className="filter-section">
             <div className="filter-label">Disponibilidad</div>
             <div className="availability-options">
               {DISPONIBILIDADES.map((d) => (
                 <button
                   key={d}
-                  className={`availability-btn ${
-                    disponibilidad === d ? "active" : ""
-                  }`}
+                  className={`availability-btn ${disponibilidad === d ? "active" : ""}`}
                   onClick={() => setDisponibilidad(d)}
                 >
                   {d}
@@ -242,6 +235,7 @@ function Catalog() {
               ))}
             </div>
           </div>
+
           <button className="btn-reset-filters" onClick={resetFiltros}>
             <i className="bi bi-x-circle me-1"></i> Limpiar filtros
           </button>
@@ -250,14 +244,7 @@ function Catalog() {
         {/* Content */}
         <div className="catalog-content">
           <div className="catalog-top-bar">
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
               <button
                 className={`mobile-filter-btn ${sidebarOpen ? "active" : ""}`}
                 onClick={() => setSidebarOpen((prev) => !prev)}
@@ -267,9 +254,7 @@ function Catalog() {
               </button>
               <span className="catalog-count">
                 <strong>{resultado.length}</strong>{" "}
-                {resultado.length === 1
-                  ? "restaurante encontrado"
-                  : "restaurantes encontrados"}
+                {resultado.length === 1 ? "restaurante encontrado" : "restaurantes encontrados"}
               </span>
             </div>
             <select
@@ -278,9 +263,7 @@ function Catalog() {
               onChange={(e) => setOrden(e.target.value)}
             >
               {ORDENAR.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
           </div>
@@ -290,42 +273,30 @@ function Catalog() {
               {busqueda && (
                 <span className="active-filter-tag">
                   🔍 "{busqueda}"
-                  <button onClick={() => setBusqueda("")}>
-                    <i className="bi bi-x"></i>
-                  </button>
+                  <button onClick={() => setBusqueda("")}><i className="bi bi-x"></i></button>
                 </span>
               )}
               {tiposSeleccionados.map((t) => (
                 <span key={t} className="active-filter-tag">
                   {t}
-                  <button onClick={() => toggleTipo(t)}>
-                    <i className="bi bi-x"></i>
-                  </button>
+                  <button onClick={() => toggleTipo(t)}><i className="bi bi-x"></i></button>
                 </span>
               ))}
               {preciosSeleccionados.map((p) => (
                 <span key={p} className="active-filter-tag">
                   {p}
-                  <button onClick={() => togglePrecio(p)}>
-                    <i className="bi bi-x"></i>
-                  </button>
+                  <button onClick={() => togglePrecio(p)}><i className="bi bi-x"></i></button>
                 </span>
               ))}
               {disponibilidad !== "Todos" && (
                 <span className="active-filter-tag">
                   {disponibilidad}
-                  <button onClick={() => setDisponibilidad("Todos")}>
-                    <i className="bi bi-x"></i>
-                  </button>
+                  <button onClick={() => setDisponibilidad("Todos")}><i className="bi bi-x"></i></button>
                 </span>
               )}
               <button
                 className="active-filter-tag"
-                style={{
-                  cursor: "pointer",
-                  border: "none",
-                  background: "#ffeee0",
-                }}
+                style={{ cursor: "pointer", border: "none", background: "#ffeee0" }}
                 onClick={resetFiltros}
               >
                 Limpiar todo
@@ -335,16 +306,10 @@ function Catalog() {
 
           {resultado.length === 0 ? (
             <div className="catalog-empty">
-              <div>
-                <i className="bi bi-search"></i>
-              </div>
+              <div><i className="bi bi-search"></i></div>
               <h4>No se encontraron restaurantes</h4>
               <p>Intenta con otros filtros o términos de búsqueda.</p>
-              <button
-                className="btn-catalog-reserva"
-                style={{ marginTop: "16px" }}
-                onClick={resetFiltros}
-              >
+              <button className="btn-catalog-reserva" style={{ marginTop: "16px" }} onClick={resetFiltros}>
                 Ver todos
               </button>
             </div>
@@ -363,14 +328,14 @@ function Catalog() {
                       <span>📍 {rest.lugar}</span>
                       <span>🕒 {rest.hora}</span>
                       <span>🍽️ {rest.mesas} mesas disponibles</span>
-                      <span>
-                        ⭐ {rest.rating}{" "}
-                        {rest.reseñas > 0 && `(${rest.reseñas}+ reseñas)`}
-                      </span>
+                      <span>⭐ {rest.rating} ({rest.reseñas}+ reseñas)</span>
                     </div>
                     <div className="catalog-card-footer">
                       <span className="catalog-card-price">{rest.precio}</span>
-                      <button className="btn-catalog-reserva">
+                      <button
+                        className="btn-catalog-reserva"
+                        onClick={() => handleBooking(rest)}
+                      >
                         Reservar Ahora
                       </button>
                     </div>
@@ -381,6 +346,18 @@ function Catalog() {
           )}
         </div>
       </div>
+
+      {/* Modal de reserva */}
+      {selectedRest && (
+        <BookingModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedRest(null);
+          }}
+          restaurante={selectedRest}
+        />
+      )}
     </div>
   );
 }
