@@ -1,7 +1,13 @@
 import { useState } from "react";
 import "../assets/styles/form.css";
 import { restaurantes } from "../data/datos";
- 
+
+// ▸ CONEXIÓN A LA INTRANET
+// Importamos el hook del Context. Cuando el usuario envía el formulario,
+// agregarComentario() guarda el mensaje en localStorage y actualiza el estado
+// global, de modo que la intranet (Comentarios.jsx) lo verá al instante.
+import { useComentarios } from "../context/ComentariosContext";
+
 const tipoOptions = [
   {
     value: "comentario",
@@ -28,9 +34,9 @@ const tipoOptions = [
     bg: "#fef2f2",
   },
 ];
- 
+
 const calificacionLabels = ["", "Muy malo", "Malo", "Regular", "Bueno", "Excelente"];
- 
+
 const initialForm = {
   nombre: "",
   apellido: "",
@@ -43,21 +49,24 @@ const initialForm = {
   mensaje: "",
   aceptaTerminos: false,
 };
- 
+
 function Form() {
+  // ▸ CONEXIÓN A LA INTRANET — obtenemos la función para guardar comentarios
+  const { agregarComentario } = useComentarios();
+
   const [form, setForm] = useState(initialForm);
   const [hoverStar, setHoverStar] = useState(0);
   const [enviado, setEnviado] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [errores, setErrores] = useState({});
   const [step, setStep] = useState(1);
- 
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     if (errores[name]) setErrores((prev) => ({ ...prev, [name]: "" }));
   };
- 
+
   const validarStep = (s) => {
     const newErrores = {};
     if (s === 1) {
@@ -82,45 +91,62 @@ function Form() {
     setErrores(newErrores);
     return Object.keys(newErrores).length === 0;
   };
- 
+
   const nextStep = () => { if (validarStep(step)) setStep((s) => s + 1); };
   const prevStep = () => setStep((s) => s - 1);
- 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validarStep(3)) return;
     setCargando(true);
+
+    // ▸ CONEXIÓN A LA INTRANET — armamos el payload con todos los campos
+    const payload = {
+      nombre: form.nombre.trim(),
+      apellido: form.apellido.trim(),
+      correo: form.correo.trim(),
+      telefono: form.telefono.trim() || null,
+      restaurante: form.restaurante,
+      tipo: form.tipo,
+      asunto: form.asunto.trim(),
+      calificacion: form.calificacion || null,
+      mensaje: form.mensaje.trim(),
+      fecha: new Date().toISOString(),
+    };
+
     try {
-      const payload = {
-        nombre: form.nombre.trim(),
-        apellido: form.apellido.trim(),
-        correo: form.correo.trim(),
-        telefono: form.telefono.trim() || null,
-        restaurante: form.restaurante,
-        tipo: form.tipo,
-        asunto: form.asunto.trim(),
-        calificacion: form.calificacion || null,
-        mensaje: form.mensaje.trim(),
-        fecha: new Date().toISOString(),
-      };
-      const response = await fetch("/api/comentarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) throw new Error(`Error del servidor: ${response.status}`);
+      // ── Paso 1: guardar en el Context (localStorage + estado global) ──────
+      // Esto es lo que conecta el formulario con la intranet.
+      // El comentario quedará disponible inmediatamente en /intranet/comentarios.
+      agregarComentario(payload);
+
+      // ── Paso 2 (opcional): enviar también al backend cuando exista ─────────
+      // Cuando tu equipo tenga una API real, descomenta estas líneas:
+      //
+      // const response = await fetch("/api/comentarios", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     // "Authorization": `Bearer ${token}`,  // agrega el token si aplica
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
+      // if (!response.ok) throw new Error(`Error del servidor: ${response.status}`);
+
       setEnviado(true);
     } catch (error) {
-      console.warn("API no disponible (modo desarrollo):", error.message);
+      console.error("Error al enviar el formulario:", error.message);
+      // Aun si el backend falla, el mensaje ya quedó en localStorage
       setEnviado(true);
     } finally {
       setCargando(false);
     }
   };
- 
+
   const resetForm = () => { setForm(initialForm); setEnviado(false); setStep(1); setErrores({}); };
   const tipoSeleccionado = tipoOptions.find((t) => t.value === form.tipo);
- 
+
+  // ── Pantalla de éxito ──────────────────────────────────────────────────────
   if (enviado) {
     return (
       <div className="form-page">
@@ -153,7 +179,8 @@ function Form() {
       </div>
     );
   }
- 
+
+  // ── Formulario ─────────────────────────────────────────────────────────────
   return (
     <div className="form-page">
       <div className="form-hero">
@@ -171,7 +198,7 @@ function Form() {
           <span>🍽️</span><span>⭐</span><span>🍕</span><span>🥗</span>
         </div>
       </div>
- 
+
       <div className="form-main-container">
         {/* Stepper */}
         <div className="form-stepper">
@@ -189,11 +216,11 @@ function Form() {
             </div>
           ))}
         </div>
- 
+
         <div className="form-card">
           <form onSubmit={handleSubmit} noValidate>
- 
-            {/* STEP 1 */}
+
+            {/* STEP 1 — Datos personales */}
             {step === 1 && (
               <div className="form-step">
                 <div className="step-header">
@@ -243,8 +270,8 @@ function Form() {
                 </div>
               </div>
             )}
- 
-            {/* STEP 2 */}
+
+            {/* STEP 2 — Detalles */}
             {step === 2 && (
               <div className="form-step">
                 <div className="step-header">
@@ -310,8 +337,8 @@ function Form() {
                 </div>
               </div>
             )}
- 
-            {/* STEP 3 */}
+
+            {/* STEP 3 — Mensaje */}
             {step === 3 && (
               <div className="form-step">
                 <div className="step-header">
@@ -358,8 +385,8 @@ function Form() {
             )}
           </form>
         </div>
- 
-        {/* Aside */}
+
+        {/* Aside informativo */}
         <aside className="form-aside">
           <div className="aside-card">
             <h4 className="aside-title"><i className="bi bi-info-circle-fill me-2"></i>¿Cómo funciona?</h4>
@@ -389,6 +416,6 @@ function Form() {
     </div>
   );
 }
- 
+
 export default Form;
 
