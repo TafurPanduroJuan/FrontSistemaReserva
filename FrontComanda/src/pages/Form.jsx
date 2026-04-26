@@ -1,11 +1,6 @@
 import { useState } from "react";
 import "../assets/styles/form.css";
 import { restaurantes } from "../data/datos";
-
-// ▸ CONEXIÓN A LA INTRANET
-// Importamos el hook del Context. Cuando el usuario envía el formulario,
-// agregarComentario() guarda el mensaje en localStorage y actualiza el estado
-// global, de modo que la intranet (Comentarios.jsx) lo verá al instante.
 import { useComentarios } from "../context/ComentariosContext";
 
 const tipoOptions = [
@@ -51,7 +46,7 @@ const initialForm = {
 };
 
 function Form() {
-  // ▸ CONEXIÓN A LA INTRANET — obtenemos la función para guardar comentarios
+  
   const { agregarComentario } = useComentarios();
 
   const [form, setForm] = useState(initialForm);
@@ -100,7 +95,7 @@ function Form() {
     if (!validarStep(3)) return;
     setCargando(true);
 
-    // ▸ CONEXIÓN A LA INTRANET — armamos el payload con todos los campos
+   
     const payload = {
       nombre: form.nombre.trim(),
       apellido: form.apellido.trim(),
@@ -115,28 +110,12 @@ function Form() {
     };
 
     try {
-      // ── Paso 1: guardar en el Context (localStorage + estado global) ──────
-      // Esto es lo que conecta el formulario con la intranet.
-      // El comentario quedará disponible inmediatamente en /intranet/comentarios.
+      
       agregarComentario(payload);
-
-      // ── Paso 2 (opcional): enviar también al backend cuando exista ─────────
-      // Cuando tu equipo tenga una API real, descomenta estas líneas:
-      //
-      // const response = await fetch("/api/comentarios", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     // "Authorization": `Bearer ${token}`,  // agrega el token si aplica
-      //   },
-      //   body: JSON.stringify(payload),
-      // });
-      // if (!response.ok) throw new Error(`Error del servidor: ${response.status}`);
-
       setEnviado(true);
     } catch (error) {
       console.error("Error al enviar el formulario:", error.message);
-      // Aun si el backend falla, el mensaje ya quedó en localStorage
+     
       setEnviado(true);
     } finally {
       setCargando(false);

@@ -19,11 +19,11 @@
 }
 .carousel-control-prev,
 .carousel-control-next {
-    width: 5%; /* Bajamos del 15% al 5% */
-    z-index: 10; /* Aseguramos que el botón de reserva esté accesible */
+    width: 5%; 
+    z-index: 10; 
 }
 
-/* Si quieres que las flechas se vean mejor fuera del área de contenido */
+
 .carousel-control-prev {
     justify-content: flex-start;
     padding-left: 20px;
@@ -146,7 +146,7 @@
   background: rgba(255, 255, 255, 0.1); 
   box-shadow: 0 8px 24px rgba(0,0,0,0.25); 
   border-radius: 45px;
-   padding: 60px; /* menos padding base */
+   padding: 60px; 
 }
 #cuadro{
   background: rgba(255, 255, 255, 0.3); 
