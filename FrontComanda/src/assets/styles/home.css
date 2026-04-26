@@ -17,7 +17,22 @@
 .carousel-inner {
   border-radius: 20px;
 }
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%; /* Bajamos del 15% al 5% */
+    z-index: 10; /* Aseguramos que el botón de reserva esté accesible */
+}
 
+/* Si quieres que las flechas se vean mejor fuera del área de contenido */
+.carousel-control-prev {
+    justify-content: flex-start;
+    padding-left: 20px;
+}
+
+.carousel-control-next {
+    justify-content: flex-end;
+    padding-right: 20px;
+}
 #restauranteCarousel .carousel-item img {
   height: 600px;
   object-fit: cover;

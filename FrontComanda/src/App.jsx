@@ -16,6 +16,7 @@ import Home from './pages/Home';
 import Catalog from './pages/Catalog';
 import About from './pages/About';
 import Form from './pages/Form';
+import RegistrarRestaurante from './pages/RegistrarRestaurante';
 
 // ── Intranet ────────────────────────────────────────────────────────────────
 import IntranetLayout from '../../FrontComanda/src/components/intranet/IntranetLayout';
@@ -66,6 +67,7 @@ function App() {
                         <Route path="/catalog" element={<Catalog />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/form" element={<Form />} />
+                        <Route path='/registrarRestaurante' element={<RegistrarRestaurante/>} />
                       </Routes>
                     </main>
                     <Footer />

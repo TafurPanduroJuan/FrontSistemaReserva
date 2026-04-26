@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "../assets/styles/home.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -23,10 +23,59 @@ import BookingModal from "../components/BookingModal";
 
 function Home() {
 const navigate = useNavigate();
+const [modalOpen, setModalOpen] = useState(false);
+const [selectedRestaurante, setSelectedRestaurante] = useState(null);
+
+const abrirModal = (restaurante) => {
+  setSelectedRestaurante(restaurante);
+  setModalOpen(true);
+};
+
+const cerrarModal = () => {
+  setModalOpen(false);
+  setSelectedRestaurante(null);
+};
 
 const irAlCatalogoConFiltro = (tipo) => {
   navigate(`/catalog?tipo=${encodeURIComponent(tipo)}`);
 };
+
+// Restaurantes del carrusel con datos necesarios para el modal
+const restaurantesCarrusel = [
+  {
+    nombre: "La Bella Italia",
+    tipo: "Italiana",
+    lugar: "Centro de Lima",
+    hora: "19:30",
+    mesas: 5,
+    precio: "$$",
+    img: italianaImg,
+    rating: 4.8,
+    reseñas: 250,
+  },
+  {
+    nombre: "Sushi Take",
+    tipo: "Japonesa",
+    lugar: "Miraflores, 2035",
+    hora: "20:00",
+    mesas: 3,
+    precio: "$$$",
+    img: japonesaImg,
+    rating: 4.7,
+    reseñas: 180,
+  },
+  {
+    nombre: "Sabor Criollo",
+    tipo: "Peruana",
+    lugar: "Surquillo, 890",
+    hora: "13:00",
+    mesas: 5,
+    precio: "$",
+    img: peruanaImg,
+    rating: 4.9,
+    reseñas: 300,
+  },
+];
 
 useEffect(() => {
     const carousels = document.querySelectorAll('.carousel');
@@ -39,6 +88,13 @@ useEffect(() => {
   }, []);
   return (
     <div className="container-fluid p-0">
+
+      {/* BookingModal */}
+      <BookingModal
+        isOpen={modalOpen}
+        onClose={cerrarModal}
+        restaurante={selectedRestaurante}
+      />
 
       {/*Sección para el Carrusel en home */}
       <section>
@@ -59,7 +115,10 @@ useEffect(() => {
               <h4>La Bella Italia</h4>
               <h5>Auténtica cocina italiana con las mejores pastas artesanales</h5>
               <p>⭐ 4.8 (250+ reseñas)</p>
-              <button className="btn btn-danger">Reservar Ahora</button>
+              <button
+                className="btn btn-danger"
+                onClick={() => abrirModal(restaurantesCarrusel[0])}
+              >Reservar Ahora</button>
             </div>
           </div>
 
@@ -71,7 +130,10 @@ useEffect(() => {
               <h4>Sushi Take</h4>
               <h5>Deliciosos rolls y sashimi preparados al instante</h5>
               <p>⭐ 4.7 (180+ reseñas)</p>
-              <button className="btn btn-danger">Reservar Ahora</button>
+              <button
+                className="btn btn-danger"
+                onClick={() => abrirModal(restaurantesCarrusel[1])}
+              >Reservar Ahora</button>
             </div>
           </div>
 
@@ -83,7 +145,10 @@ useEffect(() => {
               <h4>Sabor Criollo</h4>
               <h5>Comida típica con sazón casera y auténtica</h5>
               <p>⭐ 4.9 (300+ reseñas)</p>
-              <button className="btn btn-danger">Reservar Ahora</button>
+              <button
+                className="btn btn-danger"
+                onClick={() => abrirModal(restaurantesCarrusel[2])}
+              >Reservar Ahora</button>
             </div>
           </div>
         </div>
@@ -209,7 +274,10 @@ useEffect(() => {
                     <strong className="text-dark">💲 {rest.precio}</strong>
                   </p>
                   <div className="d-flex justify-content-center mt-3">
-                    <button className="btn btn-primary w-50 btnReserva">Reserva Ahora</button>
+                    <button
+                      className="btn btn-primary w-50 btnReserva"
+                      onClick={() => abrirModal(rest)}
+                    >Reserva Ahora</button>
                   </div>
                 </div>
               </div>
@@ -250,7 +318,7 @@ useEffect(() => {
             </ul>
 
             <Link
-              to="/form"
+              to="/registrarRestaurante"
               className="btn btn-light fw-bold btnRegistrar"
             >
               Registra tu Restaurante

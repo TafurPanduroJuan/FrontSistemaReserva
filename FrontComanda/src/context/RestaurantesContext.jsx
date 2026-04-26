@@ -241,6 +241,18 @@ export function RestaurantesProvider({ children }) {
     setRestaurantes((prev) => [...prev, nuevo]);
   };
 
+  // ── Agregar solicitud desde el formulario público ────────────────────────────
+  const agregarSolicitud = (data) => {
+    const nueva = {
+      ...data,
+      id: Date.now(),
+      estado: "pendiente",
+      fecha: new Date().toISOString().split("T")[0],
+      imagen: data.imagen || null,
+    };
+    setSolicitudes((prev) => [...prev, nueva]);
+  };
+
   const editarRestaurante = (updated) => {
     setRestaurantes((prev) =>
       prev.map((r) => (r.id === updated.id ? updated : r))
@@ -259,6 +271,7 @@ export function RestaurantesProvider({ children }) {
         aceptarSolicitud,
         rechazarSolicitud,
         agregarRestaurante,
+        agregarSolicitud,
         editarRestaurante,
         eliminarRestaurante,
       }}
