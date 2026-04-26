@@ -14,7 +14,12 @@ function saveReserva(reserva) {
   try {
     const todas = loadReservas();
     const nueva = { ...reserva, id: Date.now() };
-    localStorage.setItem("comanda_reservas_maestro", JSON.stringify([...todas, nueva]));
+    const actualizadas = [...todas, nueva];
+    localStorage.setItem("comanda_reservas_maestro", JSON.stringify(actualizadas));
+    // Notificar a la intranet si está abierta en la misma pestaña
+    window.dispatchEvent(
+      new CustomEvent("comanda_nueva_reserva", { detail: actualizadas })
+    );
     return nueva;
   } catch { return reserva; }
 }

@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useRestaurantes } from "../../context/RestaurantesContext";
 
 const ROLES = ["usuario", "personal", "administrador"];
-const RESTAURANTES = [
-  "La Bella Italia",
-  "Sushi Take",
-  "Le Petit Bistro",
-  "Costa Azul",
-  "Taquería El Sabor",
-  "Sabor al Paso",
-];
 
 function getRolBadge(rol) {
   const map = {
@@ -22,6 +15,8 @@ function getRolBadge(rol) {
 
 export default function Usuarios() {
   const { changeUserRole, user: adminUser } = useAuth();
+  const { restaurantes: restaurantesCtx } = useRestaurantes();
+  const RESTAURANTES = restaurantesCtx.map(r => r.nombre);
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState(null);

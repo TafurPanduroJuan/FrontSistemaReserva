@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useMesas } from "../../context/MesasContext";
 import { useRestaurantes } from "../../context/RestaurantesContext";
+import { useAuth } from "../../context/AuthContext";
 
 const ESTADO_CONFIG = {
   pendiente:         { label: "Pendiente",            color: "#f59e0b", bg: "#fffaf0", icon: "bi-clock" },
@@ -11,20 +12,26 @@ const ESTADO_CONFIG = {
 
 function Reservas() {
   const { reservas, cambiarEstadoReserva } = useMesas();
-
   const { restaurantes: restaurantesCtx } = useRestaurantes();
-  const [restauranteActivo, setRestauranteActivo] = useState("");
+  const { user, isAdmin } = useAuth();
+
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [fechaFiltro, setFechaFiltro] = useState("");
 
-  // Lista desde el contexto (catálogo + registrados + manuales)
-  const listaRestaurantes = restaurantesCtx.map(r => r.nombre);
+  // Si es personal, solo puede ver su propio restaurante
+  const listaRestaurantes = isAdmin
+    ? restaurantesCtx.map(r => r.nombre)
+    : (user?.restaurante ? [user.restaurante] : []);
+
+  const [restauranteActivo, setRestauranteActivo] = useState("");
 
   useEffect(() => {
-    if (listaRestaurantes.length > 0 && !restauranteActivo) {
+    if (!isAdmin && user?.restaurante) {
+      setRestauranteActivo(user.restaurante);
+    } else if (listaRestaurantes.length > 0 && !restauranteActivo) {
       setRestauranteActivo(listaRestaurantes[0]);
     }
-  }, [listaRestaurantes]);
+  }, [listaRestaurantes, isAdmin, user?.restaurante]);
 
   const filtradas = reservas.filter(r => {
     const matchRestaurante = r.restaurante === restauranteActivo;
@@ -54,13 +61,20 @@ function Reservas() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           <label style={{ fontSize: "0.65rem", fontWeight: 800, color: "#ff6b00", letterSpacing: "1px", marginBottom: "5px" }}>FILTRAR POR LOCAL</label>
-          <select
-            value={restauranteActivo}
-            onChange={(e) => setRestauranteActivo(e.target.value)}
-            style={{ padding: "10px 15px", borderRadius: "12px", border: "2px solid #ff6b00", fontWeight: 700, outline: "none", cursor: "pointer" }}
-          >
-            {listaRestaurantes.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
+          {isAdmin ? (
+            <select
+              value={restauranteActivo}
+              onChange={(e) => setRestauranteActivo(e.target.value)}
+              style={{ padding: "10px 15px", borderRadius: "12px", border: "2px solid #ff6b00", fontWeight: 700, outline: "none", cursor: "pointer" }}
+            >
+              {listaRestaurantes.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          ) : (
+            <span style={{ background: "#fff8ee", color: "#ff6b00", border: "2px solid #ff6b00", borderRadius: "12px", padding: "10px 15px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+              <i className="bi bi-lock-fill" style={{ fontSize: "0.8rem" }} />
+              {restauranteActivo}
+            </span>
+          )}
         </div>
       </div>
 
