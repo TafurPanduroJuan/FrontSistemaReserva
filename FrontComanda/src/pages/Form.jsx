@@ -56,9 +56,25 @@ function Form() {
   const [errores, setErrores] = useState({});
   const [step, setStep] = useState(1);
 
+  // Campos que solo permiten letras, espacios y tildes
+  const soloTexto = (value) => value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
+  // Campos que solo permiten números
+  const soloNumeros = (value) => value.replace(/\D/g, "");
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    let nuevoValor = type === "checkbox" ? checked : value;
+
+    // Campos de solo texto (no permiten números)
+    if (["nombre", "apellido"].includes(name)) {
+      nuevoValor = soloTexto(value);
+    }
+    // Campo teléfono: solo números, máx 9 dígitos
+    if (name === "telefono") {
+      nuevoValor = soloNumeros(value).slice(0, 9);
+    }
+
+    setForm((prev) => ({ ...prev, [name]: nuevoValor }));
     if (errores[name]) setErrores((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -66,10 +82,14 @@ function Form() {
     const newErrores = {};
     if (s === 1) {
       if (!form.nombre.trim()) newErrores.nombre = "El nombre es requerido";
+      else if (/\d/.test(form.nombre)) newErrores.nombre = "El nombre no puede contener números";
       if (!form.apellido.trim()) newErrores.apellido = "El apellido es requerido";
+      else if (/\d/.test(form.apellido)) newErrores.apellido = "El apellido no puede contener números";
       if (!form.correo.trim()) newErrores.correo = "El correo es requerido";
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo))
         newErrores.correo = "Ingresa un correo válido";
+      if (form.telefono && form.telefono.length !== 9)
+        newErrores.telefono = "El teléfono debe tener 9 dígitos";
     }
     if (s === 2) {
       if (!form.tipo) newErrores.tipo = "Selecciona el tipo de mensaje";
@@ -240,8 +260,22 @@ function Form() {
                     <label className="form-label">Teléfono <span className="optional">(opcional)</span></label>
                     <div className="input-wrapper">
                       <i className="bi bi-telephone input-icon"></i>
-                      <input type="tel" name="telefono" className="form-input" placeholder="Ej: 987 654 321" value={form.telefono} onChange={handleChange} autoComplete="tel" />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        name="telefono"
+                        className={`form-input ${errores.telefono ? "input-error" : ""}`}
+                        placeholder="Ej: 987654321"
+                        value={form.telefono}
+                        onChange={handleChange}
+                        autoComplete="tel"
+                        maxLength={9}
+                      />
                     </div>
+                    {errores.telefono && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.telefono}</span>}
+                    {!errores.telefono && form.telefono.length === 9 && (
+                      <span className="error-msg" style={{ color: "#2ecc71" }}><i className="bi bi-check-circle me-1"></i>Teléfono válido</span>
+                    )}
                   </div>
                 </div>
                 <div className="step-actions">
