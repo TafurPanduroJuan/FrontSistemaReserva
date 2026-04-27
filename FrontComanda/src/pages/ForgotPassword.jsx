@@ -9,6 +9,7 @@ export default function ForgotPassword() {
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [devToken, setDevToken] = useState(""); // solo para entorno de prueba
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -24,6 +25,7 @@ export default function ForgotPassword() {
       setError(result.error);
       return;
     }
+    setDevToken(result.token); // guardamos el token para mostrarlo en dev
     setSent(true);
   }
 
@@ -59,7 +61,27 @@ export default function ForgotPassword() {
               Revisá tu bandeja de entrada en <strong>{email}</strong> y sigue
               las instrucciones para recuperar tu contraseña.
             </p>
-            <Link to="/login" className="auth-submit-btn d-block text-center text-decoration-none mt-3">
+
+            {/* ── Bloque solo para desarrollo/pruebas ── */}
+            {devToken && (
+              <div className="auth-dev-hint">
+                <p>
+                  <i className="bi bi-code-slash me-1" />
+                  <strong>[DEV]</strong> Enlace simulado:
+                </p>
+                <Link
+                  to={`/reset-password?token=${devToken}`}
+                  className="auth-dev-link"
+                >
+                  /reset-password?token={devToken.substring(0, 12)}…
+                </Link>
+              </div>
+            )}
+
+            <Link
+              to="/login"
+              className="auth-submit-btn d-block text-center text-decoration-none mt-3"
+            >
               <i className="bi bi-arrow-left me-2" />
               Volver al inicio de sesión
             </Link>
