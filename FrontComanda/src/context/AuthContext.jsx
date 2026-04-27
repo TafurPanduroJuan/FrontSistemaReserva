@@ -126,13 +126,50 @@ export function AuthProvider({ children }) {
     return { ok: true, user: newUser };
   }
 
-  // ── Reset password (simulado) ─────────────────────────────────────────────
-  function resetPassword(email) {
-    const users = initUsers();
-    const found = users.find((u) => u.email === email);
-    if (!found) return { ok: false, error: "No existe una cuenta con ese email." };
-    return { ok: true };
-  }
+  // ── Reset password: genera token simulado ────────────────────────────────
+function resetPassword(email) {
+  const users = initUsers();
+  const found = users.find((u) => u.email === email);
+  if (!found) return { ok: false, error: "No existe una cuenta con ese email." };
+
+  // Genera un token aleatorio y lo guarda con expiración de 15 min
+  const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+  const expiry = Date.now() + 15 * 60 * 1000; // 15 minutos
+
+  const resetData = { email, token, expiry };
+  localStorage.setItem("comanda_reset_token", JSON.stringify(resetData));
+
+  // En producción aquí se enviaría el email. Simulamos mostrando el link en consola.
+  console.info(`[DEV] Enlace de recuperación: /reset-password?token=${token}`);
+
+  return { ok: true, token }; // devolvemos el token para mostrarlo en dev
+}
+
+// ── Confirmar nueva contraseña con token ──────────────────────────────────
+function confirmResetPassword(token, newPassword) {
+  const raw = localStorage.getItem("comanda_reset_token");
+  if (!raw) return { ok: false, error: "El enlace no es válido o ya fue usado." };
+
+  const { email, token: savedToken, expiry } = JSON.parse(raw);
+
+  if (savedToken !== token)
+    return { ok: false, error: "El enlace no es válido." };
+
+  if (Date.now() > expiry)
+    return { ok: false, error: "El enlace ha expirado. Solicita uno nuevo." };
+
+  // Actualiza la contraseña del usuario
+  const users = initUsers();
+  const updated = users.map((u) =>
+    u.email === email ? { ...u, password: newPassword } : u
+  );
+  localStorage.setItem("comanda_users", JSON.stringify(updated));
+
+  // Invalida el token
+  localStorage.removeItem("comanda_reset_token");
+
+  return { ok: true };
+}
 
   // ── Cambiar rol (desde la intranet del admin) ─────────────────────────────
   function changeUserRole(userId, newRol, restaurante = null) {
