@@ -223,6 +223,7 @@ function confirmResetPassword(token, newPassword) {
         logout,
         register,
         resetPassword,
+        confirmResetPassword,
         changeUserRole,
         updateProfile,
         addReserva,
