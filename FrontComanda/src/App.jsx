@@ -19,7 +19,7 @@ import Form from './pages/Form';
 import RegistrarRestaurante from './pages/RegistrarRestaurante';
 
 // ── Intranet ────────────────────────────────────────────────────────────────
-import IntranetLayout from '../../FrontComanda/src/components/intranet/IntranetLayout';
+import IntranetLayout from './components/intranet/IntranetLayout';
 import IntranetHome from './pages/intranet/IntranetHome';
 import SolicitudesRestaurantes from './pages/intranet/SolicitudesRestaurantes';
 import Comentarios from './pages/intranet/Comentarios';
@@ -63,11 +63,11 @@ function App() {
                     <Navbar />
                     <main className="flex-grow-1">
                       <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/catalog" element={<Catalog />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/form" element={<Form />} />
-                        <Route path='/registrarRestaurante' element={<RegistrarRestaurante/>} />
+                        <Route index element={<Home />} />
+                        <Route path="catalog" element={<Catalog />} />
+                        <Route path="about" element={<About />} />
+                        <Route path="form" element={<Form />} />
+                        <Route path="registrarRestaurante" element={<RegistrarRestaurante/>} />
                       </Routes>
                     </main>
                     <Footer />
