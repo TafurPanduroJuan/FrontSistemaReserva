@@ -456,3 +456,26 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   }
 }
+
+/* ── Dev hint (solo en pruebas, muestra el token generado) ─── */
+.auth-dev-hint {
+  background: #fff8e1;
+  border: 1.5px dashed #f0ad4e;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-size: 0.82rem;
+  color: #7a5700;
+  text-align: left;
+}
+.auth-dev-link {
+  display: inline-block;
+  margin-top: 4px;
+  color: #d68910;
+  font-weight: 600;
+  word-break: break-all;
+  text-decoration: underline;
+}
+.auth-dev-link:hover {
+  color: #b7770d;
+}
