@@ -1,7 +1,7 @@
 import React from "react";
 import "../../assets/styles/IntranetHome.css";
 import { useRestaurantes } from "../../context/RestaurantesContext";
-import { useComentarios } from "../../context/Comentarioscontext";
+import { useComentarios } from "../../context/ComentariosContext";
 
 const tipoIcono = {
   comentario: "bi-chat-left-text",
