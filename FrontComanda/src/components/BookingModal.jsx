@@ -288,6 +288,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                 </div>
                 <div className="input-group full-width">
                   <label>Observaciones (opcional)</label>
+                  {/* MODIFIED: description field confirmed as textarea - no change needed */}
                   <textarea placeholder="Cumpleaños, alergias, preferencias de ubicación..."
                     className="modern-field" rows={3} value={formData.notas}
                     onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
