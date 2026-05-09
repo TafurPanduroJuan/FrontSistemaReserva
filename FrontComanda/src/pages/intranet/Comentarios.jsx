@@ -4,7 +4,7 @@ import { useState } from "react";
 // Ya no usamos datos mock hardcodeados.
 // Leemos los comentarios desde el Context, que se alimenta del formulario público
 // y persiste todo en localStorage automáticamente.
-import { useComentarios } from "../../context/ComentariosContext";
+import { useComentarios } from "../../context/CommentsContext";
 
 const tipoConfig = {
   comentario:  { label: "Comentario",  icon: "bi-chat-left-text",      color: "#3b82f6", bg: "#eff6ff" },
