@@ -28,9 +28,9 @@ const INITIAL_RESERVAS = [
 ];
 
 // ── Context ───────────────────────────────────────────────────────────────────
-const MesasContext = createContext(null);
+const TablesContext = createContext(null);
 
-export function MesasProvider({ children }) {
+export function TablesProvider({ children }) {
   // datosGlobales: { [nombreRestaurante]: Mesa[] }
   const [datosGlobales, setDatosGlobales] = useState(() =>
     load("comanda_mesas_v2", {})
@@ -127,7 +127,7 @@ export function MesasProvider({ children }) {
   }, []);
 
   return (
-    <MesasContext.Provider value={{
+    <TablesContext.Provider value={{
       datosGlobales,
       getMesas,
       cambiarEstadoMesa,
@@ -136,12 +136,12 @@ export function MesasProvider({ children }) {
       cambiarEstadoReserva,
     }}>
       {children}
-    </MesasContext.Provider>
+    </TablesContext.Provider>
   );
 }
 
-export function useMesas() {
-  const ctx = useContext(MesasContext);
-  if (!ctx) throw new Error("useMesas must be used inside MesasProvider");
+export function useTables() {
+  const ctx = useContext(TablesContext);
+  if (!ctx) throw new Error("useTables must be used inside MesasProvider");
   return ctx;
 }
