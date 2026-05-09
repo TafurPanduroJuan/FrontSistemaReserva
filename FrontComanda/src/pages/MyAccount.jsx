@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import '../assets/styles/miCuenta.css'
+import '../assets/styles/myAccount.css'
 
 const TABS = ["reservas", "favoritos", "perfil"];
 
@@ -56,7 +56,7 @@ function cancelarReservaEnStorage(reservaId) {
   } catch {}
 }
 
-export default function MiCuenta() {
+export default function MyAccount() {
   const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState("reservas");
