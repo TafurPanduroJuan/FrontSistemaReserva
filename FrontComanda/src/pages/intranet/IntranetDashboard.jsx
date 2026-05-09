@@ -1,7 +1,7 @@
 import React from "react";
-import "../../assets/styles/IntranetHome.css";
-import { useRestaurantes } from "../../context/RestaurantsContext";
-import { useComentarios } from "../../context/CommentsContext";
+import "../../assets/styles/intranetDashboard.css";
+import { useRestaurants } from "../../context/RestaurantsContext";
+import { useComments } from "../../context/CommentsContext";
 
 const tipoIcono = {
   comentario: "bi-chat-left-text",
@@ -14,9 +14,9 @@ const tipoColor = {
   experiencia: "#f59e0b",
 };
 
-function IntranetHome() {
-  const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurantes();
-  const { comentarios } = useComentarios();
+function IntranetDashboard() {
+  const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurants();
+  const { comentarios } = useComments();
 
   // Leer usuarios reales desde localStorage (igual que AuthContext)
   const usuarios = (() => {
@@ -212,7 +212,7 @@ function IntranetHome() {
                 <i className="bi bi-people me-2" style={{ color: "var(--brand-mid)" }}></i>
                 Usuarios registrados (últimos)
               </h6>
-              <a href="/intranet/usuarios" className="btn-brand btn btn-sm">
+              <a href="/intranet/users" className="btn-brand btn btn-sm">
                 <i className="bi bi-arrow-right-circle me-1"></i>Ver todos
               </a>
             </div>
@@ -255,4 +255,4 @@ function IntranetHome() {
   );
 }
 
-export default IntranetHome;
+export default IntranetDashboard;
