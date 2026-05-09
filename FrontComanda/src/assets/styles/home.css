@@ -1,192 +1,183 @@
 
+
 .container {
-    max-width: 1600px !important; 
-    width: 95%; 
+    max-width: 1600px !important;
+    width: 95%;
 }
-.container-fluid{
-  padding-bottom: 10px;
-}
+.container-fluid { padding-bottom: 6px; } 
 
 #restauranteCarousel {
-    max-width: 1500px; 
+    max-width: 1500px;
     width: 100%;
-    margin: 20px auto;
-    padding-bottom: 30px;
+    margin: 12px auto;      
+    padding-bottom: 16px;   
 }
 
-.carousel-inner {
-  border-radius: 20px;
-}
-.carousel-control-prev,
-.carousel-control-next {
-    width: 5%; 
-    z-index: 10; 
-}
+.carousel-inner { border-radius: 20px; }
+.carousel-control-prev, .carousel-control-next { width: 5%; z-index: 10; }
+.carousel-control-prev { justify-content: flex-start; padding-left: 15px;}
+.carousel-control-next { justify-content: flex-end; padding-right: 15px; }
 
-
-.carousel-control-prev {
-    justify-content: flex-start;
-    padding-left: 20px;
-}
-
-.carousel-control-next {
-    justify-content: flex-end;
-    padding-right: 20px;
+#etiquetas{
+  background:rgb(255, 0, 0);
+  width:120px;
+  padding:5px; 
+  text-align: center;
+  border: 2px solid rgb(255, 0, 0);
+  border-radius: 10px;
 }
 #restauranteCarousel .carousel-item img {
-  height: 600px;
+  height: 600px;   
   object-fit: cover;
 }
 
 .card-img-overlay {
-  padding: 60px;
-  padding-top: 250px;
+  padding: 60px;          
+  padding-top: 200px;     
   color: white;
 }
 
-.fw-bold {
-  background: linear-gradient(200deg, rgb(255, 159, 34), rgb(255, 51, 0));
+
+
+/* Etiqueta de tipo de comida en carousel cards */
+.home-tag-label {
+  background: #F4956A;
   color: white;
   border-radius: 10px;
   width: 100px;
   height: 30px;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
 }
 
-.btn {
+/* Botón principal del Home*/
+.home-btn-primary {
   width: 150px;
-  background: linear-gradient(200deg, rgb(255, 159, 34), rgb(255, 51, 0));
+  background: #F4956A;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
 }
-
+#botonCarousel{
+  width: 150px !important;
+}
 
 .img-efecto {
   border-radius: 50%;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
 .img-efecto:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(255, 111, 0, 0.9);
+  box-shadow: 0 0 20px rgba(244,149,106,0.7);
 }
+.efecto:hover { color: #F4956A; }
 
-.efecto:hover {
-  color: rgba(255, 111, 0, 0.998);
-}
-.variedad{
-  padding: 100px;
+
+.variedad {
+  padding: 25px 40px;
   background-color: rgb(255, 255, 255);
   margin: 0px;
-  
 }
 
-.card{
+.card {
   border-radius: 20px;
   overflow: hidden;
-  transition: transform 0.3s  ease, box-shadow 0.3s ease;
-
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.card:hover{
+.card:hover {
   transform: translateY(-8px);
-  background:rgba(255, 222, 190, 0.995);
-  box-shadow: 3px 10px 3px rgba(9, 9, 9, 0.109) !important;
+  background: rgba(255, 222, 190, 0.995);
+  box-shadow: 3px 10px 3px rgba(9,9,9,0.109) !important;
 }
-.card:hover .card-img-top{
-  
+.card:hover .card-img-top {
   transform: scale(1.05);
   transition: transform 1.3s ease;
-  box-shadow: 10px 10px 80px rgba(255, 111, 0, 0.9);
-
+  box-shadow: 10px 10px 80px rgba(244,149,106,0.7);
 }
-.card-img-top:hover{
-  transform: scale(1.04);
-  
-}
-
-.card:hover .btnReserva{
-  background: linear-gradient(300deg,rgb(255, 51, 0), rgb(255, 159, 34));
-}
+.card-img-top:hover { transform: scale(1.04); }
 
 
-.btnReserva{
+.card:hover .btnReserva { background: #e0784d; }
+
+
+.btnReserva {
   width: auto;
   text-align: center;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(300deg, rgb(255, 175, 175), rgb(255, 203, 106));
+  background: #F4956A;
   color: white;
   border: 0px;
 }
 
-.verCatalogo{
+.verCatalogo {
   width: auto;
-  padding: 15px;
-  margin-top:40px;
-  margin-bottom: 40px;
+  padding: 12px;              
+  margin-top: 24px;         
+  margin-bottom: 24px;        
   border-radius: 30px;
   background: black;
   border: none;
   font-size: 1.3rem;
   transition: transform 0.4s ease;
 }
-.verCatalogo:hover{
-  background: black;
-  transform: scale(1.025);
-}
+.verCatalogo:hover { background: black; transform: scale(1.025); }
 
 
-#contacto{
+#contacto {
   border-top: 30px;
-  padding: 100px;
-  margin-bottom: 100px;
-  background: linear-gradient(500deg, rgb(255, 0, 0), rgb(251, 127, 38));
+  padding: 60px;              
+  margin-bottom: 60px;        
+  background: #F4956A;
 }
-#contenedorInterno{
-  min-height: 500px;
-  max-width: auto;
-  background: rgba(255, 255, 255, 0.1); 
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25); 
+#contenedorInterno {
+  min-height: 400px;        
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   border-radius: 45px;
-   padding: 60px; 
+  padding: 48px;              
 }
-#cuadro{
-  background: rgba(255, 255, 255, 0.3); 
-}
+#cuadro { background: rgba(255,255,255,0.3); }
+
 .btnRegistrar {
   width: auto;
   height: auto;
   background: white;
-  color: rgb(255, 0, 0);
+  color: #e0784d;
   font-size: 20px;
-  padding: 12px 32px;   
+  padding: 12px 32px;
   border-radius: 20px;
-  display: inline-block;   
-  text-align: center;     
-  white-space: nowrap;     
+  display: inline-block;
+  text-align: center;
+  white-space: nowrap;
   transition: transform 0.4s ease;
 }
-.btnRegistrar:hover{
+.btnRegistrar:hover {
   background: white;
-  color: red;
+  color: #e0784d;
   transform: scale(1.025);
-  box-shadow: 0 4px 12px rgb(255, 255, 255);
+  box-shadow: 0 4px 12px rgba(255,255,255,0.8);
 }
 
-.p-4{
-   border-radius: 20px;
-   background: rgba(255, 255, 255, 0.4);
-   transition: transform 0.3s ease;
+/*Sección de contacto */
+#contacto .p-4 {
+  border-radius: 20px;
+  background: rgba(255,255,255,0.4);
+  transition: transform 0.3s ease;
 }
-
-.p-4:hover{
+#contacto .p-4:hover {
   transform: scale(1.025);
-  background: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 12px rgb(255, 255, 255) !important;
+  background: rgba(255,255,255,0.55);
+  box-shadow: 0 4px 12px rgba(255,255,255,0.7) !important;
   color: black !important;
 }
 
-#seccionComentarios{
-  background-color: rgb(255, 247, 236);
-}
+#seccionComentarios { background-color: rgb(255, 247, 236); }
 
 #tituloComunidad {
   background: none;
@@ -198,93 +189,117 @@
   text-transform: uppercase;
   letter-spacing: 2px;
 }
-
-
 #autorTestimonio {
   background: white;
   height: auto;
   width: auto;
   font-size: 1.1rem;
   color: #333;
-  margin-top: 15px;
+  margin-top: 12px;   
 }
+#rolTestimonio { font-size: 0.9rem; color: #777; }
 
-
-#rolTestimonio {
-  font-size: 0.9rem;
-  color: #777;
-}
-
-
-/* --- AJUSTES RESPONSIVE --- */  
+/* --- RESPONSIVE MOBILE  --- */
 @media (max-width: 768px) {
+ 
+  .container-fluid {
+    overflow-x: hidden;
+    padding: 0 !important;
+  }
+
+  /* 2. Carrusel Principal */
+  #restauranteCarousel {
+    margin-top: 70px !important; 
+  }
+  
   #restauranteCarousel .carousel-item img {
-    height: 350px; 
+    height: 400px; 
   }
 
   .card-img-overlay {
-    padding: 20px;
-    padding-top: 100px; 
-    text-align: center;
-    align-items: center;
-  }
-
-  .variedad {
-    padding: 20px 10px;
-    margin-top: 50px;
-  }
-
-  
-  .col-md-4 {
-    width: 100% !important;
-    padding: 10px !important;
-  }
-  .btnRegistrar {
-    font-size: 16px;
-    padding: 10px 20px;
-    width: 100%;
-    white-space: normal;   
-  }
-   #contacto {
-    padding: 20px;          
-  }
-  #contenedorInterno {
-    min-height: 100vh;     
-    padding: 20px;          
+    padding: 15px !important;
+    padding-top: 40px !important; 
     display: flex;
-    flex-direction: column; 
-    justify-content: center;
-    align-items: center;    
-  }
-  .col-lg-6 .row .col-6 {
-    flex: 0 0 100%; 
-    max-width: 100%;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
-  .col-lg-6 .row .col-6 .p-4 {
-    margin-bottom: 20px;   
+  /* 3. Sección de Registro */
+  #contacto {
+    padding: 20px 10px !important;
+    margin-bottom: 20px !important;
+  }
+
+  #contenedorInterno {
+    min-height: auto !important;
+    padding: 25px 15px !important; 
+    border-radius: 25px !important;
+    width: 95% !important;
+    margin: 0 auto !important;
+  }
+
+  /* Ajuste de las columnas de estadísticas (+40%, 50K+, etc.) */
+  #contacto .col-6 {
+    width: 50% !important;
+    padding: 5px !important;
+  }
+
+  #contacto .p-4 {
+    padding: 15px 5px !important; 
+    margin-bottom: 0 !important;
+  }
+
+  #contacto h2 {
+    font-size: 1.5rem !important;
+  }
+
+  .btnRegistrar {
+    font-size: 16px !important;
+    padding: 10px 20px !important;
+    width: 100% !important; 
+    max-width: 280px;
+  }
+
+  /* 4. Tipos de Comida  */
+  #categoriasCarousel img {
+    width: 150px !important;
+    height: 150px !important;
+  }
+
+  /* 5. Flechas del Carrusel */
+  .carousel-control-prev, 
+  .carousel-control-next {
+    width: 10% !important;
   }
 }
 
-/* --- AJUSTES RESPONSIVE PARA TABLETS --- */
-@media (max-width: 991px) {
+/* --- AJUSTE EXTRA PARA TABLETS --- */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .carousel-control-prev, 
+  .carousel-control-next {
+    width: 8%;
+  }
   
-  #categoriasCarousel {
-    display: block !important;
+  .carousel-control-prev-icon, 
+  .carousel-control-next-icon {
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.2);
   }
-  .row.g-4.d-none.d-md-flex {
-    display: none !important;
+}
+
+/* --- RESPONSIVE TABLET --- */
+@media (min-width: 769px) and (max-width: 991px) {
+  #restauranteCarousel .carousel-item img { height: 450px; }
+  
+  .card-img-overlay {
+    padding-top: 120px; 
   }
 
-
-  .variedad {
-    padding: 30px 15px;
-    margin-top: 40px;
+  #botonCarousel {
+    width: 180px !important; 
   }
 
-  .btnRegistrar {
-    font-size: 18px;
-    padding: 12px 24px;
-    width: 100%;
-  }
+  #categoriasCarousel { display: block !important; }
+  .variedad { padding: 28px 15px; margin-top: 24px; }
 }
