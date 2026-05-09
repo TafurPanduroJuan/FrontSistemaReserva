@@ -29,7 +29,13 @@
   overflow: hidden;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
-
+/* ── Botón Volver ──────────────────────────────── */
+.auth-top-right {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
 /* ── Background blobs ──────────────────────────────────────── */
 .auth-bg {
   position: fixed;
@@ -111,7 +117,7 @@
 .auth-brand-title {
   font-size: 1.8rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+  background: var(--brand-color);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -261,7 +267,7 @@
 /* ── Submit button ─────────────────────────────────────────── */
 .auth-submit-btn {
   padding: 13px;
-  background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+  background: var(--brand-color);
   color: white;
   border: none;
   border-radius: 12px;
@@ -341,15 +347,18 @@
 @media (max-width: 480px) {
   .auth-card { padding: 28px 20px; }
   .auth-demo-pills { flex-wrap: wrap; }
+  .auth-brand-title { font-size: 1.5rem; }
+  .auth-home-btn { padding: 6px 12px; font-size: 0.8rem; }
+  .auth-top-right { top: 10px; right: 10px; }
 }
 
 
-/* --- Contenedor Principal (Split Screen) --- */
+/* --- Contenedor Principal --- */
 .auth-split-wrapper {
   display: flex;
-  width: 1050px; /* Ancho ajustado */
+  width: 1050px; 
   max-width: 95vw;
-  min-height: 750px; /* Altura aumentada como pediste */
+  min-height: 750px; 
   background: white;
   border-radius: 30px;
   overflow: hidden;
@@ -431,7 +440,7 @@
 .auth-submit-btn {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, var(--brand-start), var(--brand-end));
+  background: var(--brand-color);
   color: white;
   border: none;
   border-radius: 12px;
@@ -442,17 +451,18 @@
 
 /* --- Responsive --- */
 @media (max-width: 900px) {
-  .auth-image-side {
-    display: none;
-  }
+  .auth-page { padding: 80px 16px 30px; } 
+  
+  .auth-top-right { top: 15px; right: 15px; }
+
+  .auth-image-side { display: none; } 
+  
   .auth-split-wrapper {
-    width: 450px;
+    width: 100%;
+    max-width: 440px;
     min-height: auto;
-    box-shadow: none;
-    background: transparent;
-  }
-  .auth-form-side {
-    border-radius: 30px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   }
+  
+  .auth-form-side { padding: 32px 24px; }
 }
