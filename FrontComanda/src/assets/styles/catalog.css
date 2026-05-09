@@ -10,8 +10,8 @@
 
 /* -------- HERO BANNER -------- */
 .catalog-hero {
-  background: linear-gradient(135deg, rgb(255, 51, 0) 0%, rgb(255, 159, 34) 100%);
-  padding: 50px 40px 40px;
+  background: #F4956A;
+  padding: 28px 32px 24px;
   text-align: center;
   color: white;
   position: relative;
