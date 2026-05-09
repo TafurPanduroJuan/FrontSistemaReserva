@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useRestaurantes } from "../../context/RestaurantesContext";
+import { useRestaurantes } from "../../context/RestaurantsContext";
 
 const ROLES = ["usuario", "personal", "administrador"];
 

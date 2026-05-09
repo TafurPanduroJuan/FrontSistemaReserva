@@ -10,7 +10,7 @@ import rest6 from "../assets/img/rest6.jpg";
 
 // ── Restaurantes del catálogo público ────────────────────────────────────────
 // Se importan para sincronizarlos como restaurantes activos en la intranet.
-import { restaurantes as restaurantesCatalogo } from "../data/datos";
+import { restaurantes as restaurantesCatalogo } from "../data/data";
 
 // Convierte un restaurante del catálogo al formato de la intranet
 function catalogoToIntranet(r, index) {
@@ -175,9 +175,9 @@ function fusionarConCatalogo(almacenados) {
 }
 
 // ── Context ───────────────────────────────────────────────────────────────────
-const RestaurantesContext = createContext(null);
+const RestaurantsContext = createContext(null);
 
-export function RestaurantesProvider({ children }) {
+export function RestaurantsProvider({ children }) {
   const [restaurantes, setRestaurantes] = useState(() => {
     const almacenados = loadFromStorage("comanda_restaurantes", INITIAL_RESTAURANTES);
     return fusionarConCatalogo(almacenados);
@@ -264,7 +264,7 @@ export function RestaurantesProvider({ children }) {
   };
 
   return (
-    <RestaurantesContext.Provider
+    <RestaurantsContext.Provider
       value={{
         restaurantes,
         solicitudes,
@@ -277,12 +277,12 @@ export function RestaurantesProvider({ children }) {
       }}
     >
       {children}
-    </RestaurantesContext.Provider>
+    </RestaurantsContext.Provider>
   );
 }
 
-export function useRestaurantes() {
-  const ctx = useContext(RestaurantesContext);
-  if (!ctx) throw new Error("useRestaurantes must be used inside RestaurantesProvider");
+export function useRestaurants() {
+  const ctx = useContext(RestaurantsContext);
+  if (!ctx) throw new Error("useRestaurants must be used inside RestaurantesProvider");
   return ctx;
 }

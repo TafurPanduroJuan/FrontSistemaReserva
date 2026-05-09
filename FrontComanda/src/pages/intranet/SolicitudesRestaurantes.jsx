@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useRestaurantes } from "../../context/RestaurantesContext";
+import { useRestaurantes } from "../../context/RestaurantsContext";
 
 function SolicitudesRestaurantes() {
   const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurantes();

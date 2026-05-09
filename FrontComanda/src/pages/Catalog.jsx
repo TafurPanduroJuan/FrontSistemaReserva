@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import "../assets/styles/catalog.css";
 import { restaurantes as restaurantesEstaticos } from "../data/datos";
-import { useRestaurantes } from "../context/RestaurantesContext";
+import { useRestaurantes } from "../context/RestaurantsContext";
 import BookingModal from "../components/BookingModal";
 
 const PRECIOS = ["$", "$$", "$$$", "$$$$"];

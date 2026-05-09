@@ -1,6 +1,6 @@
 import React from "react";
 import "../../assets/styles/IntranetHome.css";
-import { useRestaurantes } from "../../context/RestaurantesContext";
+import { useRestaurantes } from "../../context/RestaurantsContext";
 import { useComentarios } from "../../context/CommentsContext";
 
 const tipoIcono = {

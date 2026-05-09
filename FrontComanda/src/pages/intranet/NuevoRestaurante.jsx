@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useRestaurantes } from "../../context/RestaurantesContext";
+import { useRestaurantes } from "../../context/RestaurantsContext";
 
 const tiposComida = ["Criolla","Italiana","Japonesa","Mariscos","Vegana","Parrilla","Mexicana","Peruana","Francesa","Fusión","Moderna","Asiática","Postres"];
 const sugerenciasDistritos = ["Miraflores","San Isidro","Barranco","Surco","La Molina","Chorrillos","Lince","Jesús María","Pueblo Libre","Magdalena"];

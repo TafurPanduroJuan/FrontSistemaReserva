@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMesas } from "../../context/MesasContext";
-import { useRestaurantes } from "../../context/RestaurantesContext";
+import { useRestaurantes } from "../../context/RestaurantsContext";
 import { useAuth } from "../../context/AuthContext";
 
 const ESTADOS = {

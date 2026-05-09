@@ -30,7 +30,7 @@ import Reservas from './pages/intranet/Reservas';
 import RestaurantesRegistrados from './pages/intranet/RestaurantesRegistrados';
 
 // ── Context ─────────────────────────────────────────────────────────────────
-import { RestaurantesProvider } from './context/RestaurantesContext';
+import { RestaurantesProvider } from './context/RestaurantsContext';
 import { MesasProvider } from './context/MesasContext';
 import { ComentariosProvider } from './context/CommentsContext';
 function App() {

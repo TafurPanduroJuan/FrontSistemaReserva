@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useRestaurantes } from "../context/RestaurantesContext";
+import { useRestaurantes } from "../context/RestaurantsContext";
 import { useNavigate } from "react-router-dom";
 
 const tiposComida = [
