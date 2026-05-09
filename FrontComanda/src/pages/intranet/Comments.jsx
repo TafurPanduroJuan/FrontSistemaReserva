@@ -4,7 +4,7 @@ import { useState } from "react";
 // Ya no usamos datos mock hardcodeados.
 // Leemos los comentarios desde el Context, que se alimenta del formulario público
 // y persiste todo en localStorage automáticamente.
-import { useComentarios } from "../../context/CommentsContext";
+import { useComments } from "../../context/CommentsContext";
 
 const tipoConfig = {
   comentario:  { label: "Comentario",  icon: "bi-chat-left-text",      color: "#3b82f6", bg: "#eff6ff" },
@@ -12,9 +12,9 @@ const tipoConfig = {
   experiencia: { label: "Experiencia", icon: "bi-star-fill",            color: "#f59e0b", bg: "#fffbeb" },
 };
 
-function Comentarios() {
+function Comments() {
   // ▸ CONEXIÓN A LA INTRANET — datos en tiempo real desde el Context
-  const { comentarios, marcarLeido, archivarComentario } = useComentarios();
+  const { comentarios, marcarLeido, archivarComentario } = useComments();
 
   const [filtro, setFiltro] = useState("todos");
   const [expandido, setExpandido] = useState(null);
@@ -69,7 +69,7 @@ function Comentarios() {
               border: `2px solid ${filtro === f ? "transparent" : "#e8e0d8"}`,
               background:
                 filtro === f
-                  ? "linear-gradient(135deg,#ff9f22,#ff3300)"
+                  ? "#F4956A"
                   : "white",
               color: filtro === f ? "white" : "#555",
               fontSize: "0.82rem",
@@ -264,4 +264,4 @@ function Comentarios() {
   );
 }
 
-export default Comentarios;
+export default Comments;
