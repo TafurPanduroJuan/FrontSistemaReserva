@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../assets/styles/form.css";
 import { restaurantes } from "../data/data";
-import { useComentarios } from "../context/CommentsContext";
+import { useComments } from "../context/CommentsContext";
 
 const tipoOptions = [
   {
@@ -47,7 +47,7 @@ const initialForm = {
 
 function Form() {
   
-  const { agregarComentario } = useComentarios();
+  const { agregarComentario } = useComments();
 
   const [form, setForm] = useState(initialForm);
   const [hoverStar, setHoverStar] = useState(0);
