@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import "../assets/styles/catalog.css";
 import { restaurantes as restaurantesEstaticos } from "../data/data";
-import { useRestaurantes } from "../context/RestaurantsContext";
+import { useRestaurants } from "../context/RestaurantsContext";
 import BookingModal from "../components/BookingModal";
 
 const PRECIOS = ["$", "$$", "$$$", "$$$$"];
@@ -54,7 +54,7 @@ function normalizarRestaurante(r) {
 
 function Catalog() {
   const [searchParams] = useSearchParams();
-  const { restaurantes: restaurantesContexto } = useRestaurantes();
+  const { restaurantes: restaurantesContexto } = useRestaurants();
 
   // Fusionar restaurantes del contexto con los estáticos sin duplicar
   const todosLosRestaurantes = useMemo(() => {
