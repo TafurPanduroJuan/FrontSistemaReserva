@@ -54,7 +54,7 @@ export default function Register() {
       setErrors({ email: result.error });
       return;
     }
-    navigate("/mi-cuenta");
+    navigate("/my-account");
   }
 
   const strengthScore = (() => {
