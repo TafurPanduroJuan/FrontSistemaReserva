@@ -15,9 +15,9 @@ import francesaImg from "../assets/img/tipo6.jpg"
 import fusionImg from "../assets/img/tipo7.jpg";
 import modernaImg from "../assets/img/tipo8.jpg";
 import parrillaImg from "../assets/img/tipo9.jpg";
-import { categorias } from "../data/datos";
-import { restaurantes } from "../data/datos";
-import { testimonios } from "../data/datos";
+import { categorias } from "../data/data";
+import { restaurantes } from "../data/data";
+import { testimonios } from "../data/data";
 import BookingModal from "../components/BookingModal";
 
 
