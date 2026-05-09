@@ -1,17 +1,11 @@
 
-.row{
-  margin: 0px;
- padding: auto;
-  width: 100%;
-}
 
 .custom-navbar {
   background: rgba(255, 255, 255, 0.85); 
   backdrop-filter: blur(6px);           
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+  box-shadow: 0 2px 2px rgb(255, 210, 126) !important;
   transition: background 0.3s ease-in-out;
   border-radius: 10px !important;
-  box-shadow: 0 2px 2px rgb(255, 210, 126) !important;
 }
 .nav-link {
   color: #333 !important;
@@ -22,7 +16,7 @@
   color: black  !important;
 }
 .nav-item{
-  margin-right: 50px;
+  margin-right: 20px;
   padding: 5px;
 }
 .nav-link.active {
