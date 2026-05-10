@@ -82,6 +82,42 @@ export function TablesProvider({ children }) {
       prev.map(r => r.id === reservaId ? { ...r, estado: nuevoEstado } : r)
     );
 
+    // Sincronizar estado en comanda_users si la reserva tiene userId
+    if (reserva.userId) {
+      try {
+        const usersRaw = localStorage.getItem("comanda_users");
+        const users = usersRaw ? JSON.parse(usersRaw) : [];
+        const updatedUsers = users.map(u => {
+          if (u.id !== reserva.userId) return u;
+          const updatedReservas = (u.reservas || []).map(r =>
+            r.id === reservaId ? { ...r, estado: nuevoEstado } : r
+          );
+          return { ...u, reservas: updatedReservas };
+        });
+        localStorage.setItem("comanda_users", JSON.stringify(updatedUsers));
+
+        // Actualizar sesión activa si el afectado es el usuario logueado
+        const sessionRaw = localStorage.getItem("comanda_session");
+        if (sessionRaw) {
+          const session = JSON.parse(sessionRaw);
+          if (session.id === reserva.userId) {
+            const updatedSession = {
+              ...session,
+              reservas: (session.reservas || []).map(r =>
+                r.id === reservaId ? { ...r, estado: nuevoEstado } : r
+              ),
+            };
+            localStorage.setItem("comanda_session", JSON.stringify(updatedSession));
+          }
+        }
+
+        // Notificar a la pestaña del catálogo/cuenta para que se actualice
+        window.dispatchEvent(
+          new CustomEvent("comanda_reserva_actualizada", { detail: { reservaId, nuevoEstado } })
+        );
+      } catch {}
+    }
+
     // Sincronizar estado de la mesa
     if (nuevoEstado === "confirmada") {
       cambiarEstadoMesa(reserva.restaurante, reserva.mesa, "reservada");
