@@ -169,7 +169,10 @@ export function AuthProvider({ children }) {
     const users = initUsers();
     const updated = users.map((u) => {
       if (u.id !== user.id) return u;
-      const reservas = [...(u.reservas || []), { id: Date.now(), ...reserva }];
+      const existentes = u.reservas || [];
+      // Evitar duplicados por id
+      const yaExiste = existentes.some(r => r.id === reserva.id);
+      const reservas = yaExiste ? existentes : [...existentes, reserva];
       return { ...u, reservas };
     });
     localStorage.setItem("comanda_users", JSON.stringify(updated));
@@ -177,6 +180,26 @@ export function AuthProvider({ children }) {
     setUser(current);
     localStorage.setItem("comanda_session", JSON.stringify(current));
   }
+
+  // ── Escuchar actualizaciones de estado desde la intranet ──────────────────
+  useEffect(() => {
+    function handleReservaActualizada(e) {
+      if (!user) return;
+      const { reservaId, nuevoEstado } = e.detail || {};
+      if (!reservaId || !nuevoEstado) return;
+      setUser(prev => {
+        if (!prev) return prev;
+        const updatedReservas = (prev.reservas || []).map(r =>
+          r.id === reservaId ? { ...r, estado: nuevoEstado } : r
+        );
+        const updated = { ...prev, reservas: updatedReservas };
+        localStorage.setItem("comanda_session", JSON.stringify(updated));
+        return updated;
+      });
+    }
+    window.addEventListener("comanda_reserva_actualizada", handleReservaActualizada);
+    return () => window.removeEventListener("comanda_reserva_actualizada", handleReservaActualizada);
+  }, [user]);
 
   return (
     <AuthContext.Provider
