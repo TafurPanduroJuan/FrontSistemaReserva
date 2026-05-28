@@ -151,6 +151,14 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // ── Eliminar usuario ───────────────────────────────────────────────────────
+  function deleteUser(userId) {
+    const users = initUsers();
+    const updated = users.filter((u) => u.id !== userId);
+    localStorage.setItem("comanda_users", JSON.stringify(updated));
+    return { ok: true };
+  }
+
   // ── Actualizar perfil de usuario ──────────────────────────────────────────
   function updateProfile(data) {
     const users = initUsers();
@@ -210,6 +218,7 @@ export function AuthProvider({ children }) {
         register,
         resetPassword,
         changeUserRole,
+        deleteUser,
         updateProfile,
         addReserva,
         isAdmin: user?.rol === "administrador",
