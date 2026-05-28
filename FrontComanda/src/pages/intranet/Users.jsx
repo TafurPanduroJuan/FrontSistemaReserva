@@ -19,7 +19,7 @@ function getRolBadge(rol) {
 const EMPTY_FORM = { nombre: "", email: "", password: "", rol: "usuario", restaurante: "" };
 
 export default function Users() {
-  const { changeUserRole, user: adminUser } = useAuth();
+  const { changeUserRole, deleteUser, user: adminUser } = useAuth();
   const { restaurantes: restaurantesCtx } = useRestaurants();
   const RESTAURANTES = restaurantesCtx.map(r => r.nombre);
 
@@ -28,6 +28,16 @@ export default function Users() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ nombre: "", email: "", rol: "", restaurante: "" });
   const [savedMsg, setSavedMsg] = useState("");
+
+  const [modalEliminar, setModalEliminar] = useState(null);
+
+  function handleDelete() {
+    deleteUser(modalEliminar.id);
+    loadUsers();
+    setModalEliminar(null);
+    setSavedMsg("🗑️ Cuenta eliminada");
+    setTimeout(() => setSavedMsg(""), 3000);
+  }
 
   const [showCreate, setShowCreate]   = useState(false);
   const [createForm, setCreateForm]   = useState(EMPTY_FORM);
@@ -344,6 +354,27 @@ export default function Users() {
                         >
                           <i className="bi bi-pencil" /> Editar
                         </button>
+
+                          <button
+                            onClick={() => setModalEliminar(u)}
+                            disabled={isMe}
+                            title={isMe ? "No puedes eliminar tu propia cuenta" : "Eliminar cuenta"}
+                            style={{
+                              background: isMe ? "#f5f5f5" : "#fff0ef",
+                              color: isMe ? "#ccc" : "#842029",
+                              border: `1.5px solid ${isMe ? "#eee" : "#fecaca"}`,
+                              borderRadius: 8,
+                              padding: "5px 12px",
+                              fontSize: "0.78rem",
+                              fontWeight: 600,
+                              cursor: isMe ? "not-allowed" : "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <i className="bi bi-trash" /> Eliminar
+                          </button>                        
                         {!isMe && (
                           isActive ? (
                             <button
@@ -485,6 +516,80 @@ export default function Users() {
                 Cancelar
               </button>
             </div>
+
+            {modalEliminar && (
+              <div
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  background: "rgba(0,0,0,0.45)",
+                  zIndex: 1000,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 16,
+                }}
+                onClick={(e) => { if (e.target === e.currentTarget) setModalEliminar(null); }}
+              >
+                <div
+                  style={{
+                    background: "white",
+                    borderRadius: 18,
+                    padding: "28px 24px",
+                    width: "100%",
+                    maxWidth: 400,
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                    textAlign: "center",
+                  }}
+                >
+                  <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>⚠️</div>
+                  <h3 style={{ margin: "0 0 8px", fontSize: "1.1rem", fontWeight: 800, color: "#1a1a2e" }}>
+                    ¿Eliminar esta cuenta?
+                  </h3>
+                  <p style={{ color: "#666", fontSize: "0.88rem", marginBottom: 4 }}>
+                    Vas a eliminar la cuenta de
+                  </p>
+                  <p style={{ fontWeight: 800, fontSize: "1rem", color: "#1a1a2e", marginBottom: 8 }}>
+                    {modalEliminar.nombre}
+                  </p>
+                  <p style={{ color: "#999", fontSize: "0.82rem", marginBottom: 24 }}>
+                    Esta acción no se puede deshacer.
+                  </p>
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                    <button
+                      onClick={() => setModalEliminar(null)}
+                      style={{
+                        background: "#f5f5f5",
+                        color: "#888",
+                        border: "none",
+                        borderRadius: 10,
+                        padding: "9px 20px",
+                        fontWeight: 600,
+                        fontSize: "0.88rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      style={{
+                        background: "#842029",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 10,
+                        padding: "9px 20px",
+                        fontWeight: 700,
+                        fontSize: "0.88rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="bi bi-trash me-2" /> Sí, eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
