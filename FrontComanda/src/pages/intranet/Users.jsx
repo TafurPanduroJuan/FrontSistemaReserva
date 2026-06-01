@@ -516,8 +516,11 @@ export default function Users() {
                 Cancelar
               </button>
             </div>
+          </div>
+        </div>
+      )}
 
-            {modalEliminar && (
+      {modalEliminar && (
               <div
                 style={{
                   position: "fixed",
@@ -590,9 +593,6 @@ export default function Users() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
