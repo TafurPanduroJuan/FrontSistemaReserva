@@ -151,6 +151,31 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // ── Eliminar usuario ───────────────────────────────────────────────────────
+  function deleteUser(userId) {
+    const users = initUsers();
+    const updated = users.filter((u) => u.id !== userId);
+    localStorage.setItem("comanda_users", JSON.stringify(updated));
+    return { ok: true };
+  }
+
+  // ── Editar datos de usuario desde el admin ────────────────────────────────
+  function adminUpdateUser(userId, data) {
+    const users = initUsers();
+    if (data.email) {
+      const duplicate = users.find((u) => u.email === data.email && u.id !== userId);
+      if (duplicate) return { ok: false, error: "El email ya está en uso." };
+    }
+    const updated = users.map((u) => (u.id === userId ? { ...u, ...data } : u));
+    localStorage.setItem("comanda_users", JSON.stringify(updated));
+    if (user && user.id === userId) {
+      const newSession = { ...user, ...data };
+      setUser(newSession);
+      localStorage.setItem("comanda_session", JSON.stringify(newSession));
+    }
+    return { ok: true };
+  }
+
   // ── Actualizar perfil de usuario ──────────────────────────────────────────
   function updateProfile(data) {
     const users = initUsers();
@@ -210,6 +235,8 @@ export function AuthProvider({ children }) {
         register,
         resetPassword,
         changeUserRole,
+        deleteUser,
+        adminUpdateUser,
         updateProfile,
         addReserva,
         isAdmin: user?.rol === "administrador",
