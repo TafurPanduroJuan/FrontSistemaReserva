@@ -19,7 +19,7 @@ function getRolBadge(rol) {
 const EMPTY_FORM = { nombre: "", email: "", password: "", rol: "usuario", restaurante: "" };
 
 export default function Users() {
-  const { changeUserRole, deleteUser, user: adminUser } = useAuth();
+  const { changeUserRole, deleteUser, adminUpdateUser, user: adminUser } = useAuth();
   const { restaurantes: restaurantesCtx } = useRestaurants();
   const RESTAURANTES = restaurantesCtx.map(r => r.nombre);
 
@@ -66,27 +66,17 @@ export default function Users() {
   }
 
   function saveEdit(userId) {
-    const stored = localStorage.getItem("comanda_users");
-    const all = stored ? JSON.parse(stored) : [];
-    const updated = all.map(u => {
-      if (u.id !== userId) return u;
-      return {
-        ...u,
-        nombre: editForm.nombre,
-        email: editForm.email,
-        rol: editForm.rol,
-        restaurante: editForm.rol === "personal" ? editForm.restaurante : null,
-      };
-    });
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    
-    const session = localStorage.getItem("comanda_session");
-    if (session) {
-      const s = JSON.parse(session);
-      if (s.id === userId) {
-        const edited = updated.find(u => u.id === userId);
-        localStorage.setItem("comanda_session", JSON.stringify(edited));
-      }
+    const data = {
+      nombre: editForm.nombre,
+      email: editForm.email,
+      rol: editForm.rol,
+      restaurante: editForm.rol === "personal" ? editForm.restaurante : null,
+    };
+    const result = adminUpdateUser(userId, data);
+    if (!result.ok) {
+      setSavedMsg("❌ " + result.error);
+      setTimeout(() => setSavedMsg(""), 3000);
+      return;
     }
     loadUsers();
     cancelEdit();
