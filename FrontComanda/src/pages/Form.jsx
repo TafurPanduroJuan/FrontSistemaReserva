@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import "../assets/styles/form.css";
 
 const tipoOptions = [
@@ -36,6 +36,7 @@ const initialForm = {
   correo: "",
   telefono: "",
   restaurante: "",
+  restauranteId: null,
   tipo: "",
   asunto: "",
   calificacion: 0,
@@ -44,8 +45,14 @@ const initialForm = {
 };
 
 function Form() {
-  
-  const { agregarComentario } = useComments();
+  const [restaurantesApi, setRestaurantesApi] = useState([]);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/restaurants`)
+      .then(r => r.json())
+      .then(setRestaurantesApi)
+      .catch(console.error);
+  }, []);
 
   const [form, setForm] = useState(initialForm);
   const [hoverStar, setHoverStar] = useState(0);
@@ -77,6 +84,7 @@ function Form() {
       // Si cambia el tipo a comentario, limpiar el restaurante
       if (name === "tipo" && nuevoValor === "comentario") {
         updated.restaurante = "";
+        updated.restauranteId = null;
       }
       return updated;
     });
@@ -114,39 +122,6 @@ function Form() {
 
   const nextStep = () => { if (validarStep(step)) setStep((s) => s + 1); };
   const prevStep = () => setStep((s) => s - 1);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validarStep(3)) return;
-    setCargando(true);
-
-   
-    const payload = {
-      nombre: form.nombre.trim(),
-      apellido: form.apellido.trim(),
-      correo: form.correo.trim(),
-      telefono: form.telefono.trim() || null,
-      restaurante: form.restaurante,
-      tipo: form.tipo,
-      asunto: form.asunto.trim(),
-      calificacion: form.calificacion || null,
-      mensaje: form.mensaje.trim(),
-      fecha: new Date().toISOString(),
-    };
-
-    try {
-      
-      agregarComentario(payload);
-      setEnviado(true);
-    } catch (error) {
-      console.error("Error al enviar el formulario:", error.message);
-     
-      setEnviado(true);
-    } finally {
-      setCargando(false);
-    }
-  };
-
   const resetForm = () => { setForm(initialForm); setEnviado(false); setStep(1); setErrores({}); };
   const tipoSeleccionado = tipoOptions.find((t) => t.value === form.tipo);
 
@@ -312,21 +287,6 @@ function Form() {
                     ))}
                   </div>
                   {errores.tipo && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.tipo}</span>}
-                </div>
-                {form.tipo !== "comentario" && (
-                <div className="form-group">
-                  <label className="form-label">Restaurante <span className="required">*</span></label>
-                  <div className="input-wrapper">
-                    <i className="bi bi-shop input-icon"></i>
-                    <select name="restaurante" className={`form-input form-select-custom ${errores.restaurante ? "input-error" : ""}`} value={form.restaurante} onChange={handleChange}>
-                      <option value="">— Selecciona el restaurante —</option>
-                      {restaurantes.map((r) => (
-                        <option key={r.nombre} value={r.nombre}>{r.nombre} · {r.lugar}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {errores.restaurante && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.restaurante}</span>}
-                </div>
                 )}
                 <div className="form-group">
                   <label className="form-label">Asunto <span className="required">*</span></label>
