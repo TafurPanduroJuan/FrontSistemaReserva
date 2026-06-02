@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import "../assets/styles/catalog.css";
-import { restaurantes as restaurantesEstaticos } from "../data/data";
-import { useRestaurants } from "../context/RestaurantsContext";
 import BookingModal from "../components/BookingModal";
 
 const PRECIOS = ["$", "$$", "$$$", "$$$$"];
