@@ -144,6 +144,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         user,
+        token: user?.token || null,
         login,
         logout,
         register,
