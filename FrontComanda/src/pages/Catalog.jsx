@@ -35,19 +35,18 @@ function normalizarRestaurante(r) {
 
 function Catalog() {
   const [searchParams] = useSearchParams();
-  const { restaurantes: restaurantesContexto } = useRestaurants();
+  const [restaurantesBackend, setRestaurantesBackend] = useState([]);
 
-  // Fusionar restaurantes del contexto con los estáticos sin duplicar
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/restaurants`)
+      .then(r => r.json())
+      .then(setRestaurantesBackend)
+      .catch(console.error);
+  }, []);
+
   const todosLosRestaurantes = useMemo(() => {
-    const normalizados = restaurantesContexto.map(normalizarRestaurante);
-    const nombresEnContexto = new Set(
-      normalizados.map((r) => r.nombre.toLowerCase())
-    );
-    const estaticosExtra = restaurantesEstaticos
-      .filter((r) => !nombresEnContexto.has(r.nombre.toLowerCase()))
-      .map(normalizarRestaurante);
-    return [...normalizados, ...estaticosExtra];
-  }, [restaurantesContexto]);
+    return restaurantesBackend.map(normalizarRestaurante);
+  }, [restaurantesBackend]);
 
   // Tipos únicos dinámicos (incluye tipos de restaurantes nuevos)
   const TIPOS = useMemo(
@@ -307,7 +306,7 @@ function Catalog() {
                     <div className="catalog-card-title">{rest.nombre}</div>
                     <div className="catalog-card-meta">
                       <span>📍 {rest.lugar}</span>
-                      <span>🕒 {rest.hora}</span>
+                      <span>🕒 {rest.horaApertura} – {rest.horaCierre}</span>
                       <span>🍽️ {rest.mesas} mesas disponibles</span>
                       <span>⭐ {rest.rating} ({rest.reseñas}+ reseñas)</span>
                     </div>
