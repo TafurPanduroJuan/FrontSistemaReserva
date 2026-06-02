@@ -39,27 +39,25 @@ export function AuthProvider({ children }) {
   }
 
   // ── Registro ───────────────────────────────────────────────────────────────
-  function register({ nombre, email, password }) {
-    const users = initUsers();
-    if (users.find((u) => u.email === email))
-      return { ok: false, error: "El email ya está registrado." };
-    const newUser = {
-      id: Date.now(),
-      nombre,
-      email,
-      password,
-      rol: "usuario",
-      restaurante: null,
-      avatar: null,
-      fechaRegistro: new Date().toISOString().split("T")[0],
-      reservas: [],
-      favoritos: [],
-    };
-    const updated = [...users, newUser];
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    setUser(newUser);
-    localStorage.setItem("comanda_session", JSON.stringify(newUser));
-    return { ok: true, user: newUser };
+  async function register({ nombre, email, password }) {
+    try {
+      const data = await apiFetch("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ nombre, email, password }),
+      });
+      const session = {
+        id: data.id,
+        nombre: data.nombre,
+        email: data.email,
+        rol: data.role,
+        token: data.token,
+      };
+      setUser(session);
+      localStorage.setItem("comanda_session", JSON.stringify(session));
+      return { ok: true, user: session };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
   }
 
   // ── Reset password (simulado) ─────────────────────────────────────────────
