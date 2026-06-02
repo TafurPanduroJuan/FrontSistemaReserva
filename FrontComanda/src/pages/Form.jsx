@@ -1,7 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import "../assets/styles/form.css";
-import { restaurantes } from "../data/data";
-import { useComments } from "../context/CommentsContext";
 
 const tipoOptions = [
   {
