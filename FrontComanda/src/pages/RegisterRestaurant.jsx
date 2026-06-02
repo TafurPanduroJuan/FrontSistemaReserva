@@ -14,9 +14,9 @@ const sugerenciasDistritos = [
 
 const initialForm = {
   nombre: "", tipo: "", distrito: "", direccion: "",
-  horario_apertura: "", horario_cierre: "", precio: "",
-  mesas: "", descripcion: "", telefono: "", email: "",
-  propietario: "", mensaje_personalizado: "",
+  horarioApertura: "", horarioCierre: "",
+  descripcion: "", telefono: "", email: "",
+  propietario: "", mensajePersonalizado: "",
 };
 
 // Solo letras, tildes y espacios
@@ -82,28 +82,6 @@ function RegisterRestaurant() {
       e.telefono = "El teléfono debe tener 9 dígitos";
     }
     return e;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    agregarSolicitud({
-      nombre: form.nombre,
-      propietario: form.propietario,
-      email: form.email,
-      tipo: form.tipo,
-      ciudad: form.distrito,
-      telefono: form.telefono,
-      descripcion: form.descripcion || form.mensaje_personalizado || "Solicitud enviada desde el formulario público.",
-      imagen: preview || null,
-    });
-
-    setSubmitted(true);
   };
 
   // ── Estilos ────────────────────────────────────────────────────────────────
@@ -238,8 +216,8 @@ function RegisterRestaurant() {
                 </div>
                 <div className="col-12">
                   <label style={labelStyle}>Eslogan o mensaje de bienvenida <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span></label>
-                  <input name="mensaje_personalizado" value={form.mensaje_personalizado} onChange={handle}
-                    style={inputStyle("mensaje_personalizado")}
+                  <input name="mensajePersonalizado" value={form.mensajePersonalizado} onChange={handle}
+                    style={inputStyle("mensajePersonalizado")}
                     placeholder='Ej: "El mejor sabor norteño en el corazón de la ciudad"' />
                 </div>
                 <div className="col-12">
@@ -385,6 +363,9 @@ function RegisterRestaurant() {
                   </p>
                   <p style={{ fontSize: "0.78rem", color: "#bbb", marginTop: 8, marginBottom: 0 }}>
                     Formatos: JPG, PNG, WEBP · Máx. 5MB
+                  </p>
+                  <p style={{ fontSize: "0.78rem", color: "#e67e22", marginTop: 8, marginBottom: 0 }}>
+                    ℹ️ La imagen podrá cargarse una vez que tu solicitud sea aceptada.
                   </p>
                 </div>
               </div>
