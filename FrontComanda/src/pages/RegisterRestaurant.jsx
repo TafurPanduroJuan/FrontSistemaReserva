@@ -260,6 +260,30 @@ function RegisterRestaurant() {
                     style={inputStyle("direccion")} placeholder="Av. / Jr. / Calle y número" />
                   {errorMsg("direccion")}
                 </div>
+                <div className="col-md-3">
+                  <label style={labelStyle}>
+                    Horario Apertura <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="horarioApertura"
+                    value={form.horarioApertura}
+                    onChange={handle}
+                    style={inputStyle("horarioApertura")}
+                  />
+                </div>
+                <div className="col-md-3">
+                  <label style={labelStyle}>
+                    Horario Cierre <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="horarioCierre"
+                    value={form.horarioCierre}
+                    onChange={handle}
+                    style={inputStyle("horarioCierre")}
+                  />
+                </div>
               </div>
             </div>
 
