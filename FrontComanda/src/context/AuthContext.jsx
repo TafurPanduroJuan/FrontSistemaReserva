@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { apiFetch } from "../services/api";
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const AuthContext = createContext(null);
@@ -10,15 +11,25 @@ export function AuthProvider({ children }) {
   });
 
   // ── Login ──────────────────────────────────────────────────────────────────
-  function login(email, password) {
-    const users = initUsers();
-    const found = users.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (!found) return { ok: false, error: "Credenciales incorrectas." };
-    setUser(found);
-    localStorage.setItem("comanda_session", JSON.stringify(found));
-    return { ok: true, user: found };
+  async function login(email, password) {
+    try {
+      const data = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      const session = {
+        id: data.id,
+        nombre: data.nombre,
+        email: data.email,
+        rol: data.role,
+        token: data.token,
+      };
+      setUser(session);
+      localStorage.setItem("comanda_session", JSON.stringify(session));
+      return { ok: true, user: session };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
   }
 
   // ── Logout ─────────────────────────────────────────────────────────────────
