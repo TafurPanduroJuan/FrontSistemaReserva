@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "../../assets/styles/intranetDashboard.css";
 import { useRestaurants } from "../../context/RestaurantsContext";
 import { useComments } from "../../context/CommentsContext";
+import { useAuth } from "../../context/AuthContext";
+import { apiFetch } from "../../services/api";
 
 const tipoIcono = {
   comentario: "bi-chat-left-text",
@@ -17,9 +19,16 @@ const tipoColor = {
 function IntranetDashboard() {
   const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurants();
   const { comentarios } = useComments();
+  const { token } = useAuth();
 
-  // TODO: cargar desde GET /api/users (pendiente de integración)
   const [usuarios, setUsuarios] = useState([]);
+
+  useEffect(() => {
+    if (!token) return;
+    apiFetch("/api/users", {}, token)
+      .then(setUsuarios)
+      .catch((err) => console.error("Error cargando usuarios:", err));
+  }, [token]);
 
   const reclamos = comentarios.filter((c) => c.tipo === "reclamo");
 
