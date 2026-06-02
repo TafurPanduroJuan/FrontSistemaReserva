@@ -9,18 +9,6 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Sincroniza la sesión activa si el admin cambió el rol de este usuario
-  useEffect(() => {
-    if (!user) return;
-    const users = initUsers();
-    const updated = users.find((u) => u.id === user.id);
-    if (updated && updated.rol !== user.rol) {
-      const newSession = { ...updated };
-      setUser(newSession);
-      localStorage.setItem("comanda_session", JSON.stringify(newSession));
-    }
-  }, []);
-
   // ── Login ──────────────────────────────────────────────────────────────────
   function login(email, password) {
     const users = initUsers();
@@ -142,26 +130,6 @@ export function AuthProvider({ children }) {
     setUser(current);
     localStorage.setItem("comanda_session", JSON.stringify(current));
   }
-
-  // ── Escuchar actualizaciones de estado desde la intranet ──────────────────
-  useEffect(() => {
-    function handleReservaActualizada(e) {
-      if (!user) return;
-      const { reservaId, nuevoEstado } = e.detail || {};
-      if (!reservaId || !nuevoEstado) return;
-      setUser(prev => {
-        if (!prev) return prev;
-        const updatedReservas = (prev.reservas || []).map(r =>
-          r.id === reservaId ? { ...r, estado: nuevoEstado } : r
-        );
-        const updated = { ...prev, reservas: updatedReservas };
-        localStorage.setItem("comanda_session", JSON.stringify(updated));
-        return updated;
-      });
-    }
-    window.addEventListener("comanda_reserva_actualizada", handleReservaActualizada);
-    return () => window.removeEventListener("comanda_reserva_actualizada", handleReservaActualizada);
-  }, [user]);
 
   return (
     <AuthContext.Provider
