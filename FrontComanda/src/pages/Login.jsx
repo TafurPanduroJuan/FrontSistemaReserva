@@ -35,8 +35,8 @@ export default function Login() {
 
     const { rol } = result.user;
     if (rol === "administrador") navigate("/intranet");
-    else if (rol === "personal") navigate("/intranet/mesas");
-    else navigate("/mi-cuenta");
+    else if (rol === "personal") navigate("/intranet/tables");
+    else navigate("/my-account");
   }
 
   return (

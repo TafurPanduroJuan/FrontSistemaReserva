@@ -4,8 +4,8 @@
 
 /* Hero Section */
 .about-hero {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
-  min-height: 420px;
+  background: #1a1a2e;
+  min-height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,12 +40,12 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 60px 20px;
+  padding: 36px 20px;
 }
 
 .about-hero-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #ff6400, #ffb400);
+  background: #F4956A;
   color: #fff;
   font-size: 0.85rem;
   font-weight: 700;
@@ -65,10 +65,7 @@
 }
 
 .about-hero h1 span {
-  background: linear-gradient(135deg, #ff6400, #ffb400);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #F4956A;
 }
 
 .about-hero p {
@@ -83,7 +80,7 @@
    MISIÓN & VISIÓN
    ============================= */
 .about-mv-section {
-  padding: 80px 0;
+  padding: 48px 0;
   background-color: #fff;
 }
 
@@ -150,7 +147,7 @@
    VALORES
    ============================= */
 .about-values-section {
-  padding: 80px 0;
+  padding: 48px 0;
   background: linear-gradient(180deg, #f9f9f9 0%, #ffffff 100%);
 }
 
@@ -162,10 +159,8 @@
 }
 
 .about-section-title span {
-  background: linear-gradient(135deg, #ff6400, #ffb400);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #F4956A;
+   
 }
 
 .about-section-subtitle {
@@ -206,7 +201,7 @@
 }
 
 .about-value-item:hover .about-value-icon {
-  background: linear-gradient(135deg, #ff6400, #ffb400);
+  background: #F4956A;
   color: white;
 }
 
@@ -228,7 +223,7 @@
    EQUIPO
    ============================= */
 .about-team-section {
-  padding: 80px 0;
+  padding: 48px 0;
   background: #fff;
 }
 
@@ -250,7 +245,7 @@
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ff6400, #ffb400);
+  background: #F4956A;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -270,7 +265,7 @@
 
 .about-team-role {
   display: inline-block;
-  background: linear-gradient(135deg, #ff6400, #ffb400);
+  background: #F4956A;
   color: white;
   font-size: 0.78rem;
   font-weight: 600;
@@ -293,7 +288,7 @@
    ESTADÍSTICAS
    ============================= */
 .about-stats-section {
-  padding: 80px 0;
+  padding: 48px 0;
   background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
   position: relative;
   overflow: hidden;
@@ -318,10 +313,10 @@
 .about-stat-number {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #ff6400, #ffb400);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #F4956A;
+  
+  
+  
   display: block;
   line-height: 1.1;
   margin-bottom: 8px;
@@ -337,8 +332,8 @@
    CTA SECTION
    ============================= */
 .about-cta-section {
-  padding: 80px 20px;
-  background: linear-gradient(135deg, #ff6400, #ffb400);
+  padding: 30px 20px;
+  background: #F4956A;
   text-align: center;
 }
 

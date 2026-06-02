@@ -27,8 +27,8 @@ export default function ProtectedRoute({
   // Rol no permitido → redirigir según rol
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.rol)) {
     if (user.rol === "administrador") return <Navigate to="/intranet" replace />;
-    if (user.rol === "personal") return <Navigate to="/intranet/mesas" replace />;
-    return <Navigate to="/mi-cuenta" replace />;
+    if (user.rol === "personal") return <Navigate to="/intranet/tables" replace />;
+    return <Navigate to="/my-account" replace />;
   }
 
   return children;

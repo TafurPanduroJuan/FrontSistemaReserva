@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 function Footer() {
     return (
-        <footer className="bg-dark text-white pt-5 pb-3">
+        <footer className="bg-dark text-white pt-5 pb-3 px-3">
             <div className="container-fluid">
                 <div className="row">
                     {/* Logo y descripción */}

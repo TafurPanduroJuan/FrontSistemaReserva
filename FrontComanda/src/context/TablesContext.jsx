@@ -28,9 +28,9 @@ const INITIAL_RESERVAS = [
 ];
 
 // ── Context ───────────────────────────────────────────────────────────────────
-const MesasContext = createContext(null);
+const TablesContext = createContext(null);
 
-export function MesasProvider({ children }) {
+export function TablesProvider({ children }) {
   // datosGlobales: { [nombreRestaurante]: Mesa[] }
   const [datosGlobales, setDatosGlobales] = useState(() =>
     load("comanda_mesas_v2", {})
@@ -82,6 +82,42 @@ export function MesasProvider({ children }) {
       prev.map(r => r.id === reservaId ? { ...r, estado: nuevoEstado } : r)
     );
 
+    // Sincronizar estado en comanda_users si la reserva tiene userId
+    if (reserva.userId) {
+      try {
+        const usersRaw = localStorage.getItem("comanda_users");
+        const users = usersRaw ? JSON.parse(usersRaw) : [];
+        const updatedUsers = users.map(u => {
+          if (u.id !== reserva.userId) return u;
+          const updatedReservas = (u.reservas || []).map(r =>
+            r.id === reservaId ? { ...r, estado: nuevoEstado } : r
+          );
+          return { ...u, reservas: updatedReservas };
+        });
+        localStorage.setItem("comanda_users", JSON.stringify(updatedUsers));
+
+        // Actualizar sesión activa si el afectado es el usuario logueado
+        const sessionRaw = localStorage.getItem("comanda_session");
+        if (sessionRaw) {
+          const session = JSON.parse(sessionRaw);
+          if (session.id === reserva.userId) {
+            const updatedSession = {
+              ...session,
+              reservas: (session.reservas || []).map(r =>
+                r.id === reservaId ? { ...r, estado: nuevoEstado } : r
+              ),
+            };
+            localStorage.setItem("comanda_session", JSON.stringify(updatedSession));
+          }
+        }
+
+        // Notificar a la pestaña del catálogo/cuenta para que se actualice
+        window.dispatchEvent(
+          new CustomEvent("comanda_reserva_actualizada", { detail: { reservaId, nuevoEstado } })
+        );
+      } catch {}
+    }
+
     // Sincronizar estado de la mesa
     if (nuevoEstado === "confirmada") {
       cambiarEstadoMesa(reserva.restaurante, reserva.mesa, "reservada");
@@ -127,7 +163,7 @@ export function MesasProvider({ children }) {
   }, []);
 
   return (
-    <MesasContext.Provider value={{
+    <TablesContext.Provider value={{
       datosGlobales,
       getMesas,
       cambiarEstadoMesa,
@@ -136,12 +172,12 @@ export function MesasProvider({ children }) {
       cambiarEstadoReserva,
     }}>
       {children}
-    </MesasContext.Provider>
+    </TablesContext.Provider>
   );
 }
 
-export function useMesas() {
-  const ctx = useContext(MesasContext);
-  if (!ctx) throw new Error("useMesas must be used inside MesasProvider");
+export function useTables() {
+  const ctx = useContext(TablesContext);
+  if (!ctx) throw new Error("useTables must be used inside MesasProvider");
   return ctx;
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useRestaurantes } from "../../context/RestaurantesContext";
+import { useRestaurants } from "../../context/RestaurantsContext";
 
 const tiposComida = ["Criolla","Italiana","Japonesa","Mariscos","Vegana","Parrilla","Mexicana","Peruana","Francesa","Fusión","Moderna","Asiática","Postres"];
 const sugerenciasDistritos = ["Miraflores","San Isidro","Barranco","Surco","La Molina","Chorrillos","Lince","Jesús María","Pueblo Libre","Magdalena"];
@@ -11,8 +11,8 @@ const initialForm = {
   etiqueta:"", mensaje_personalizado:""
 };
 
-function NuevoRestaurante() {
-  const { agregarRestaurante } = useRestaurantes();
+function NewRestaurant() {
+  const { agregarRestaurante } = useRestaurants();
   const [form, setForm] = useState(initialForm);
   const [imagen, setImagen] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -229,4 +229,4 @@ function NuevoRestaurante() {
   );
 }
 
-export default NuevoRestaurante;
+export default NewRestaurant;

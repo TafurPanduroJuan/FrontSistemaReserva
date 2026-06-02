@@ -565,3 +565,30 @@
   font-weight: 600;
   margin-top: 5px;
 }
+
+/* ── Textarea de Observaciones ───────────────────────────────── */
+.observations-field {
+  height: 100px;         
+  min-height: 100px;
+  max-height: 100px;
+  resize: none;          
+  overflow-y: auto;      
+  line-height: 1.5;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #f0cfc0 transparent;
+}
+.observations-field::-webkit-scrollbar { width: 4px; }
+.observations-field::-webkit-scrollbar-thumb { background: #f0cfc0; border-radius: 8px; }
+
+/* Móvil: altura ligeramente menor para no saturar la pantalla */
+@media (max-width: 480px) {
+  .observations-field {
+    height: 80px;
+    min-height: 80px;
+    max-height: 80px;
+    font-size: 0.85rem;
+  }
+}

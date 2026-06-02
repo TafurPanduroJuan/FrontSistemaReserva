@@ -45,7 +45,7 @@ const STEPS = [
 ];
 
 const BookingModal = ({ isOpen, onClose, restaurante }) => {
-  const { user } = useAuth();
+  const { user, addReserva } = useAuth();
   const [step, setStep] = useState(1);
 
   const minDate = useMemo(() => {
@@ -89,7 +89,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
 
   const handleNext = () => {
     if (step === 5) {
-      saveReserva({
+      const reservaData = {
         cliente: formData.nombre,
         email: formData.email,
         tel: formData.telefono,
@@ -101,7 +101,13 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
         zona: formData.zona,
         notas: formData.notas,
         estado: "pendiente",
-      });
+        ...(user ? { userId: user.id } : {}),
+      };
+      const reservaGuardada = saveReserva(reservaData);
+      // Si hay sesión activa, vincular la reserva al usuario
+      if (user) {
+        addReserva({ ...reservaData, id: reservaGuardada.id });
+      }
       onClose();
     } else {
       setStep(prev => prev + 1);
@@ -288,10 +294,10 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                 </div>
                 <div className="input-group full-width">
                   <label>Observaciones (opcional)</label>
+                  {/* MODIFIED: description field confirmed as textarea - no change needed */}
                   <textarea placeholder="Cumpleaños, alergias, preferencias de ubicación..."
-                    className="modern-field" rows={3} value={formData.notas}
-                    onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                    style={{ resize: 'vertical' }} />
+                    className="modern-field observations-field" value={formData.notas}
+                    onChange={(e) => setFormData({ ...formData, notas: e.target.value })} />
                 </div>
               </div>
             </div>

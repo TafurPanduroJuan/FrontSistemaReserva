@@ -15,9 +15,9 @@ import francesaImg from "../assets/img/tipo6.jpg"
 import fusionImg from "../assets/img/tipo7.jpg";
 import modernaImg from "../assets/img/tipo8.jpg";
 import parrillaImg from "../assets/img/tipo9.jpg";
-import { categorias } from "../data/datos";
-import { restaurantes } from "../data/datos";
-import { testimonios } from "../data/datos";
+import { categorias } from "../data/data";
+import { restaurantes } from "../data/data";
+import { testimonios } from "../data/data";
 import BookingModal from "../components/BookingModal";
 
 
@@ -98,25 +98,22 @@ useEffect(() => {
 
       {/*Sección para el Carrusel en home */}
       <section>
-      <div className="alert text-center" style={{ marginTop: "80px" }}>
-        <h2>¡Bienvenido a Comanda!</h2>
-        <h5> Reserva tu restaurante favorito aquí.</h5>
-      </div>
+   
 
       {/*Div General del Carrusel*/}
-      <div id="restauranteCarousel" className="carousel slide" data-bs-ride="carousel">
+      <div id="restauranteCarousel" className="carousel slide" data-bs-ride="carousel" style={{ marginTop: "85px" }}>
         <div className="carousel-inner">
 
           {/* Item 1 */}
           <div className="carousel-item active">
             <img src={italianaImg} className="d-block w-100" alt="Italiana" />
-            <div className="card-img-overlay d-flex flex-column justify-content-center bg-dark bg-opacity-50">
-              <h5 className="fw-bold">Italiana</h5>
+            <div className="card-img-overlay d-flex flex-column justify-content-center bg-dark bg-opacity-50 gap-2  ">
+              <h5 className="fw-bold" id="etiquetas">Italiana</h5>
               <h4>La Bella Italia</h4>
               <h5>Auténtica cocina italiana con las mejores pastas artesanales</h5>
               <p>⭐ 4.8 (250+ reseñas)</p>
               <button
-                className="btn btn-danger"
+                className="btn btn-danger" id="botonCarousel"
                 onClick={() => abrirModal(restaurantesCarrusel[0])}
               >Reservar Ahora</button>
             </div>
@@ -125,13 +122,13 @@ useEffect(() => {
           {/* Item 2 */}
           <div className="carousel-item">
             <img src={japonesaImg} className="d-block w-100" alt="Japonesa" />
-            <div className="card-img-overlay d-flex flex-column justify-content-center bg-dark bg-opacity-50">
-              <h5 className="fw-bold">Japonesa</h5>
+            <div className="card-img-overlay d-flex flex-column justify-content-center bg-dark bg-opacity-50 gap-2">
+              <h5 className="fw-bold" id="etiquetas">Japonesa</h5>
               <h4>Sushi Take</h4>
               <h5>Deliciosos rolls y sashimi preparados al instante</h5>
               <p>⭐ 4.7 (180+ reseñas)</p>
               <button
-                className="btn btn-danger"
+                className="btn btn-danger" id="botonCarousel"
                 onClick={() => abrirModal(restaurantesCarrusel[1])}
               >Reservar Ahora</button>
             </div>
@@ -140,13 +137,13 @@ useEffect(() => {
           {/* Item 3 */}
           <div className="carousel-item">
             <img src={peruanaImg} className="d-block w-100" alt="Peruana" />
-            <div className="card-img-overlay d-flex flex-column justify-content-center bg-dark bg-opacity-50">
-              <h5 className="fw-bold">Peruana</h5>
+            <div className="card-img-overlay d-flex flex-column justify-content-center bg-dark bg-opacity-50 gap-2">
+              <h5 className="fw-bold" id="etiquetas">Peruana</h5>
               <h4>Sabor Criollo</h4>
               <h5>Comida típica con sazón casera y auténtica</h5>
               <p>⭐ 4.9 (300+ reseñas)</p>
               <button
-                className="btn btn-danger"
+                className="btn btn-danger" id="botonCarousel"
                 onClick={() => abrirModal(restaurantesCarrusel[2])}
               >Reservar Ahora</button>
             </div>
@@ -247,7 +244,7 @@ useEffect(() => {
 
       {/* Sección Restaurantes - miniCatalogo*/}
       <section>
-      <div className="container my-5">
+      <div className="container my-4">
         <div id="letraEfecto" className="text-center mb-4">
           <h2>Reservas Disponibles</h2>
           <h5>Mesas disponibles para hoy y mañana</h5>
@@ -301,12 +298,12 @@ useEffect(() => {
           <div className="col-lg-6 col-12">
             <div className="d-flex align-items-center">
 
-              <span className="fw-bold w-50 h-100 pb-2 mb-4" id="cuadro"><i className="bi bi-stars fs-4 me-2"></i>Para Restaurantes</span>
+              <span className="fw-bold h-100 px-2 py-1 mb-4 rounded-pill" id="cuadro"><i className="bi bi-stars fs-4 me-2"></i>Para Restaurantes</span>
             </div>
 
             <h2 className="mb-3 w-100 text-white">¿Tienes un Restaurante?</h2>
             <p className="mb-4 text-white">
-              Únete a Comoda y conecta con miles de comensales.
+              Únete a Comanda y conecta con miles de comensales.
               <br />
               Aumenta tus reservas y lleva tu negocio al siguiente nivel.
             </p>
@@ -318,7 +315,7 @@ useEffect(() => {
             </ul>
 
             <Link
-              to="/registrarRestaurante"
+              to="/register-restaurant"
               className="btn btn-light fw-bold btnRegistrar"
             >
               Registra tu Restaurante
@@ -372,8 +369,8 @@ useEffect(() => {
       </div>
       </section>
       {/*Sección de Comentarios Comunidad*/}
-      <section className="py-5">
-        <div className="container-fluid text-center pt-4 pb-4" id="seccionComentarios">
+      <section className="py-1">
+        <div className="container-fluid text-center pb-4" id="seccionComentarios">
           <h2 className="fw-bold mb-4" id="tituloComunidad">¡Comunidad de Comanda!</h2>
 
           <div

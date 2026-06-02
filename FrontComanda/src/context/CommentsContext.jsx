@@ -101,9 +101,9 @@ const INITIAL_COMENTARIOS = [
 ];
 
 // ── Context ───────────────────────────────────────────────────────────────────
-const ComentariosContext = createContext(null);
+const CommentsContext = createContext(null);
 
-export function ComentariosProvider({ children }) {
+export function CommentsProvider({ children }) {
   // Carga desde localStorage o usa los datos iniciales de ejemplo
   const [comentarios, setComentarios] = useState(() =>
     load("comanda_comentarios", INITIAL_COMENTARIOS)
@@ -151,7 +151,7 @@ export function ComentariosProvider({ children }) {
   const noLeidos = comentarios.filter((c) => !c.leido).length;
 
   return (
-    <ComentariosContext.Provider
+    <CommentsContext.Provider
       value={{
         comentarios,
         noLeidos,
@@ -161,14 +161,14 @@ export function ComentariosProvider({ children }) {
       }}
     >
       {children}
-    </ComentariosContext.Provider>
+    </CommentsContext.Provider>
   );
 }
 
 // Hook para consumir el context fácilmente
-export function useComentarios() {
-  const ctx = useContext(ComentariosContext);
+export function useComments() {
+  const ctx = useContext(CommentsContext);
   if (!ctx)
-    throw new Error("useComentarios debe usarse dentro de ComentariosProvider");
+    throw new Error("useComments debe usarse dentro de ComentariosProvider");
   return ctx;
 }

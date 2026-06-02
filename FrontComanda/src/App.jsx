@@ -1,63 +1,65 @@
+// ── MODIFIED: All imports renamed to English, routes standardized to kebab-case ──
 
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
-// ── Auth ────────────────────────────────────────────────────────────────────
+// ── Auth ─────────────────────────────────────────────────────────────────────
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
-import MiCuenta from './pages/MiCuenta';
+import MyAccount from './pages/MyAccount';          
 
-// ── Componentes Publicos ────────────────────────────────────────────────────────────────
+// ── Public Components ─────────────────────────────────────────────────────────
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Catalog from './pages/Catalog';
 import About from './pages/About';
 import Form from './pages/Form';
-import RegistrarRestaurante from './pages/RegistrarRestaurante';
+import RegisterRestaurant from './pages/RegisterRestaurant';
 
-// ── Intranet ────────────────────────────────────────────────────────────────
+// ── Intranet ──────────────────────────────────────────────────────────────────
 import IntranetLayout from './components/intranet/IntranetLayout';
-import IntranetHome from './pages/intranet/IntranetHome';
-import SolicitudesRestaurantes from './pages/intranet/SolicitudesRestaurantes';
-import Comentarios from './pages/intranet/Comentarios';
-import Usuarios from './pages/intranet/Usuarios';
-import NuevoRestaurante from './pages/intranet/NuevoRestaurante';
-import GestionMesas from './pages/intranet/GestionMesas';
-import Reservas from './pages/intranet/Reservas';
-import RestaurantesRegistrados from './pages/intranet/RestaurantesRegistrados';
+import IntranetDashboard from './pages/intranet/IntranetDashboard';         
+import RestaurantRequests from './pages/intranet/RestaurantRequests';      
+import Comments from './pages/intranet/Comments';                          
+import Users from './pages/intranet/Users';                               
+import NewRestaurant from './pages/intranet/NewRestaurant';                
+import TableManagement from './pages/intranet/TableManagement';            
+import Bookings from './pages/intranet/Bookings';                           
+import RegisteredRestaurants from './pages/intranet/RegisteredRestaurants'; 
 
-// ── Context ─────────────────────────────────────────────────────────────────
-import { RestaurantesProvider } from './context/RestaurantesContext';
-import { MesasProvider } from './context/MesasContext';
-import { ComentariosProvider } from './context/ComentariosContext';
+// ── Context ───────────────────────────────────────────────────────────────────
+import { RestaurantsProvider } from './context/RestaurantsContext';  
+import { TablesProvider } from './context/TablesContext';           
+import { CommentsProvider } from './context/CommentsContext';         
+
 function App() {
   return (
     <AuthProvider>
-      <RestaurantesProvider>
-        <MesasProvider>
-            <ComentariosProvider>
+      <RestaurantsProvider>
+        <TablesProvider>
+          <CommentsProvider>
             <Router>
               <Routes>
 
-                {/* ── Rutas de autenticación (sin Navbar/Footer) ────────── */}
+               
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                {/* ── Área de usuario autenticado (rol: usuario) ────────── */}
+                {/* ── Autenticación por rol Usuario -- te redirige a tu cuenta ────────────────── */}
                 <Route
-                  path="/mi-cuenta"
+                  path="/my-account" 
                   element={
                     <ProtectedRoute allowedRoles={["usuario"]}>
-                      <MiCuenta />
+                      <MyAccount />
                     </ProtectedRoute>
                   }
                 />
 
-                {/* ── Rutas públicas (web) ──────────────────────────────── */}
+                {/* ── Public routes (web) ─────────────────────────────────── */}
                 <Route path="/*" element={
                   <div className="d-flex flex-column min-vh-100">
                     <Navbar />
@@ -67,14 +69,14 @@ function App() {
                         <Route path="catalog" element={<Catalog />} />
                         <Route path="about" element={<About />} />
                         <Route path="form" element={<Form />} />
-                        <Route path="registrarRestaurante" element={<RegistrarRestaurante/>} />
+                        <Route path="register-restaurant" element={<RegisterRestaurant />} /> 
                       </Routes>
                     </main>
                     <Footer />
                   </div>
                 } />
 
-                {/* ── Intranet (admin + personal) ───────────────────────── */}
+                {/* ── Intranet (administrador + personal) ────────────────────────────── */}
                 <Route
                   path="/intranet"
                   element={
@@ -83,70 +85,70 @@ function App() {
                     </ProtectedRoute>
                   }
                 >
-                  {/* Rutas solo para administrador */}
+                  {/* Ruta para administradores */}
                   <Route
                     index
                     element={
                       <ProtectedRoute allowedRoles={["administrador"]}>
-                        <IntranetHome />
+                        <IntranetDashboard />
                       </ProtectedRoute>
                     }
                   />
                   <Route
-                    path="restaurantes"
+                    path="restaurants"  
                     element={
                       <ProtectedRoute allowedRoles={["administrador"]}>
-                        <RestaurantesRegistrados />
+                        <RegisteredRestaurants />
                       </ProtectedRoute>
                     }
                   />
                   <Route
-                    path="restaurantesSolicitudes"
+                    path="restaurant-requests"  
                     element={
                       <ProtectedRoute allowedRoles={["administrador"]}>
-                        <SolicitudesRestaurantes />
+                        <RestaurantRequests />
                       </ProtectedRoute>
                     }
                   />
                   <Route
-                    path="comentarios"
+                    path="comments"  
                     element={
                       <ProtectedRoute allowedRoles={["administrador"]}>
-                        <Comentarios />
+                        <Comments />
                       </ProtectedRoute>
                     }
                   />
                   <Route
-                    path="usuarios"
+                    path="users"  
                     element={
                       <ProtectedRoute allowedRoles={["administrador"]}>
-                        <Usuarios />
+                        <Users />
                       </ProtectedRoute>
                     }
                   />
                   <Route
-                    path="nuevoRestaurante"
+                    path="new-restaurant"  
                     element={
                       <ProtectedRoute allowedRoles={["administrador"]}>
-                        <NuevoRestaurante />
+                        <NewRestaurant />
                       </ProtectedRoute>
                     }
                   />
 
-                  {/* Rutas accesibles por admin Y personal */}
+                  {/*Rutas accesibles para administrador y personal */}
                   <Route
-                    path="mesas"
+                    path="tables"  
                     element={
                       <ProtectedRoute allowedRoles={["administrador", "personal"]}>
-                        <GestionMesas />
+                        <TableManagement />
                       </ProtectedRoute>
                     }
                   />
                   <Route
-                    path="reservas"
+                    path="bookings"  
                     element={
                       <ProtectedRoute allowedRoles={["administrador", "personal"]}>
-                        <Reservas />
+                        <Bookings />
                       </ProtectedRoute>
                     }
                   />
@@ -154,9 +156,9 @@ function App() {
 
               </Routes>
             </Router>
-          </ComentariosProvider>          
-        </MesasProvider>
-      </RestaurantesProvider>
+          </CommentsProvider>
+        </TablesProvider>
+      </RestaurantsProvider>
     </AuthProvider>
   );
 }

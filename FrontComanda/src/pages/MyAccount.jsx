@@ -1,18 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import '../assets/styles/miCuenta.css'
+import '../assets/styles/myAccount.css'
 
 const TABS = ["reservas", "favoritos", "perfil"];
 
-// Lee reservas del maestro filtradas por email y estado confirmada
-function loadReservasConfirmadas(email) {
+// Lee TODAS las reservas del usuario desde el maestro (por userId o email como fallback)
+function loadTodasReservasUsuario(userId, email) {
   try {
     const raw = localStorage.getItem("comanda_reservas_maestro");
     const todas = raw ? JSON.parse(raw) : [];
-    return todas.filter(
-      (r) => r.email === email && r.estado === "confirmada"
-    );
+    return todas
+      .filter(r =>
+        (userId && r.userId === userId) ||
+        (!userId && r.email === email)
+      )
+      .sort((a, b) => new Date(`${b.fecha}T${b.hora}`) - new Date(`${a.fecha}T${a.hora}`));
   } catch {
     return [];
   }
@@ -56,7 +59,7 @@ function cancelarReservaEnStorage(reservaId) {
   } catch {}
 }
 
-export default function MiCuenta() {
+export default function MyAccount() {
   const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState("reservas");
@@ -66,30 +69,39 @@ export default function MiCuenta() {
     email: user?.email || "",
   });
   const [saveMsg, setSaveMsg] = useState("");
-  const [reservasConfirmadas, setReservasConfirmadas] = useState([]);
+  const [reservasUsuario, setReservasUsuario] = useState([]);
 
   // Modal de confirmación de cancelación
   const [modalCancel, setModalCancel] = useState(null); // null | reservaObj
 
   useEffect(() => {
-    if (user?.email) {
-      setReservasConfirmadas(loadReservasConfirmadas(user.email));
+    if (user) {
+      setReservasUsuario(loadTodasReservasUsuario(user.id, user.email));
     }
   }, [user]);
 
-  // Recarga al volver a la pestaña de reservas
+  // Recarga al cambiar de tab
   useEffect(() => {
-    if (tab === "reservas" && user?.email) {
-      setReservasConfirmadas(loadReservasConfirmadas(user.email));
+    if (tab === "reservas" && user) {
+      setReservasUsuario(loadTodasReservasUsuario(user.id, user.email));
     }
   }, [tab]);
+
+  // Escuchar actualizaciones desde la intranet (misma pestaña)
+  useEffect(() => {
+    function handleUpdate() {
+      if (user) setReservasUsuario(loadTodasReservasUsuario(user.id, user.email));
+    }
+    window.addEventListener("comanda_reserva_actualizada", handleUpdate);
+    return () => window.removeEventListener("comanda_reserva_actualizada", handleUpdate);
+  }, [user]);
 
   if (!user) {
     navigate("/login");
     return null;
   }
 
-  const reservas = reservasConfirmadas;
+  const reservas = reservasUsuario;
   const favoritos = user.favoritos || [];
 
   function handleSaveProfile(e) {
@@ -109,7 +121,7 @@ export default function MiCuenta() {
     if (!modalCancel) return;
     cancelarReservaEnStorage(modalCancel.id);
     setModalCancel(null);
-    setReservasConfirmadas(loadReservasConfirmadas(user.email));
+    setReservasUsuario(loadTodasReservasUsuario(user.id, user.email));
   }
 
   return (
@@ -182,24 +194,21 @@ export default function MiCuenta() {
         </div>
       </div>
 
-      {/* Stats rápidas */}
       <div className="cuenta-stats">
         <div className="stat-card">
           <i className="bi bi-calendar-check stat-icon" />
-          <span className="stat-num">{reservas.length}</span>
+          <span className="stat-num">{reservas.filter(r => r.estado === "confirmada").length}</span>
           <span className="stat-label">Confirmadas</span>
+        </div>
+        <div className="stat-card">
+          <i className="bi bi-clock stat-icon" />
+          <span className="stat-num">{reservas.filter(r => r.estado === "pendiente").length}</span>
+          <span className="stat-label">Pendientes</span>
         </div>
         <div className="stat-card">
           <i className="bi bi-heart stat-icon" />
           <span className="stat-num">{favoritos.length}</span>
           <span className="stat-label">Favoritos</span>
-        </div>
-        <div className="stat-card">
-          <i className="bi bi-clock-history stat-icon" />
-          <span className="stat-num">
-            {reservas.length}
-          </span>
-          <span className="stat-label">Reservas</span>
         </div>
         <div className="stat-card">
           <i className="bi bi-person-check stat-icon" />
@@ -241,7 +250,7 @@ export default function MiCuenta() {
             {reservas.length === 0 ? (
               <div className="cuenta-empty">
                 <i className="bi bi-calendar-x" />
-                <p>Aún no tienes reservas confirmadas.</p>
+                <p>Aún no tienes reservas.</p>
                 <Link to="/catalog" className="btn-nueva-reserva">
                   Explorar restaurantes
                 </Link>
@@ -249,9 +258,16 @@ export default function MiCuenta() {
             ) : (
               <div className="reservas-list">
                 {reservas.map((r) => {
-                  const cancelable = puedeCancel(r);
+                  const cancelable = r.estado === "confirmada" && puedeCancel(r);
+                  const estadoConfig = {
+                    pendiente:         { color: "#f59e0b", icon: "bi-clock",            label: "Pendiente" },
+                    confirmada:        { color: "#22c55e", icon: "bi-check-circle-fill", label: "Confirmada" },
+                    cancelada:         { color: "#dc3545", icon: "bi-x-circle-fill",     label: "Cancelada" },
+                    cancelada_cliente: { color: "#7c3aed", icon: "bi-person-x-fill",     label: "Cancelada por ti" },
+                  }[r.estado] || { color: "#888", icon: "bi-question-circle", label: r.estado };
+
                   return (
-                    <div key={r.id} className="reserva-card">
+                    <div key={r.id} className="reserva-card" style={{ borderLeft: `4px solid ${estadoConfig.color}` }}>
                       <div className="reserva-restaurante">
                         <i className="bi bi-shop me-2" />
                         <strong>{r.restaurante}</strong>
@@ -277,24 +293,26 @@ export default function MiCuenta() {
                         )}
                       </div>
                       <div className="reserva-card-right">
-                        <span className="reserva-estado" style={{ color: "#4caf50" }}>
-                          <i className="bi bi-circle-fill me-1" style={{ fontSize: "0.5rem" }} />
-                          Confirmada
+                        <span className="reserva-estado" style={{ color: estadoConfig.color }}>
+                          <i className={`bi ${estadoConfig.icon} me-1`} style={{ fontSize: "0.85rem" }} />
+                          {estadoConfig.label}
                         </span>
-                        <button
-                          className={`btn-cancelar-reserva ${!cancelable ? "disabled" : ""}`}
-                          onClick={() => cancelable && handleSolicitarCancel(r)}
-                          title={
-                            cancelable
-                              ? "Cancelar esta reserva"
-                              : "Ya no es posible cancelar (menos de 2 horas para la reserva)"
-                          }
-                          disabled={!cancelable}
-                        >
-                          <i className="bi bi-x-circle me-1" />
-                          {cancelable ? "Cancelar" : "No cancelable"}
-                        </button>
-                        {!cancelable && (
+                        {r.estado === "confirmada" && (
+                          <button
+                            className={`btn-cancelar-reserva ${!cancelable ? "disabled" : ""}`}
+                            onClick={() => cancelable && handleSolicitarCancel(r)}
+                            title={
+                              cancelable
+                                ? "Cancelar esta reserva"
+                                : "Ya no es posible cancelar (menos de 2 horas para la reserva)"
+                            }
+                            disabled={!cancelable}
+                          >
+                            <i className="bi bi-x-circle me-1" />
+                            {cancelable ? "Cancelar" : "No cancelable"}
+                          </button>
+                        )}
+                        {r.estado === "confirmada" && !cancelable && (
                           <span className="reserva-no-cancel-hint">
                             <i className="bi bi-lock-fill me-1" />
                             Menos de 2h para la reserva

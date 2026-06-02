@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useRestaurantes } from "../context/RestaurantesContext";
+import { useRestaurants } from "../context/RestaurantsContext";
 import { useNavigate } from "react-router-dom";
 
 const tiposComida = [
@@ -24,8 +24,8 @@ const soloTexto = (v) => v.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "
 // Solo números
 const soloNumeros = (v) => v.replace(/\D/g, "");
 
-function RegistrarRestaurante() {
-  const { agregarSolicitud } = useRestaurantes();
+function RegisterRestaurant() {
+  const { agregarSolicitud } = useRestaurants();
   const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
   const [preview, setPreview] = useState(null);
@@ -138,7 +138,7 @@ function RegistrarRestaurante() {
         }}>
           <div style={{
             width: 72, height: 72, borderRadius: "50%",
-            background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+            background: "#F4956A",
             display: "flex", alignItems: "center", justifyContent: "center",
             margin: "0 auto 20px", fontSize: "2rem", color: "white",
           }}>✓</div>
@@ -158,7 +158,7 @@ function RegistrarRestaurante() {
             }}>Volver al inicio</button>
             <button onClick={() => { setForm(initialForm); setPreview(null); setSubmitted(false); }} style={{
               padding: "12px 28px", borderRadius: 10, border: "none",
-              background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+              background: "#F4956A",
               color: "white", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
             }}>Enviar otra solicitud</button>
           </div>
@@ -174,7 +174,7 @@ function RegistrarRestaurante() {
       {/* ── Hero Banner ── */}
       <div style={{
         background: "linear-gradient(135deg,#ff9f22 0%,#ff3300 100%)",
-        padding: "52px 24px 56px", textAlign: "center", position: "relative", overflow: "hidden",
+        padding: "50px 24px 56px", marginTop:"60px", textAlign: "center", position: "relative", overflow: "hidden",
       }}>
         {/* Círculos decorativos */}
         <div style={{ position: "absolute", width: 300, height: 300, borderRadius: "50%", background: "rgba(255,255,255,0.07)", top: -80, right: -40, pointerEvents: "none" }} />
@@ -211,7 +211,7 @@ function RegistrarRestaurante() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: "50%",
-                  background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+                  background: "#F4956A",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "white", fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
                 }}>1</div>
@@ -256,7 +256,7 @@ function RegistrarRestaurante() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: "50%",
-                  background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+                  background: "#F4956A",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "white", fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
                 }}>2</div>
@@ -290,7 +290,7 @@ function RegistrarRestaurante() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: "50%",
-                  background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+                  background: "#F4956A",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "white", fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
                 }}>3</div>
@@ -343,7 +343,7 @@ function RegistrarRestaurante() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: "50%",
-                  background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+                  background: "#F4956A",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "white", fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
                 }}>4</div>
@@ -414,7 +414,7 @@ function RegistrarRestaurante() {
                 </button>
                 <button type="submit" style={{
                   padding: "12px 36px", borderRadius: 10, border: "none",
-                  background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+                  background: "#F4956A",
                   color: "white", fontWeight: 700, cursor: "pointer",
                   boxShadow: "0 4px 14px rgba(255,107,0,0.28)", fontSize: "0.95rem",
                   display: "flex", alignItems: "center", gap: 8,
@@ -431,4 +431,4 @@ function RegistrarRestaurante() {
   );
 }
 
-export default RegistrarRestaurante;
+export default RegisterRestaurant;

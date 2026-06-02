@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useRestaurantes } from "../../context/RestaurantesContext";
+import { useRestaurants } from "../../context/RestaurantsContext";
 
-function SolicitudesRestaurantes() {
-  const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurantes();
+function RestaurantRequests() {
+  const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurants();
   const [filtro, setFiltro] = useState("todos");
   const [confirmando, setConfirmando] = useState(null);
 
@@ -132,7 +132,7 @@ function SolicitudesRestaurantes() {
       <style>{`
         .filtro-btn { padding:6px 16px; border-radius:20px; border:2px solid #e8e0d8; background:white; font-size:0.82rem; font-weight:600; cursor:pointer; display:flex; align-items:center; transition:all 0.2s; color:#555; }
         .filtro-btn:hover { border-color:#ff9f22; color:#ff6b00; }
-        .filtro-btn.active { background:linear-gradient(135deg,#ff9f22,#ff3300); color:white; border-color:transparent; }
+        .filtro-btn.active { background:#F4956A; color:white; border-color:transparent; }
         .filtro-count { background:rgba(0,0,0,0.1); border-radius:10px; padding:1px 7px; font-size:0.75rem; }
         .filtro-btn.active .filtro-count { background:rgba(255,255,255,0.25); }
         .solicitud-card { overflow:hidden; border-radius:16px; }
@@ -160,4 +160,4 @@ function SolicitudesRestaurantes() {
   );
 }
 
-export default SolicitudesRestaurantes;
+export default RestaurantRequests;

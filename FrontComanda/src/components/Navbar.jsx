@@ -61,7 +61,7 @@ export default function Navbar() {
                     className="nav-link btn btn-sm px-3 py-1" id="registro"
                     to="/register"
                     style={{
-                      background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+                      background: "#F4956A",
                       borderRadius: "20px",
                       
                     }}
@@ -84,7 +84,7 @@ export default function Navbar() {
             {/* Usuario regular → Mi cuenta */}
             {user && !isAdmin && !isPersonal && (
               <li className="nav-item">
-                <Link className="nav-link" to="/mi-cuenta">
+                <Link className="nav-link" to="/my-account">
                   <i className="bi bi-person-circle" /> Mi cuenta
                 </Link>
               </li>
@@ -96,7 +96,7 @@ export default function Navbar() {
                 <button
                   className="btn btn-sm d-flex align-items-center gap-2"
                   style={{
-                    background: "linear-gradient(135deg,#ff9f22,#ff3300)",
+                    background: "#F4956A",
                     color: "white",
                     borderRadius: "20px",
                     padding: "6px 14px",
@@ -119,7 +119,7 @@ export default function Navbar() {
                   <li><hr className="dropdown-divider" /></li>
                   {!isAdmin && !isPersonal && (
                     <li>
-                      <Link className="dropdown-item" to="/mi-cuenta">
+                      <Link className="dropdown-item" to="/my-account">
                         <i className="bi bi-person me-2" /> Mi cuenta
                       </Link>
                     </li>

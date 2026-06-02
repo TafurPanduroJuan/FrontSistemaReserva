@@ -1,14 +1,14 @@
 import { useState } from "react";
 import "../assets/styles/form.css";
-import { restaurantes } from "../data/datos";
-import { useComentarios } from "../context/ComentariosContext";
+import { restaurantes } from "../data/data";
+import { useComments } from "../context/CommentsContext";
 
 const tipoOptions = [
   {
     value: "comentario",
-    label: "Comentario",
-    icon: "bi-chat-left-text-fill",
-    desc: "Comparte tus opiniones o sugerencias",
+    label: "Sugerencia Web",
+    icon: "bi-laptop",
+    desc: "Comparte cómo fue tu experiencia navegando en nuestra página",
     color: "#3b82f6",
     bg: "#eff6ff",
   },
@@ -47,7 +47,7 @@ const initialForm = {
 
 function Form() {
   
-  const { agregarComentario } = useComentarios();
+  const { agregarComentario } = useComments();
 
   const [form, setForm] = useState(initialForm);
   const [hoverStar, setHoverStar] = useState(0);
@@ -74,7 +74,14 @@ function Form() {
       nuevoValor = soloNumeros(value).slice(0, 9);
     }
 
-    setForm((prev) => ({ ...prev, [name]: nuevoValor }));
+    setForm((prev) => {
+      const updated = { ...prev, [name]: nuevoValor };
+      // Si cambia el tipo a comentario, limpiar el restaurante
+      if (name === "tipo" && nuevoValor === "comentario") {
+        updated.restaurante = "";
+      }
+      return updated;
+    });
     if (errores[name]) setErrores((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -93,7 +100,7 @@ function Form() {
     }
     if (s === 2) {
       if (!form.tipo) newErrores.tipo = "Selecciona el tipo de mensaje";
-      if (!form.restaurante) newErrores.restaurante = "Selecciona un restaurante";
+      if (form.tipo !== "comentario" && !form.restaurante) newErrores.restaurante = "Selecciona un restaurante";
       if (!form.asunto.trim()) newErrores.asunto = "El asunto es requerido";
     }
     if (s === 3) {
@@ -189,7 +196,7 @@ function Form() {
           </span>
           <h1 className="form-hero-title">Comparte tu experiencia</h1>
           <p className="form-hero-sub">
-            Ayúdanos a mejorar nuestros restaurantes dejando tu comentario, experiencia o reclamo.
+            Ayúdanos a mejorar nuestros restaurantes y nuestra página web dejando tu sugerencia, experiencia o reclamo.
             Tu voz hace la diferencia.
           </p>
         </div>
@@ -308,6 +315,7 @@ function Form() {
                   </div>
                   {errores.tipo && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.tipo}</span>}
                 </div>
+                {form.tipo !== "comentario" && (
                 <div className="form-group">
                   <label className="form-label">Restaurante <span className="required">*</span></label>
                   <div className="input-wrapper">
@@ -321,11 +329,12 @@ function Form() {
                   </div>
                   {errores.restaurante && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.restaurante}</span>}
                 </div>
+                )}
                 <div className="form-group">
                   <label className="form-label">Asunto <span className="required">*</span></label>
                   <div className="input-wrapper">
                     <i className="bi bi-tag input-icon"></i>
-                    <input type="text" name="asunto" className={`form-input ${errores.asunto ? "input-error" : ""}`} placeholder="Ej: Excelente servicio al cliente" value={form.asunto} onChange={handleChange} maxLength={100} />
+                    <input type="text" name="asunto" className={`form-input ${errores.asunto ? "input-error" : ""}`} placeholder={form.tipo === "comentario" ? "Ej: Dificultad para reservar desde el celular" : "Ej: Excelente servicio al cliente"} value={form.asunto} onChange={handleChange} maxLength={100} />
                   </div>
                   <div className="char-counter">{form.asunto.length}/100</div>
                   {errores.asunto && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.asunto}</span>}
@@ -361,13 +370,24 @@ function Form() {
                     <p className="step-desc">Cuéntanos con detalle tu experiencia o lo que deseas comunicarnos.</p>
                   </div>
                 </div>
-                {form.restaurante && form.tipo && (
+                {form.tipo && (
                   <div className="resumen-banner" style={{ borderColor: tipoSeleccionado?.color, background: tipoSeleccionado?.bg }}>
                     <i className={`bi ${tipoSeleccionado?.icon} me-2`} style={{ color: tipoSeleccionado?.color }}></i>
                     <span style={{ color: tipoSeleccionado?.color, fontWeight: 600 }}>{tipoSeleccionado?.label}</span>
-                    <span className="resumen-sep">·</span>
-                    <i className="bi bi-shop me-1" style={{ color: "#888" }}></i>
-                    <span style={{ color: "#555" }}>{form.restaurante}</span>
+                    {form.tipo !== "comentario" && form.restaurante && (
+                      <>
+                        <span className="resumen-sep">·</span>
+                        <i className="bi bi-shop me-1" style={{ color: "#888" }}></i>
+                        <span style={{ color: "#555" }}>{form.restaurante}</span>
+                      </>
+                    )}
+                    {form.tipo === "comentario" && (
+                      <>
+                        <span className="resumen-sep">·</span>
+                        <i className="bi bi-globe me-1" style={{ color: "#888" }}></i>
+                        <span style={{ color: "#555" }}>Comanda</span>
+                      </>
+                    )}
                     {form.calificacion > 0 && (
                       <><span className="resumen-sep">·</span><span style={{ color: "#f59e0b" }}>{"★".repeat(form.calificacion)}</span></>
                     )}
@@ -375,8 +395,23 @@ function Form() {
                 )}
                 <div className="form-group">
                   <label className="form-label">Mensaje <span className="required">*</span></label>
+                  {form.tipo === "comentario" && (
+                    <div className="ux-hint-box" style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "10px", padding: "12px 16px", marginBottom: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <p style={{ margin: 0, fontWeight: 600, color: "#1d4ed8", fontSize: "0.85rem" }}>
+                        <i className="bi bi-lightbulb-fill me-2"></i>Cuéntanos sobre tu experiencia en la página
+                      </p>
+                      <ul style={{ margin: 0, paddingLeft: "18px", color: "#374151", fontSize: "0.82rem", lineHeight: "1.6" }}>
+                        <li>¿Fue fácil encontrar restaurantes o hacer una reserva?</li>
+                        <li>¿Tuviste problemas técnicos (carga lenta, errores, botones)?</li>
+                        <li>¿El diseño te resultó claro y fácil de usar?</li>
+                        <li>¿Qué funcionalidad mejorarías o añadirías?</li>
+                      </ul>
+                    </div>
+                  )}
                   <textarea name="mensaje" className={`form-input form-textarea ${errores.mensaje ? "input-error" : ""}`}
-                    placeholder="Escribe aquí tu comentario, experiencia o reclamo con el mayor detalle posible..."
+                    placeholder={form.tipo === "comentario"
+                      ? "Describe tu experiencia navegando la página: ¿fue fácil encontrar lo que buscabas? ¿Tuviste algún problema al reservar, navegar o usar alguna función? ¿Qué mejorarías?"
+                      : "Escribe aquí tu experiencia o reclamo con el mayor detalle posible..."}
                     value={form.mensaje} onChange={handleChange} rows={6} maxLength={1000} />
                   <div className="char-counter">{form.mensaje.length}/1000</div>
                   {errores.mensaje && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.mensaje}</span>}
@@ -405,7 +440,7 @@ function Form() {
             <h4 className="aside-title"><i className="bi bi-info-circle-fill me-2"></i>¿Cómo funciona?</h4>
             <ol className="aside-steps">
               <li>Ingresa tus datos personales.</li>
-              <li>Elige el tipo de mensaje y el restaurante.</li>
+              <li>Elige el tipo de mensaje: sugerencia web, experiencia o reclamo.</li>
               <li>Escribe tu mensaje y envíalo.</li>
               <li>Nuestro equipo revisará tu mensaje en la intranet.</li>
               <li>Si aplica, te contactaremos por correo.</li>
