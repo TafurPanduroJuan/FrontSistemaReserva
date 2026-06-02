@@ -84,6 +84,37 @@ function RegisterRestaurant() {
     return e;
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    const payload = {
+      nombre:              form.nombre.trim(),
+      propietario:         form.propietario.trim(),
+      email:               form.email.trim(),
+      tipo:                form.tipo,
+      distrito:            form.distrito.trim(),
+      direccion:           form.direccion.trim(),
+      telefono:            parseInt(form.telefono),
+      descripcion:         form.descripcion.trim() || "Solicitud enviada desde el formulario público.",
+      mensajePersonalizado: form.mensajePersonalizado.trim() || null,
+      horarioApertura:     form.horarioApertura || null,
+      horarioCierre:       form.horarioCierre || null,
+    };
+
+    try {
+      await agregarSolicitud(payload);
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Error al enviar solicitud:", err);
+      alert("Ocurrió un error al enviar la solicitud. Por favor intenta nuevamente.");
+    }
+  };
+
   // ── Estilos ────────────────────────────────────────────────────────────────
   const inputBase = {
     width: "100%", padding: "11px 14px", borderRadius: 10, fontSize: "0.9rem",
