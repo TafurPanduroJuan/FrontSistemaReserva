@@ -2,39 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import "../assets/styles/bookingModal.css";
 
-// ── localStorage helpers ──────────────────────────────────────────────────────
-function loadReservas() {
-  try {
-    const raw = localStorage.getItem("comanda_reservas_maestro");
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
 
-function saveReserva(reserva) {
-  try {
-    const todas = loadReservas();
-    const nueva = { ...reserva, id: Date.now() };
-    const actualizadas = [...todas, nueva];
-    localStorage.setItem("comanda_reservas_maestro", JSON.stringify(actualizadas));
-    // Notificar a la intranet si está abierta en la misma pestaña
-    window.dispatchEvent(
-      new CustomEvent("comanda_nueva_reserva", { detail: actualizadas })
-    );
-    return nueva;
-  } catch { return reserva; }
-}
-
-// ── Genera mesas según la capacidad del restaurante ───────────────────────────
-function generarMesas(totalMesas) {
-  const zonas = ["Terraza", "Salón Interior", "VIP"];
-  const n = Math.max(totalMesas || 6, 3);
-  return Array.from({ length: n }, (_, i) => ({
-    id: i + 1,
-    numero: i + 1,
-    zona: zonas[Math.floor(i / Math.ceil(n / 3))] || "Salón Interior",
-    capacidad: [2, 4, 4, 6, 2, 4, 2, 8, 4, 4, 2, 4][i] || 4,
-  }));
-}
 
 const STEPS = [
   { label: "Restaurante" },
