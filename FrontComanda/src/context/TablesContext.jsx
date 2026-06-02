@@ -1,49 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-// ── Helpers localStorage ──────────────────────────────────────────────────────
-function load(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch { return fallback; }
-}
-function save(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
-}
-
-// ── Generador de mesas por restaurante ───────────────────────────────────────
-export const generarMesasIniciales = () =>
-  Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    numero: i + 1,
-    capacidad: [2, 4, 4, 6, 2, 4, 2, 8, 4, 4, 2, 4][i] || 4,
-    estado: "disponible",
-    zona: i < 4 ? "Terraza" : i < 8 ? "Salón Interior" : "VIP",
-  }));
-
-// ── Reservas iniciales de ejemplo ─────────────────────────────────────────────
-const INITIAL_RESERVAS = [
-  { id: 1, cliente: "María López",   email: "maria@gmail.com",   tel: "987654321", restaurante: "La Bella Italia", fecha: "2026-04-25", hora: "19:30", personas: 2, mesa: 3, zona: "Terraza",        notas: "Aniversario", estado: "pendiente" },
-  { id: 2, cliente: "Roberto Silva", email: "roberto@gmail.com", tel: "976543210", restaurante: "La Bella Italia", fecha: "2026-04-25", hora: "20:00", personas: 4, mesa: 7, zona: "Salón Interior", notas: "",            estado: "confirmada" },
-];
-
 // ── Context ───────────────────────────────────────────────────────────────────
 const TablesContext = createContext(null);
 
 export function TablesProvider({ children }) {
-  // datosGlobales: { [nombreRestaurante]: Mesa[] }
-  const [datosGlobales, setDatosGlobales] = useState(() =>
-    load("comanda_mesas_v2", {})
-  );
-
-  // reservas: Reserva[]
-  const [reservas, setReservas] = useState(() =>
-    load("comanda_reservas_maestro", INITIAL_RESERVAS)
-  );
-
-  useEffect(() => { save("comanda_mesas_v2", datosGlobales); }, [datosGlobales]);
-  useEffect(() => { save("comanda_reservas_maestro", reservas); }, [reservas]);
-
   // ── Mesas ─────────────────────────────────────────────────────────────────
   const getMesas = (restaurante) =>
     datosGlobales[restaurante] || generarMesasIniciales();
@@ -133,34 +93,6 @@ export function TablesProvider({ children }) {
       }
     }
   };
-
-  // ── Sincronización en tiempo real con el catálogo público ────────────────
-  // Escucha el evento "storage" que dispara el navegador cuando OTRA pestaña
-  // (la del catálogo) escribe en localStorage. Así la intranet se actualiza
-  // automáticamente sin necesidad de recargar la página.
-  useEffect(() => {
-    function handleStorageChange(e) {
-      if (e.key === "comanda_reservas_maestro" && e.newValue) {
-        try {
-          const actualizadas = JSON.parse(e.newValue);
-          setReservas(actualizadas);
-        } catch {}
-      }
-    }
-    // Evento cross-tab (cuando el catálogo está en otra pestaña del navegador)
-    window.addEventListener("storage", handleStorageChange);
-
-    // Evento mismo-tab (cuando el catálogo y la intranet están en la misma SPA)
-    function handleMismaTab(e) {
-      if (e.detail) setReservas(e.detail);
-    }
-    window.addEventListener("comanda_nueva_reserva", handleMismaTab);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("comanda_nueva_reserva", handleMismaTab);
-    };
-  }, []);
 
   return (
     <TablesContext.Provider value={{
