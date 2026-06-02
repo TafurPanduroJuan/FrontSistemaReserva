@@ -122,6 +122,39 @@ function Form() {
 
   const nextStep = () => { if (validarStep(step)) setStep((s) => s + 1); };
   const prevStep = () => setStep((s) => s - 1);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validarStep(3)) return;
+    setCargando(true);
+
+    const payload = {
+      usuario:      `${form.nombre.trim()} ${form.apellido.trim()}`,
+      email:        form.correo.trim(),
+      telefono:     form.telefono || null,
+      tipo:         form.tipo,
+      asunto:       form.asunto.trim(),
+      mensaje:      form.mensaje.trim(),
+      calificacion: form.calificacion || null,
+      restaurant:   form.restauranteId ? { id: form.restauranteId } : null,
+    };
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Error al enviar comentario");
+      setEnviado(true);
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error.message);
+      alert("Ocurrió un error al enviar tu mensaje. Por favor intenta nuevamente.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
   const resetForm = () => { setForm(initialForm); setEnviado(false); setStep(1); setErrores({}); };
   const tipoSeleccionado = tipoOptions.find((t) => t.value === form.tipo);
 
@@ -287,6 +320,30 @@ function Form() {
                     ))}
                   </div>
                   {errores.tipo && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.tipo}</span>}
+                </div>
+                {form.tipo !== "comentario" && (
+                <div className="form-group">
+                  <label className="form-label">Restaurante <span className="required">*</span></label>
+                  <div className="input-wrapper">
+                    <i className="bi bi-shop input-icon"></i>
+                  <select name="restaurante" className={`form-input form-select-custom ${errores.restaurante ? "input-error" : ""}`} value={form.restaurante}
+                    onChange={(e) => {
+                      const seleccionado = restaurantesApi.find(r => r.nombre === e.target.value);
+                      setForm(prev => ({
+                        ...prev,
+                        restaurante: e.target.value,
+                        restauranteId: seleccionado?.id || null,
+                      }));
+                      if (errores.restaurante) setErrores(prev => ({ ...prev, restaurante: "" }));
+                    }}>
+                      <option value="">— Selecciona el restaurante —</option>
+                      {restaurantesApi.map((r) => (
+                        <option key={r.id} value={r.nombre}>{r.nombre} · {r.distrito}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {errores.restaurante && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.restaurante}</span>}
+                </div>
                 )}
                 <div className="form-group">
                   <label className="form-label">Asunto <span className="required">*</span></label>
