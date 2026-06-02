@@ -5,22 +5,6 @@ import '../assets/styles/myAccount.css'
 
 const TABS = ["reservas", "favoritos", "perfil"];
 
-// Lee TODAS las reservas del usuario desde el maestro (por userId o email como fallback)
-function loadTodasReservasUsuario(userId, email) {
-  try {
-    const raw = localStorage.getItem("comanda_reservas_maestro");
-    const todas = raw ? JSON.parse(raw) : [];
-    return todas
-      .filter(r =>
-        (userId && r.userId === userId) ||
-        (!userId && r.email === email)
-      )
-      .sort((a, b) => new Date(`${b.fecha}T${b.hora}`) - new Date(`${a.fecha}T${a.hora}`));
-  } catch {
-    return [];
-  }
-}
-
 // Devuelve true si todavía se puede cancelar (faltan más de 2h para la reserva)
 function puedeCancel(reserva) {
   try {
@@ -32,31 +16,6 @@ function puedeCancel(reserva) {
   } catch {
     return false;
   }
-}
-
-// Cancela la reserva en localStorage y libera la mesa
-function cancelarReservaEnStorage(reservaId) {
-  try {
-    const raw = localStorage.getItem("comanda_reservas_maestro");
-    const todas = raw ? JSON.parse(raw) : [];
-    const actualizadas = todas.map((r) =>
-      r.id === reservaId ? { ...r, estado: "cancelada_cliente" } : r
-    );
-    localStorage.setItem("comanda_reservas_maestro", JSON.stringify(actualizadas));
-
-    // Liberar la mesa en comanda_mesas_v2
-    const reserva = todas.find((r) => r.id === reservaId);
-    if (reserva?.restaurante && reserva?.mesa) {
-      const mesasRaw = localStorage.getItem("comanda_mesas_v2");
-      const mesasData = mesasRaw ? JSON.parse(mesasRaw) : {};
-      const mesasRest = mesasData[reserva.restaurante] || [];
-      const mesasActualizadas = mesasRest.map((m) =>
-        m.id === reserva.mesa ? { ...m, estado: "disponible" } : m
-      );
-      mesasData[reserva.restaurante] = mesasActualizadas;
-      localStorage.setItem("comanda_mesas_v2", JSON.stringify(mesasData));
-    }
-  } catch {}
 }
 
 export default function MyAccount() {
@@ -73,28 +32,6 @@ export default function MyAccount() {
 
   // Modal de confirmación de cancelación
   const [modalCancel, setModalCancel] = useState(null); // null | reservaObj
-
-  useEffect(() => {
-    if (user) {
-      setReservasUsuario(loadTodasReservasUsuario(user.id, user.email));
-    }
-  }, [user]);
-
-  // Recarga al cambiar de tab
-  useEffect(() => {
-    if (tab === "reservas" && user) {
-      setReservasUsuario(loadTodasReservasUsuario(user.id, user.email));
-    }
-  }, [tab]);
-
-  // Escuchar actualizaciones desde la intranet (misma pestaña)
-  useEffect(() => {
-    function handleUpdate() {
-      if (user) setReservasUsuario(loadTodasReservasUsuario(user.id, user.email));
-    }
-    window.addEventListener("comanda_reserva_actualizada", handleUpdate);
-    return () => window.removeEventListener("comanda_reserva_actualizada", handleUpdate);
-  }, [user]);
 
   if (!user) {
     navigate("/login");

@@ -1,67 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-
-// ─── Usuarios de prueba precargados en localStorage ───────────────────────────
-const DEFAULT_USERS = [
-  {
-    id: 1,
-    nombre: "Admin Principal",
-    email: "admin@comanda.com",
-    password: "admin123",
-    rol: "administrador",
-    restaurante: null,
-    avatar: null,
-    fechaRegistro: "2024-01-01",
-  },
-  {
-    id: 2,
-    nombre: "Carlos Mesero",
-    email: "personal@labellaitalia.com",
-    password: "personal123",
-    rol: "personal",
-    restaurante: "La Bella Italia",
-    avatar: null,
-    fechaRegistro: "2024-03-15",
-  },
-  {
-    id: 3,
-    nombre: "María González",
-    email: "usuario@gmail.com",
-    password: "usuario123",
-    rol: "usuario",
-    restaurante: null,
-    avatar: null,
-    fechaRegistro: "2025-01-10",
-    reservas: [
-      {
-        id: 101,
-        restaurante: "La Bella Italia",
-        fecha: "2025-05-10",
-        hora: "20:00",
-        personas: 2,
-        estado: "confirmada",
-      },
-      {
-        id: 102,
-        restaurante: "Sushi Take",
-        fecha: "2025-04-28",
-        hora: "19:30",
-        personas: 4,
-        estado: "pendiente",
-      },
-    ],
-    favoritos: ["La Bella Italia", "Le Petit Bistro"],
-  },
-];
-
-// ─── Helper para inicializar usuarios en localStorage ────────────────────────
-function initUsers() {
-  const stored = localStorage.getItem("comanda_users");
-  if (!stored) {
-    localStorage.setItem("comanda_users", JSON.stringify(DEFAULT_USERS));
-    return DEFAULT_USERS;
-  }
-  return JSON.parse(stored);
-}
+import { apiFetch } from "../services/api";
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const AuthContext = createContext(null);
@@ -72,28 +10,26 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Sincroniza la sesión activa si el admin cambió el rol de este usuario
-  useEffect(() => {
-    if (!user) return;
-    const users = initUsers();
-    const updated = users.find((u) => u.id === user.id);
-    if (updated && updated.rol !== user.rol) {
-      const newSession = { ...updated };
-      setUser(newSession);
-      localStorage.setItem("comanda_session", JSON.stringify(newSession));
-    }
-  }, []);
-
   // ── Login ──────────────────────────────────────────────────────────────────
-  function login(email, password) {
-    const users = initUsers();
-    const found = users.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (!found) return { ok: false, error: "Credenciales incorrectas." };
-    setUser(found);
-    localStorage.setItem("comanda_session", JSON.stringify(found));
-    return { ok: true, user: found };
+  async function login(email, password) {
+    try {
+      const data = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      const session = {
+        id: data.id,
+        nombre: data.nombre,
+        email: data.email,
+        rol: data.role,
+        token: data.token,
+      };
+      setUser(session);
+      localStorage.setItem("comanda_session", JSON.stringify(session));
+      return { ok: true, user: session };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
   }
 
   // ── Logout ─────────────────────────────────────────────────────────────────
@@ -103,27 +39,25 @@ export function AuthProvider({ children }) {
   }
 
   // ── Registro ───────────────────────────────────────────────────────────────
-  function register({ nombre, email, password }) {
-    const users = initUsers();
-    if (users.find((u) => u.email === email))
-      return { ok: false, error: "El email ya está registrado." };
-    const newUser = {
-      id: Date.now(),
-      nombre,
-      email,
-      password,
-      rol: "usuario",
-      restaurante: null,
-      avatar: null,
-      fechaRegistro: new Date().toISOString().split("T")[0],
-      reservas: [],
-      favoritos: [],
-    };
-    const updated = [...users, newUser];
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    setUser(newUser);
-    localStorage.setItem("comanda_session", JSON.stringify(newUser));
-    return { ok: true, user: newUser };
+  async function register({ nombre, email, password }) {
+    try {
+      const data = await apiFetch("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ nombre, email, password }),
+      });
+      const session = {
+        id: data.id,
+        nombre: data.nombre,
+        email: data.email,
+        rol: data.role,
+        token: data.token,
+      };
+      setUser(session);
+      localStorage.setItem("comanda_session", JSON.stringify(session));
+      return { ok: true, user: session };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
   }
 
   // ── Reset password (simulado) ─────────────────────────────────────────────
@@ -206,30 +140,11 @@ export function AuthProvider({ children }) {
     localStorage.setItem("comanda_session", JSON.stringify(current));
   }
 
-  // ── Escuchar actualizaciones de estado desde la intranet ──────────────────
-  useEffect(() => {
-    function handleReservaActualizada(e) {
-      if (!user) return;
-      const { reservaId, nuevoEstado } = e.detail || {};
-      if (!reservaId || !nuevoEstado) return;
-      setUser(prev => {
-        if (!prev) return prev;
-        const updatedReservas = (prev.reservas || []).map(r =>
-          r.id === reservaId ? { ...r, estado: nuevoEstado } : r
-        );
-        const updated = { ...prev, reservas: updatedReservas };
-        localStorage.setItem("comanda_session", JSON.stringify(updated));
-        return updated;
-      });
-    }
-    window.addEventListener("comanda_reserva_actualizada", handleReservaActualizada);
-    return () => window.removeEventListener("comanda_reserva_actualizada", handleReservaActualizada);
-  }, [user]);
-
   return (
     <AuthContext.Provider
       value={{
         user,
+        token: user?.token || null,
         login,
         logout,
         register,
