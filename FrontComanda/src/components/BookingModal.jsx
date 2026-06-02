@@ -202,6 +202,52 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                     <button key={z} className={`zona-chip ${formData.zona === z ? 'active' : ''}`}
                       onClick={() => setFormData({ ...formData, zona: z, mesa: null, mesaNumero: null })}>{z}</button>
                   ))}
+                </div>
+              </div>
+              <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, fontSize: '0.9rem', color: '#555' }}>🪑 Selecciona una mesa</label>
+              {cargandoMesas ? (
+                <p style={{ textAlign: "center", color: "#aaa" }}>Cargando mesas disponibles...</p>
+              ) : mesasFiltradas.length === 0 ? (
+                <p style={{ textAlign: "center", color: "#e74c3c" }}>
+                  No hay mesas disponibles para esta zona.
+                </p>
+              ) : (
+                <div className="mesas-grid">
+                  {mesasFiltradas.map(m => {
+                    const isSelected = formData.mesa === m.id;
+                    const tooSmall = m.capacidad < formData.personas;
+                    const emoji = m.capacidad >= 6 ? '🏯' : m.capacidad >= 4 ? '🍽️' : '☕';
+                    return (
+                      <div key={m.id}
+                        className={`mesa-card ${isSelected ? 'selected' : ''} ${tooSmall ? 'too-small' : ''}`}
+                        onClick={() => !tooSmall && setFormData({
+                          ...formData,
+                          mesa:       m.id,
+                          mesaNumero: m.numero,
+                          zona:       m.zona,
+                        })}
+                      >
+                        {isSelected && <div className="mesa-check">✓</div>}
+                        <div className="mesa-emoji">{emoji}</div>
+                        <div className="mesa-num">Mesa {m.numero}</div>
+                        <div className="mesa-info">{m.zona}</div>
+                        <div className="mesa-cap">
+                          {tooSmall
+                            ? <span style={{ color: '#e74c3c', fontSize: '0.65rem' }}>Cap. insuficiente</span>
+                            : `${m.capacidad} pers.`}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {formData.mesa && (
+                <p style={{ color: '#2ecc71', fontWeight: 600, marginTop: '14px', textAlign: 'center', fontSize: '0.9rem' }}>
+                  ✓ Mesa {formData.mesaNumero} — {formData.zona}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* PASO 4 */}
           {step === 4 && (
@@ -281,6 +327,19 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
         </div>
 
         {/* FOOTER */}
+        <div className="modal-footer-actions">
+          <button className="btn-back" onClick={handleBack} disabled={enviando}>
+            {step === 1 ? '✕ Cerrar' : '← Atrás'}
+          </button>
+          <button
+            className="btn-next-red"
+            onClick={handleNext}
+            disabled={!canProceed() || enviando}
+            style={{ opacity: canProceed() && !enviando ? 1 : 0.5, cursor: canProceed() && !enviando ? 'pointer' : 'not-allowed' }}
+          >
+            {enviando ? 'Confirmando...' : step === 5 ? '✓ Confirmar Reserva' : 'Siguiente →'}
+          </button>
+        </div>
       </div>
     </div>
     </div>
