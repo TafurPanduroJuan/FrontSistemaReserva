@@ -31,12 +31,29 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
     hora: '18:00',
     personas: 2,
     mesa: null,
+    mesaNumero: null,
     zona: '',
     nombre: user?.nombre || '',
     email: user?.email || '',
     telefono: '',
     notas: '',
   });
+
+  const horarios = ["12:00", "13:00", "14:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+
+  // Cargar mesas reales del backend al llegar al paso 3
+  useEffect(() => {
+    if (step === 3 && restaurante?.id) {
+      setCargandoMesas(true);
+      getMesasDisponibles(restaurante.id, formData.zona || null)
+        .then(setMesas)
+        .catch(console.error)
+        .finally(() => setCargandoMesas(false));
+    }
+  }, [step, restaurante?.id, formData.zona]);
+
+  const zonas = useMemo(() => [...new Set(mesas.map(m => m.zona))], [mesas]);
+  const mesasFiltradas = formData.zona ? mesas.filter(m => m.zona === formData.zona) : mesas;
 
   const handleTelefono = (e) => {
     const valor = e.target.value.replace(/\D/g, "").slice(0, 9);
@@ -51,6 +68,33 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
     if (step === 3) return formData.mesa !== null;
     if (step === 4) return formData.nombre.trim() && formData.email.trim() && formData.telefono.trim();
     return true;
+  };
+
+  const handleNext = async () => {
+    if (step === 5) {
+      setEnviando(true);
+      try {
+        await agregarReserva({
+          restaurantId: restaurante.id,
+          mesaNumero:   formData.mesaNumero,
+          zona:         formData.zona,
+          cliente:      formData.nombre,
+          email:        formData.email,
+          tel:          parseInt(formData.telefono),
+          fecha:        formData.fecha,
+          hora:         formData.hora,
+          personas:     formData.personas,
+          notas:        formData.notas || null,
+        });
+        onClose();
+      } catch (err) {
+        alert("Error al confirmar la reserva: " + err.message);
+      } finally {
+        setEnviando(false);
+      }
+    } else {
+      setStep(prev => prev + 1);
+    }
   };
 
   const handleBack = () => {
@@ -236,5 +280,11 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
           )}
         </div>
 
+        {/* FOOTER */}
+      </div>
+    </div>
+    </div>
+  );
+};
 
 export default BookingModal;
