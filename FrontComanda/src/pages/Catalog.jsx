@@ -15,38 +15,21 @@ const ORDENAR = [
 
 const precioNum = (p) => (p || "").length;
 
-// Convierte restaurante del contexto (formato intranet) al formato del catálogo
+// Convierte restaurante del backend al formato del catálogo
 function normalizarRestaurante(r) {
-  if (r.img && r.lugar) {
-    return {
-      id: r.id || r.nombre,
-      nombre: r.nombre,
-      lugar: r.lugar,
-      hora: r.hora || "—",
-      mesas: r.mesas ?? 0,
-      precio: r.precio || "$",
-      etiqueta: r.etiqueta || "Hoy",
-      tipo: r.tipo || "Otro",
-      img: r.img,
-      rating: r.rating ?? 4.0,
-      reseñas: r.reseñas ?? 0,
-    };
-  }
-  // Formato intranet/NuevoRestaurante → normalizar al formato del catálogo
   return {
-    id: r.id || r.nombre,
-    nombre: r.nombre,
-    lugar: r.distrito || r.direccion || "Lima",
-    hora: r.horario_apertura || "—",
-    mesas: r.mesas ?? 0,
-    precio: r.precio || "$",
-    etiqueta: r.etiqueta || "Hoy",
-    tipo: r.tipo || "Otro",
-    img:
-      r.imagen ||
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400",
-    rating: r.rating ?? 4.0,
-    reseñas: r.reseñas ?? 0,
+    id:           r.id,
+    nombre:       r.nombre,
+    lugar:        r.distrito || "Lima",
+    horaApertura: r.horarioApertura || "—",
+    horaCierre:   r.horarioCierre   || "—",
+    mesas:        r.mesas ?? 0,
+    precio:       "$",
+    tipo:         r.tipo || "Otro",
+    img:          r.imagen || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400",
+    rating:       4.0,
+    reseñas:      0,
+    etiqueta:     "Hoy",
   };
 }
 
