@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "../../assets/styles/intranetDashboard.css";
 import { useRestaurants } from "../../context/RestaurantsContext";
 import { useComments } from "../../context/CommentsContext";
@@ -18,15 +18,8 @@ function IntranetDashboard() {
   const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurants();
   const { comentarios } = useComments();
 
-  // Leer usuarios reales desde localStorage (igual que AuthContext)
-  const usuarios = (() => {
-    try {
-      const raw = localStorage.getItem("comanda_users");
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  })();
+  // TODO: cargar desde GET /api/users (pendiente de integración)
+  const [usuarios, setUsuarios] = useState([]);
 
   const reclamos = comentarios.filter((c) => c.tipo === "reclamo");
 
