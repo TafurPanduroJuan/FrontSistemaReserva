@@ -15,9 +15,9 @@ const sugerenciasDistritos = [
 
 const initialForm = {
   nombre: "", tipo: "", distrito: "", direccion: "",
-  horario_apertura: "", horario_cierre: "",
+  horarioApertura: "", horarioCierre: "",
   mesas: "", telefono: "", email: "",
-  mensaje_personalizado: "", imagen: "",
+  mensajePersonalizado: "", imagen: "",
 };
 
 /* ── Convierte File a base64 data-URL ── */
@@ -94,8 +94,8 @@ function NewRestaurant() {
     if (!form.tipo)                    e.tipo             = "Selecciona un tipo de cocina";
     if (!form.distrito.trim())         e.distrito         = "Ingresa un distrito o zona";
     if (!form.direccion.trim())        e.direccion        = "La dirección exacta es requerida";
-    if (!form.horario_apertura.trim()) e.horario_apertura = "El horario de apertura es requerido";
-    if (!form.horario_cierre.trim())   e.horario_cierre   = "El horario de cierre es requerido";
+    if (!form.horarioApertura.trim()) e.horarioApertura = "El horario de apertura es requerido";
+    if (!form.horarioCierre.trim())   e.horarioCierre   = "El horario de cierre es requerido";
     if (!form.email.trim())            e.email            = "El email es requerido";
     if (!form.telefono.trim()) {
       e.telefono = "El teléfono es requerido";
@@ -116,7 +116,8 @@ function NewRestaurant() {
     try {
       await agregarRestaurante({
         ...form,
-        mesas: parseInt(form.mesas) || 0,
+        mesas:    parseInt(form.mesas)    || 0,
+        telefono: parseInt(form.telefono) || null,
       });
       setSubmitted(true);
     } catch (err) {
@@ -220,8 +221,8 @@ function NewRestaurant() {
               </div>
               <div className="col-12">
                 <label style={lbl}>Eslogan o mensaje de bienvenida</label>
-                <input name="mensaje_personalizado" value={form.mensaje_personalizado}
-                  onChange={handle} style={inp("mensaje_personalizado")}
+                <input name="mensajePersonalizado" value={form.mensajePersonalizado}
+                  onChange={handle} style={inp("mensajePersonalizado")}
                   placeholder="Ej: El mejor sabor norteño en el corazón de la ciudad" />
               </div>
             </div>
@@ -259,15 +260,15 @@ function NewRestaurant() {
             <div className="row g-3">
               <div className="col-md-4">
                 <label style={lbl}>Horario de Apertura *</label>
-                <input type="time" name="horario_apertura" value={form.horario_apertura} onChange={handle}
-                  style={inp("horario_apertura")} />
-                {errors.horario_apertura && <small style={{ color:"#ef4444" }}>{errors.horario_apertura}</small>}
+                <input type="time" name="horarioApertura" value={form.horarioApertura} onChange={handle}
+                  style={inp("horarioApertura")} />
+                {errors.horarioApertura && <small style={{ color:"#ef4444" }}>{errors.horarioApertura}</small>}
               </div>
               <div className="col-md-4">
                 <label style={lbl}>Horario de Cierre *</label>
-                <input type="time" name="horario_cierre" value={form.horario_cierre} onChange={handle}
-                  style={inp("horario_cierre")} />
-                {errors.horario_cierre && <small style={{ color:"#ef4444" }}>{errors.horario_cierre}</small>}
+                <input type="time" name="horarioCierre" value={form.horarioCierre} onChange={handle}
+                  style={inp("horarioCierre")} />
+                {errors.horarioCierre && <small style={{ color:"#ef4444" }}>{errors.horarioCierre}</small>}
               </div>
               <div className="col-md-4">
                 <label style={lbl}>N° de Mesas</label>
