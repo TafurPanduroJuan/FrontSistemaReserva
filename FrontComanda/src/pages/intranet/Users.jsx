@@ -1,5 +1,4 @@
-
-
+import { apiFetch } from "../../services/api";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useRestaurants } from "../../context/RestaurantsContext";
@@ -19,7 +18,7 @@ function getRolBadge(rol) {
 const EMPTY_FORM = { nombre: "", email: "", password: "", rol: "usuario", restaurante: "" };
 
 export default function Users() {
-  const { changeUserRole, deleteUser, adminUpdateUser, user: adminUser } = useAuth();
+  const { token, user: adminUser } = useAuth();
   const { restaurantes: restaurantesCtx } = useRestaurants();
   const RESTAURANTES = restaurantesCtx.map(r => r.nombre);
 
@@ -30,25 +29,39 @@ export default function Users() {
   const [savedMsg, setSavedMsg] = useState("");
 
   const [modalEliminar, setModalEliminar] = useState(null);
+  const [showCreate, setShowCreate]       = useState(false);
+  const [createForm, setCreateForm]       = useState(EMPTY_FORM);
+  const [createErrors, setCreateErrors]   = useState({});
+  const [cargando, setCargando]           = useState(false);
 
-  function handleDelete() {
-    deleteUser(modalEliminar.id);
-    loadUsers();
-    setModalEliminar(null);
-    setSavedMsg("🗑️ Cuenta eliminada");
+  const loadUsers = async () => {
+    if (!token) return;
+    setCargando(true);
+    try {
+      const raw = await apiFetch("/api/users", {}, token);
+      const data = raw.map(u => ({
+        ...u,
+        nombre: u.name || u.nombre || "",
+        rol: (u.role || u.rol || "usuario").toLowerCase(),
+        restaurante: u.restaurant || u.restaurante || null,
+        fechaRegistro: u.createdAt || u.fechaRegistro || "",
+        activo: u.activo !== false,
+      }));
+      setUsers(data);
+    } catch (err) {
+      console.error("Error cargando usuarios:", err);
+      notify("❌ No se pudo cargar la lista de usuarios");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => { loadUsers(); }, [token]);
+
+  function notify(msg) {
+    setSavedMsg(msg);
     setTimeout(() => setSavedMsg(""), 3000);
   }
-
-  const [showCreate, setShowCreate]   = useState(false);
-  const [createForm, setCreateForm]   = useState(EMPTY_FORM);
-  const [createErrors, setCreateErrors] = useState({});
-
-  function loadUsers() {
-    const stored = localStorage.getItem("comanda_users");
-    if (stored) setUsers(JSON.parse(stored));
-  }
-
-  useEffect(() => { loadUsers(); }, []);
 
   const filtered = users.filter(u =>
     u.nombre.toLowerCase().includes(search.toLowerCase()) ||
@@ -65,48 +78,37 @@ export default function Users() {
     setEditForm({ nombre: "", email: "", rol: "", restaurante: "" });
   }
 
-  function saveEdit(userId) {
-    const data = {
-      nombre: editForm.nombre,
-      email: editForm.email,
-      rol: editForm.rol,
-      restaurante: editForm.rol === "personal" ? editForm.restaurante : null,
-    };
-    const result = adminUpdateUser(userId, data);
-    if (!result.ok) {
-      setSavedMsg("❌ " + result.error);
-      setTimeout(() => setSavedMsg(""), 3000);
-      return;
+  async function saveEdit(userId) {
+    try {
+      await apiFetch(`/api/users/${userId}/role`, {
+        method: "PUT",
+        body: JSON.stringify({ rol: editForm.rol }),
+      }, token);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? { ...u, rol: editForm.rol, nombre: editForm.nombre,
+                email: editForm.email, restaurante: editForm.restaurante || null }
+            : u
+        )
+      );
+      cancelEdit();
+      notify("Usuario actualizado correctamente");
+    } catch (err) {
+      notify("❌ " + err.message);
     }
-    loadUsers();
-    cancelEdit();
-    setSavedMsg("Usuario actualizado correctamente");
-    setTimeout(() => setSavedMsg(""), 3000);
   }
 
-  function deactivateUser(userId) {
-    if (!window.confirm("¿Estás seguro de que deseas desactivar esta cuenta?")) return;
-    const stored = localStorage.getItem("comanda_users");
-    const all = stored ? JSON.parse(stored) : [];
-    const updated = all.map(u =>
-      u.id === userId ? { ...u, activo: false } : u
-    );
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    loadUsers();
-    setSavedMsg("Cuenta desactivada");
-    setTimeout(() => setSavedMsg(""), 3000);
-  }
-
-  function reactivateUser(userId) {
-    const stored = localStorage.getItem("comanda_users");
-    const all = stored ? JSON.parse(stored) : [];
-    const updated = all.map(u =>
-      u.id === userId ? { ...u, activo: true } : u
-    );
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    loadUsers();
-    setSavedMsg("Cuenta activada");
-    setTimeout(() => setSavedMsg(""), 3000);
+  async function handleDelete() {
+    try {
+      await apiFetch(`/api/users/${modalEliminar.id}`, { method: "DELETE" }, token);
+      setUsers((prev) => prev.filter((u) => u.id !== modalEliminar.id));
+      setModalEliminar(null);
+      notify("🗑️ Cuenta eliminada");
+    } catch (err) {
+      setModalEliminar(null);
+      notify("❌ " + err.message);
+    }
   }
 
   function validateCreate() {
@@ -119,39 +121,32 @@ export default function Users() {
     return errs;
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     const errs = validateCreate();
     if (Object.keys(errs).length > 0) { setCreateErrors(errs); return; }
-
-    const stored = localStorage.getItem("comanda_users");
-    const all = stored ? JSON.parse(stored) : [];
-
-    if (all.find(u => u.email === createForm.email)) {
-      setCreateErrors({ email: "Este email ya está registrado" });
-      return;
+    try {
+      const newUser = await apiFetch("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          nombre: createForm.nombre,
+          email: createForm.email,
+          password: createForm.password,
+        }),
+      });
+      if (createForm.rol !== "usuario") {
+        await apiFetch(`/api/users/${newUser.id}/role`, {
+          method: "PUT",
+          body: JSON.stringify({ rol: createForm.rol }),
+        }, token);
+      }
+      setShowCreate(false);
+      setCreateForm(EMPTY_FORM);
+      setCreateErrors({});
+      notify("✅ Usuario creado exitosamente");
+      await loadUsers();
+    } catch (err) {
+      setCreateErrors({ email: err.message });
     }
-
-    const newUser = {
-      id: Date.now(),
-      nombre: createForm.nombre,
-      email: createForm.email,
-      password: createForm.password,
-      rol: createForm.rol,
-      restaurante: createForm.rol === "personal" ? createForm.restaurante : null,
-      avatar: null,
-      fechaRegistro: new Date().toLocaleDateString(),
-      reservas: [],
-      favoritos: [],
-      activo: true,
-    };
-
-    localStorage.setItem("comanda_users", JSON.stringify([...all, newUser]));
-    loadUsers();
-    setShowCreate(false);
-    setCreateForm(EMPTY_FORM);
-    setCreateErrors({});
-    setSavedMsg("✅ Usuario creado exitosamente");
-    setTimeout(() => setSavedMsg(""), 3000);
   }
 
   const inputStyle = {
@@ -365,23 +360,6 @@ export default function Users() {
                           >
                             <i className="bi bi-trash" /> Eliminar
                           </button>                        
-                        {!isMe && (
-                          isActive ? (
-                            <button
-                              onClick={() => deactivateUser(u.id)}
-                              style={{ background: "#fff0f0", color: "#842029", border: "1.5px solid #f8d7da", borderRadius: 8, padding: "5px 12px", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
-                            >
-                              <i className="bi bi-person-x" /> Desactivar
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => reactivateUser(u.id)}
-                              style={{ background: "#f0fff4", color: "#0f5132", border: "1.5px solid #b7f7cb", borderRadius: 8, padding: "5px 12px", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
-                            >
-                              <i className="bi bi-person-check" /> Activar
-                            </button>
-                          )
-                        )}
                       </div>
                     )}
                   </td>
