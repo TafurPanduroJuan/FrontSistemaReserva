@@ -63,7 +63,7 @@ export default function CreateRestaurant() {
                                   e.email        = "Ingresa un email válido.";
     return e;
   };
-  
+
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -120,3 +120,160 @@ export default function CreateRestaurant() {
       )}
  
       <form onSubmit={handleSubmit} noValidate></form>
+
+      {/* ── Sección 1: Identidad ──────────────────────────────────────── */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header fw-semibold">
+            <i className="bi bi-info-circle me-2 text-primary" />
+            Sección 1 — Identidad
+          </div>
+          <div className="card-body">
+            <div className="row g-3">
+ 
+              {/* Nombre */}
+              <div className="col-md-6">
+                <label className="form-label fw-semibold">
+                  Nombre del restaurante <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={form.nombre}
+                  onChange={handle}
+                  className={fieldClass("nombre")}
+                  placeholder="Ej: La Huerta del Sabor"
+                />
+                {errors.nombre && (
+                  <div className="invalid-feedback">{errors.nombre}</div>
+                )}
+              </div>
+ 
+              {/* Tipo */}
+              <div className="col-md-6">
+                <label className="form-label fw-semibold">
+                  Tipo de cocina <span className="text-danger">*</span>
+                </label>
+                <select
+                  name="tipo"
+                  value={form.tipo}
+                  onChange={handle}
+                  className={fieldClass("tipo")}
+                >
+                  <option value="">Seleccionar tipo...</option>
+                  {tiposComida.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+                {errors.tipo && (
+                  <div className="invalid-feedback">{errors.tipo}</div>
+                )}
+              </div>
+ 
+              {/* Mensaje personalizado */}
+              <div className="col-12">
+                <label className="form-label fw-semibold">
+                  Mensaje personalizado{" "}
+                  <span className="text-muted fw-normal">(slogan / bienvenida)</span>
+                </label>
+                <textarea
+                  name="mensajePersonalizado"
+                  value={form.mensajePersonalizado}
+                  onChange={handle}
+                  className="form-control"
+                  rows={3}
+                  placeholder="Ej: ¡El mejor sabor norteño en el corazón de la ciudad!"
+                />
+              </div>
+ 
+            </div>
+          </div>
+        </div>
+ 
+        {/* ── Sección 2: Ubicación y Horarios ──────────────────────────── */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header fw-semibold">
+            <i className="bi bi-geo-alt me-2 text-danger" />
+            Sección 2 — Ubicación y Horarios
+          </div>
+          <div className="card-body">
+            <div className="row g-3">
+ 
+              {/* Distrito */}
+              <div className="col-md-5">
+                <label className="form-label fw-semibold">
+                  Distrito <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="distrito"
+                  value={form.distrito}
+                  onChange={handle}
+                  list="lista-distritos-intra"
+                  className={fieldClass("distrito")}
+                  placeholder="Escribe o selecciona..."
+                />
+                <datalist id="lista-distritos-intra">
+                  {sugerenciasDistritos.map((d) => (
+                    <option key={d} value={d} />
+                  ))}
+                </datalist>
+                {errors.distrito && (
+                  <div className="invalid-feedback">{errors.distrito}</div>
+                )}
+              </div>
+ 
+              {/* Dirección */}
+              <div className="col-md-7">
+                <label className="form-label fw-semibold">
+                  Dirección exacta <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="direccion"
+                  value={form.direccion}
+                  onChange={handle}
+                  className={fieldClass("direccion")}
+                  placeholder="Av. / Jr. / Calle y número"
+                />
+                {errors.direccion && (
+                  <div className="invalid-feedback">{errors.direccion}</div>
+                )}
+              </div>
+ 
+              {/* Horario apertura */}
+              <div className="col-md-4">
+                <label className="form-label fw-semibold">
+                  Horario de apertura <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="time"
+                  name="horarioApertura"
+                  value={form.horarioApertura}
+                  onChange={handle}
+                  className={fieldClass("horarioApertura")}
+                />
+                {errors.horarioApertura && (
+                  <div className="invalid-feedback">{errors.horarioApertura}</div>
+                )}
+              </div>
+ 
+              {/* Horario cierre */}
+              <div className="col-md-4">
+                <label className="form-label fw-semibold">
+                  Horario de cierre <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="time"
+                  name="horarioCierre"
+                  value={form.horarioCierre}
+                  onChange={handle}
+                  className={fieldClass("horarioCierre")}
+                />
+                {errors.horarioCierre && (
+                  <div className="invalid-feedback">{errors.horarioCierre}</div>
+                )}
+              </div>
+ 
+            </div>
+          </div>
+        </div>
