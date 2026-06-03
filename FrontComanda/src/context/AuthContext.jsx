@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import { apiFetch } from "../services/api";
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -10,6 +10,20 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
+  // ── Normaliza la respuesta del backend al formato interno ─────────────────
+  function normalizeSession(data) {
+    return {
+      id:     data.id,
+      nombre: data.nombre || data.name || data.nombre, // backend devuelve 'nombre'
+      email:  data.email,
+      rol:    (data.role || data.rol || "usuario").toLowerCase(),
+      token:  data.token,
+      restaurante: data.restaurant || data.restaurante || null,
+      avatar:      data.avatar     || null,
+      telefono:    data.telefono   || null,
+    };
+  }
+
   // ── Login ──────────────────────────────────────────────────────────────────
   async function login(email, password) {
     try {
@@ -17,13 +31,7 @@ export function AuthProvider({ children }) {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
-      const session = {
-        id: data.id,
-        nombre: data.nombre,
-        email: data.email,
-        rol: data.role,
-        token: data.token,
-      };
+      const session = normalizeSession(data);
       setUser(session);
       localStorage.setItem("comanda_session", JSON.stringify(session));
       return { ok: true, user: session };
@@ -45,13 +53,7 @@ export function AuthProvider({ children }) {
         method: "POST",
         body: JSON.stringify({ nombre, email, password }),
       });
-      const session = {
-        id: data.id,
-        nombre: data.nombre,
-        email: data.email,
-        rol: data.role,
-        token: data.token,
-      };
+      const session = normalizeSession(data);
       setUser(session);
       localStorage.setItem("comanda_session", JSON.stringify(session));
       return { ok: true, user: session };
@@ -60,84 +62,64 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ── Reset password (simulado) ─────────────────────────────────────────────
+  // ── Reset password (simulado — el backend no implementa email aún) ────────
   function resetPassword(email) {
-    const users = initUsers();
-    const found = users.find((u) => u.email === email);
-    if (!found) return { ok: false, error: "No existe una cuenta con ese email." };
+    if (!email) return { ok: false, error: "Ingresa un email válido." };
+    // Por ahora simplemente simulamos que el email existe
+    // cuando el backend implemente la funcionalidad de email se conectará aquí
     return { ok: true };
   }
 
-  // ── Cambiar rol (desde la intranet del admin) ─────────────────────────────
-  function changeUserRole(userId, newRol, restaurante = null) {
-    const users = initUsers();
-    const updated = users.map((u) => {
-      if (u.id === userId) return { ...u, rol: newRol, restaurante };
-      return u;
-    });
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
+  // ── Cambiar rol de usuario (admin — llama al backend) ─────────────────────
+  async function changeUserRole(userId, newRol, restaurante = null) {
+    try {
+      await apiFetch(`/api/users/${userId}/role`, {
+        method: "PUT",
+        body: JSON.stringify({ rol: newRol, restaurante: restaurante || "" }),
+      }, user?.token);
 
-    // Si el usuario activo es el afectado, actualizar sesión
-    if (user && user.id === userId) {
-      const newSession = { ...user, rol: newRol, restaurante };
+      // Si el usuario activo es el afectado, actualizar sesión
+      if (user && user.id === userId) {
+        const newSession = { ...user, rol: newRol, restaurante };
+        setUser(newSession);
+        localStorage.setItem("comanda_session", JSON.stringify(newSession));
+      }
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }
+
+  // ── Eliminar usuario (admin — llama al backend) ────────────────────────────
+  async function deleteUser(userId) {
+    try {
+      await apiFetch(`/api/users/${userId}`, { method: "DELETE" }, user?.token);
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }
+
+  // ── Actualizar perfil de usuario (PUT /api/users/me) ──────────────────────
+  async function updateProfile(data) {
+    try {
+      const updated = await apiFetch(
+        "/api/users/me",
+        { method: "PUT", body: JSON.stringify(data) },
+        user?.token
+      );
+      const newSession = {
+        ...user,
+        nombre: updated.name || updated.nombre || user.nombre,
+        avatar: updated.avatar || user.avatar,
+        telefono: updated.telefono || user.telefono,
+      };
       setUser(newSession);
       localStorage.setItem("comanda_session", JSON.stringify(newSession));
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message };
     }
-  }
-
-  // ── Eliminar usuario ───────────────────────────────────────────────────────
-  function deleteUser(userId) {
-    const users = initUsers();
-    const updated = users.filter((u) => u.id !== userId);
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    return { ok: true };
-  }
-
-  // ── Editar datos de usuario desde el admin ────────────────────────────────
-  function adminUpdateUser(userId, data) {
-    const users = initUsers();
-    if (data.email) {
-      const duplicate = users.find((u) => u.email === data.email && u.id !== userId);
-      if (duplicate) return { ok: false, error: "El email ya está en uso." };
-    }
-    const updated = users.map((u) => (u.id === userId ? { ...u, ...data } : u));
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    if (user && user.id === userId) {
-      const newSession = { ...user, ...data };
-      setUser(newSession);
-      localStorage.setItem("comanda_session", JSON.stringify(newSession));
-    }
-    return { ok: true };
-  }
-
-  // ── Actualizar perfil de usuario ──────────────────────────────────────────
-  function updateProfile(data) {
-    const users = initUsers();
-    const updated = users.map((u) =>
-      u.id === user.id ? { ...u, ...data } : u
-    );
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    const newSession = { ...user, ...data };
-    setUser(newSession);
-    localStorage.setItem("comanda_session", JSON.stringify(newSession));
-  }
-
-  // ── Agregar reserva al usuario ────────────────────────────────────────────
-  function addReserva(reserva) {
-    if (!user) return;
-    const users = initUsers();
-    const updated = users.map((u) => {
-      if (u.id !== user.id) return u;
-      const existentes = u.reservas || [];
-      // Evitar duplicados por id
-      const yaExiste = existentes.some(r => r.id === reserva.id);
-      const reservas = yaExiste ? existentes : [...existentes, reserva];
-      return { ...u, reservas };
-    });
-    localStorage.setItem("comanda_users", JSON.stringify(updated));
-    const current = updated.find((u) => u.id === user.id);
-    setUser(current);
-    localStorage.setItem("comanda_session", JSON.stringify(current));
   }
 
   return (
@@ -151,12 +133,10 @@ export function AuthProvider({ children }) {
         resetPassword,
         changeUserRole,
         deleteUser,
-        adminUpdateUser,
         updateProfile,
-        addReserva,
-        isAdmin: user?.rol === "administrador",
+        isAdmin:    user?.rol === "administrador",
         isPersonal: user?.rol === "personal",
-        isUsuario: user?.rol === "usuario",
+        isUsuario:  user?.rol === "usuario",
       }}
     >
       {children}

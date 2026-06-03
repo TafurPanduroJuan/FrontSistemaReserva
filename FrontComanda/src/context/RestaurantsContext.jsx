@@ -20,12 +20,22 @@ export function RestaurantsProvider({ children }) {
     if (token) cargarSolicitudes();
   }, [token]);
 
+  const normalizeRestaurant = (r) => ({
+    ...r,
+    // Campos que el frontend espera con nombres distintos a los del backend
+    img:      r.img      || r.imagen   || null,
+    lugar:    r.lugar    || r.distrito  || r.direccion || "",
+    rating:   r.rating   != null ? r.rating   : null,
+    reseñas:  r.reseñas  != null ? r.reseñas  : 0,
+    precio:   r.precio   || null,
+  });
+
   const cargarRestaurantes = async () => {
     setCargando(true);
     setError(null);
     try {
       const data = await apiFetch("/api/restaurants");
-      setRestaurantes(data);
+      setRestaurantes(data.map(normalizeRestaurant));
     } catch (err) {
       setError(err.message);
       console.error("Error cargando restaurantes:", err);
@@ -39,7 +49,7 @@ export function RestaurantsProvider({ children }) {
       method: "POST",
       body: JSON.stringify(data),
     }, token);
-    setRestaurantes((prev) => [...prev, nuevo]);
+    setRestaurantes((prev) => [...prev, normalizeRestaurant(nuevo)]);
     return nuevo;
   };
 
@@ -49,7 +59,7 @@ export function RestaurantsProvider({ children }) {
       body: JSON.stringify(data),
     }, token);
     setRestaurantes((prev) =>
-      prev.map((r) => (r.id === actualizado.id ? actualizado : r))
+      prev.map((r) => (r.id === actualizado.id ? normalizeRestaurant(actualizado) : r))
     );
     return actualizado;
   };
