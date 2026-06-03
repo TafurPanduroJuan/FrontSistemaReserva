@@ -5,7 +5,7 @@ import { useAuth } from "./AuthContext";
 const RestaurantsContext = createContext(null);
 
 export function RestaurantsProvider({ children }) {
-  const { token } = useAuth();
+  const { token, isAdmin } = useAuth();
 
   const [restaurantes, setRestaurantes] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
@@ -16,13 +16,15 @@ export function RestaurantsProvider({ children }) {
     cargarRestaurantes();
   }, []);
 
+  // FIX: solo cargar solicitudes si el usuario es ADMINISTRADOR.
+  // Antes se llamaba con cualquier token, lo que generaba 403 para
+  // usuarios con rol "personal" o "usuario".
   useEffect(() => {
-    if (token) cargarSolicitudes();
-  }, [token]);
+    if (token && isAdmin) cargarSolicitudes();
+  }, [token, isAdmin]);
 
   const normalizeRestaurant = (r) => ({
     ...r,
-    // Campos que el frontend espera con nombres distintos a los del backend
     img:      r.img      || r.imagen   || null,
     lugar:    r.lugar    || r.distrito  || r.direccion || "",
     rating:   r.rating   != null ? r.rating   : null,
