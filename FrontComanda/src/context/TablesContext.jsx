@@ -11,6 +11,10 @@ export function TablesProvider({ children }) {
   const [reservas, setReservas] = useState([]);
   const [cargandoReservas, setCargandoReservas] = useState(false);
 
+  // Flag que avisa a TableManagement que debe recargar las mesas
+  // porque una cancelación liberó una mesa en el backend
+  const [mesasDesactualizadas, setMesasDesactualizadas] = useState(false);
+
   // ── Todas las mesas de un restaurante ─────────────────────────────────────
   const getMesas = async (restaurantId) => {
     return await apiFetch(`/api/tables?restaurantId=${restaurantId}`);
@@ -89,6 +93,12 @@ export function TablesProvider({ children }) {
       setReservas((prev) =>
         prev.map((r) => (r.id === reservaId ? { ...r, estado: nuevoEstado } : r))
       );
+      // Si se cancela la reserva, refrescar las mesas para que la mesa
+      // vuelva a aparecer como "disponible" en TableManagement
+      const esCancelacion = nuevoEstado.startsWith("cancelada");
+      if (esCancelacion) {
+        setMesasDesactualizadas(true);
+      }
       return true;
     } catch (err) {
       console.error("Error cambiando estado reserva:", err);
@@ -100,6 +110,8 @@ export function TablesProvider({ children }) {
     <TablesContext.Provider value={{
       reservas,
       cargandoReservas,
+      mesasDesactualizadas,
+      setMesasDesactualizadas,
       getMesas,
       getMesasDisponibles,
       crearMesa,
