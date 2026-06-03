@@ -1,175 +1,57 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext } from "react";
+import { apiFetch } from "../services/api";
+import { useAuth } from "./AuthContext";
 
-// ── Helpers localStorage ──────────────────────────────────────────────────────
-function load(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch { return fallback; }
-}
-function save(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
-}
-
-// ── Generador de mesas por restaurante ───────────────────────────────────────
-export const generarMesasIniciales = () =>
-  Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    numero: i + 1,
-    capacidad: [2, 4, 4, 6, 2, 4, 2, 8, 4, 4, 2, 4][i] || 4,
-    estado: "disponible",
-    zona: i < 4 ? "Terraza" : i < 8 ? "Salón Interior" : "VIP",
-  }));
-
-// ── Reservas iniciales de ejemplo ─────────────────────────────────────────────
-const INITIAL_RESERVAS = [
-  { id: 1, cliente: "María López",   email: "maria@gmail.com",   tel: "987654321", restaurante: "La Bella Italia", fecha: "2026-04-25", hora: "19:30", personas: 2, mesa: 3, zona: "Terraza",        notas: "Aniversario", estado: "pendiente" },
-  { id: 2, cliente: "Roberto Silva", email: "roberto@gmail.com", tel: "976543210", restaurante: "La Bella Italia", fecha: "2026-04-25", hora: "20:00", personas: 4, mesa: 7, zona: "Salón Interior", notas: "",            estado: "confirmada" },
-];
-
-// ── Context ───────────────────────────────────────────────────────────────────
 const TablesContext = createContext(null);
 
 export function TablesProvider({ children }) {
-  // datosGlobales: { [nombreRestaurante]: Mesa[] }
-  const [datosGlobales, setDatosGlobales] = useState(() =>
-    load("comanda_mesas_v2", {})
-  );
+  const { token } = useAuth();
 
-  // reservas: Reserva[]
-  const [reservas, setReservas] = useState(() =>
-    load("comanda_reservas_maestro", INITIAL_RESERVAS)
-  );
-
-  useEffect(() => { save("comanda_mesas_v2", datosGlobales); }, [datosGlobales]);
-  useEffect(() => { save("comanda_reservas_maestro", reservas); }, [reservas]);
-
-  // ── Mesas ─────────────────────────────────────────────────────────────────
-  const getMesas = (restaurante) =>
-    datosGlobales[restaurante] || generarMesasIniciales();
-
-  const cambiarEstadoMesa = (restaurante, mesaId, nuevoEstado) => {
-    const mesas = getMesas(restaurante).map(m =>
-      m.id === mesaId ? { ...m, estado: nuevoEstado } : m
-    );
-    setDatosGlobales(prev => ({ ...prev, [restaurante]: mesas }));
+  // Todas las mesas de un restaurante
+  const getMesas = async (restaurantId) => {
+    return await apiFetch(`/api/tables?restaurantId=${restaurantId}`);
   };
 
-  // ── Reservas ──────────────────────────────────────────────────────────────
+  // Solo mesas disponibles, con filtro opcional de zona
+  const getMesasDisponibles = async (restaurantId, zona = null) => {
+    const url = zona
+      ? `/api/tables/available?restaurantId=${restaurantId}&zona=${encodeURIComponent(zona)}`
+      : `/api/tables/available?restaurantId=${restaurantId}`;
+    return await apiFetch(url);
+  };
 
-  /**
-   * Agrega una nueva reserva (llamado desde el catálogo público).
-   * El localStorage ya fue escrito directamente por el catálogo,
-   * pero actualizamos el estado en memoria para que la intranet
-   * lo refleje sin recargar.
-   */
-  const agregarReserva = (nuevaReserva) => {
-    const conId = nuevaReserva.id
-      ? nuevaReserva
-      : { ...nuevaReserva, id: Date.now() };
-    setReservas(prev => {
-      // Evitar duplicados si ya vino del storage
-      const yaExiste = prev.some(r => r.id === conId.id);
-      return yaExiste ? prev : [...prev, conId];
+  // Crear reserva desde el catálogo público (sin token)
+  const agregarReserva = async (datos) => {
+    return await apiFetch("/api/tables/reserve", {
+      method: "POST",
+      body: JSON.stringify(datos),
     });
   };
 
-  const cambiarEstadoReserva = (reservaId, nuevoEstado) => {
-    const reserva = reservas.find(r => r.id === reservaId);
-    if (!reserva) return;
-
-    setReservas(prev =>
-      prev.map(r => r.id === reservaId ? { ...r, estado: nuevoEstado } : r)
+  // Cambiar estado de una reserva (intranet — requiere token)
+  const cambiarEstadoReserva = async (reservaId, nuevoEstado) => {
+    return await apiFetch(
+      `/api/reservations/${reservaId}/status`,
+      { method: "PATCH", body: JSON.stringify({ estado: nuevoEstado }) },
+      token
     );
-
-    // Sincronizar estado en comanda_users si la reserva tiene userId
-    if (reserva.userId) {
-      try {
-        const usersRaw = localStorage.getItem("comanda_users");
-        const users = usersRaw ? JSON.parse(usersRaw) : [];
-        const updatedUsers = users.map(u => {
-          if (u.id !== reserva.userId) return u;
-          const updatedReservas = (u.reservas || []).map(r =>
-            r.id === reservaId ? { ...r, estado: nuevoEstado } : r
-          );
-          return { ...u, reservas: updatedReservas };
-        });
-        localStorage.setItem("comanda_users", JSON.stringify(updatedUsers));
-
-        // Actualizar sesión activa si el afectado es el usuario logueado
-        const sessionRaw = localStorage.getItem("comanda_session");
-        if (sessionRaw) {
-          const session = JSON.parse(sessionRaw);
-          if (session.id === reserva.userId) {
-            const updatedSession = {
-              ...session,
-              reservas: (session.reservas || []).map(r =>
-                r.id === reservaId ? { ...r, estado: nuevoEstado } : r
-              ),
-            };
-            localStorage.setItem("comanda_session", JSON.stringify(updatedSession));
-          }
-        }
-
-        // Notificar a la pestaña del catálogo/cuenta para que se actualice
-        window.dispatchEvent(
-          new CustomEvent("comanda_reserva_actualizada", { detail: { reservaId, nuevoEstado } })
-        );
-      } catch {}
-    }
-
-    // Sincronizar estado de la mesa
-    if (nuevoEstado === "confirmada") {
-      cambiarEstadoMesa(reserva.restaurante, reserva.mesa, "reservada");
-    } else if (nuevoEstado === "cancelada") {
-      const otraConfirmada = reservas.some(
-        r => r.id !== reservaId &&
-             r.restaurante === reserva.restaurante &&
-             r.mesa === reserva.mesa &&
-             r.estado === "confirmada"
-      );
-      if (!otraConfirmada) {
-        cambiarEstadoMesa(reserva.restaurante, reserva.mesa, "disponible");
-      }
-    }
   };
 
-  // ── Sincronización en tiempo real con el catálogo público ────────────────
-  // Escucha el evento "storage" que dispara el navegador cuando OTRA pestaña
-  // (la del catálogo) escribe en localStorage. Así la intranet se actualiza
-  // automáticamente sin necesidad de recargar la página.
-  useEffect(() => {
-    function handleStorageChange(e) {
-      if (e.key === "comanda_reservas_maestro" && e.newValue) {
-        try {
-          const actualizadas = JSON.parse(e.newValue);
-          setReservas(actualizadas);
-        } catch {}
-      }
-    }
-    // Evento cross-tab (cuando el catálogo está en otra pestaña del navegador)
-    window.addEventListener("storage", handleStorageChange);
-
-    // Evento mismo-tab (cuando el catálogo y la intranet están en la misma SPA)
-    function handleMismaTab(e) {
-      if (e.detail) setReservas(e.detail);
-    }
-    window.addEventListener("comanda_nueva_reserva", handleMismaTab);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("comanda_nueva_reserva", handleMismaTab);
-    };
-  }, []);
+  // Obtener reservas de un restaurante con filtros opcionales (intranet)
+  const getReservas = async (restaurantId, fecha = null, estado = null) => {
+    let url = `/api/reservations?restaurantId=${restaurantId}`;
+    if (fecha)  url += `&fecha=${fecha}`;
+    if (estado) url += `&estado=${estado}`;
+    return await apiFetch(url, {}, token);
+  };
 
   return (
     <TablesContext.Provider value={{
-      datosGlobales,
       getMesas,
-      cambiarEstadoMesa,
-      reservas,
+      getMesasDisponibles,
       agregarReserva,
       cambiarEstadoReserva,
+      getReservas,
     }}>
       {children}
     </TablesContext.Provider>
@@ -178,6 +60,6 @@ export function TablesProvider({ children }) {
 
 export function useTables() {
   const ctx = useContext(TablesContext);
-  if (!ctx) throw new Error("useTables must be used inside MesasProvider");
+  if (!ctx) throw new Error("useTables must be used inside TablesProvider");
   return ctx;
 }

@@ -1,7 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../assets/styles/form.css";
-import { restaurantes } from "../data/data";
-import { useComments } from "../context/CommentsContext";
 
 const tipoOptions = [
   {
@@ -38,6 +36,7 @@ const initialForm = {
   correo: "",
   telefono: "",
   restaurante: "",
+  restauranteId: null,
   tipo: "",
   asunto: "",
   calificacion: 0,
@@ -46,8 +45,14 @@ const initialForm = {
 };
 
 function Form() {
-  
-  const { agregarComentario } = useComments();
+  const [restaurantesApi, setRestaurantesApi] = useState([]);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/restaurants`)
+      .then(r => r.json())
+      .then(setRestaurantesApi)
+      .catch(console.error);
+  }, []);
 
   const [form, setForm] = useState(initialForm);
   const [hoverStar, setHoverStar] = useState(0);
@@ -79,6 +84,7 @@ function Form() {
       // Si cambia el tipo a comentario, limpiar el restaurante
       if (name === "tipo" && nuevoValor === "comentario") {
         updated.restaurante = "";
+        updated.restauranteId = null;
       }
       return updated;
     });
@@ -122,28 +128,28 @@ function Form() {
     if (!validarStep(3)) return;
     setCargando(true);
 
-   
     const payload = {
-      nombre: form.nombre.trim(),
-      apellido: form.apellido.trim(),
-      correo: form.correo.trim(),
-      telefono: form.telefono.trim() || null,
-      restaurante: form.restaurante,
-      tipo: form.tipo,
-      asunto: form.asunto.trim(),
+      usuario:      `${form.nombre.trim()} ${form.apellido.trim()}`,
+      email:        form.correo.trim(),
+      telefono:     form.telefono || null,
+      tipo:         form.tipo,
+      asunto:       form.asunto.trim(),
+      mensaje:      form.mensaje.trim(),
       calificacion: form.calificacion || null,
-      mensaje: form.mensaje.trim(),
-      fecha: new Date().toISOString(),
+      restaurant:   form.restauranteId ? { id: form.restauranteId } : null,
     };
 
     try {
-      
-      agregarComentario(payload);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Error al enviar comentario");
       setEnviado(true);
     } catch (error) {
       console.error("Error al enviar el formulario:", error.message);
-     
-      setEnviado(true);
+      alert("Ocurrió un error al enviar tu mensaje. Por favor intenta nuevamente.");
     } finally {
       setCargando(false);
     }
@@ -320,10 +326,19 @@ function Form() {
                   <label className="form-label">Restaurante <span className="required">*</span></label>
                   <div className="input-wrapper">
                     <i className="bi bi-shop input-icon"></i>
-                    <select name="restaurante" className={`form-input form-select-custom ${errores.restaurante ? "input-error" : ""}`} value={form.restaurante} onChange={handleChange}>
+                  <select name="restaurante" className={`form-input form-select-custom ${errores.restaurante ? "input-error" : ""}`} value={form.restaurante}
+                    onChange={(e) => {
+                      const seleccionado = restaurantesApi.find(r => r.nombre === e.target.value);
+                      setForm(prev => ({
+                        ...prev,
+                        restaurante: e.target.value,
+                        restauranteId: seleccionado?.id || null,
+                      }));
+                      if (errores.restaurante) setErrores(prev => ({ ...prev, restaurante: "" }));
+                    }}>
                       <option value="">— Selecciona el restaurante —</option>
-                      {restaurantes.map((r) => (
-                        <option key={r.nombre} value={r.nombre}>{r.nombre} · {r.lugar}</option>
+                      {restaurantesApi.map((r) => (
+                        <option key={r.id} value={r.nombre}>{r.nombre} · {r.distrito}</option>
                       ))}
                     </select>
                   </div>

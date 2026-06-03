@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import "../assets/styles/catalog.css";
-import { restaurantes as restaurantesEstaticos } from "../data/data";
-import { useRestaurants } from "../context/RestaurantsContext";
 import BookingModal from "../components/BookingModal";
 
 const PRECIOS = ["$", "$$", "$$$", "$$$$"];
@@ -17,56 +15,38 @@ const ORDENAR = [
 
 const precioNum = (p) => (p || "").length;
 
-// Convierte restaurante del contexto (formato intranet) al formato del catálogo
+// Convierte restaurante del backend al formato del catálogo
 function normalizarRestaurante(r) {
-  if (r.img && r.lugar) {
-    return {
-      id: r.id || r.nombre,
-      nombre: r.nombre,
-      lugar: r.lugar,
-      hora: r.hora || "—",
-      mesas: r.mesas ?? 0,
-      precio: r.precio || "$",
-      etiqueta: r.etiqueta || "Hoy",
-      tipo: r.tipo || "Otro",
-      img: r.img,
-      rating: r.rating ?? 4.0,
-      reseñas: r.reseñas ?? 0,
-    };
-  }
-  // Formato intranet/NuevoRestaurante → normalizar al formato del catálogo
   return {
-    id: r.id || r.nombre,
-    nombre: r.nombre,
-    lugar: r.distrito || r.direccion || "Lima",
-    hora: r.horario_apertura || "—",
-    mesas: r.mesas ?? 0,
-    precio: r.precio || "$",
-    etiqueta: r.etiqueta || "Hoy",
-    tipo: r.tipo || "Otro",
-    img:
-      r.imagen ||
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400",
-    rating: r.rating ?? 4.0,
-    reseñas: r.reseñas ?? 0,
+    id:           r.id,
+    nombre:       r.nombre,
+    lugar:        r.distrito || "Lima",
+    horaApertura: r.horarioApertura || "—",
+    horaCierre:   r.horarioCierre   || "—",
+    mesas:        r.mesas ?? 0,
+    precio:       "$",
+    tipo:         r.tipo || "Otro",
+    img:          r.imagen || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400",
+    rating:       4.0,
+    reseñas:      0,
+    etiqueta:     "Hoy",
   };
 }
 
 function Catalog() {
   const [searchParams] = useSearchParams();
-  const { restaurantes: restaurantesContexto } = useRestaurants();
+  const [restaurantesBackend, setRestaurantesBackend] = useState([]);
 
-  // Fusionar restaurantes del contexto con los estáticos sin duplicar
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/restaurants`)
+      .then(r => r.json())
+      .then(setRestaurantesBackend)
+      .catch(console.error);
+  }, []);
+
   const todosLosRestaurantes = useMemo(() => {
-    const normalizados = restaurantesContexto.map(normalizarRestaurante);
-    const nombresEnContexto = new Set(
-      normalizados.map((r) => r.nombre.toLowerCase())
-    );
-    const estaticosExtra = restaurantesEstaticos
-      .filter((r) => !nombresEnContexto.has(r.nombre.toLowerCase()))
-      .map(normalizarRestaurante);
-    return [...normalizados, ...estaticosExtra];
-  }, [restaurantesContexto]);
+    return restaurantesBackend.map(normalizarRestaurante);
+  }, [restaurantesBackend]);
 
   // Tipos únicos dinámicos (incluye tipos de restaurantes nuevos)
   const TIPOS = useMemo(
@@ -326,7 +306,7 @@ function Catalog() {
                     <div className="catalog-card-title">{rest.nombre}</div>
                     <div className="catalog-card-meta">
                       <span>📍 {rest.lugar}</span>
-                      <span>🕒 {rest.hora}</span>
+                      <span>🕒 {rest.horaApertura} – {rest.horaCierre}</span>
                       <span>🍽️ {rest.mesas} mesas disponibles</span>
                       <span>⭐ {rest.rating} ({rest.reseñas}+ reseñas)</span>
                     </div>
