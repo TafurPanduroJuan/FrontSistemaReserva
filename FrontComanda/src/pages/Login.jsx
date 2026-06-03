@@ -78,30 +78,6 @@ export default function Login() {
             </div>
 
             {/* Credenciales de prueba */}
-            <div className="auth-demo-pills">
-              <button
-                type="button"
-                className="demo-pill"
-                onClick={() => setForm({ email: "admin@comanda.com", password: "admin123" })}
-              >
-                <i className="bi bi-shield-check" /> Admin
-              </button>
-              <button
-                type="button"
-                className="demo-pill"
-                onClick={() => setForm({ email: "personal@labellaitalia.com", password: "personal123" })}
-              >
-                <i className="bi bi-person-badge" /> Personal
-              </button>
-              <button
-                type="button"
-                className="demo-pill"
-                onClick={() => setForm({ email: "usuario@gmail.com", password: "usuario123" })}
-              >
-                <i className="bi bi-person" /> Usuario
-              </button>
-            </div>
-
             <form onSubmit={handleSubmit} className="auth-form" noValidate>
               <div className="auth-field">
                 <label className="auth-label">Correo electrónico</label>
