@@ -334,3 +334,51 @@ export default function CreateRestaurant() {
             </div>
           </div>
         </div>
+
+        {/* ── Sección 4: Contacto ───────────────────────────────────────── */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header fw-semibold">
+            <i className="bi bi-telephone me-2 text-info" />
+            Sección 4 — Contacto
+          </div>
+          <div className="card-body">
+            <div className="row g-3">
+ 
+              {/* Teléfono */}
+              <div className="col-md-4">
+                <label className="form-label fw-semibold">Teléfono</label>
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={form.telefono}
+                  onChange={(e) =>
+                    handle({ target: { name: "telefono", value: e.target.value.replace(/\D/g, "").slice(0, 9) } })
+                  }
+                  className={fieldClass("telefono")}
+                  placeholder="9 dígitos"
+                  maxLength={9}
+                />
+                {errors.telefono && (
+                  <div className="invalid-feedback">{errors.telefono}</div>
+                )}
+              </div>
+ 
+              {/* Email */}
+              <div className="col-md-8">
+                <label className="form-label fw-semibold">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handle}
+                  className={fieldClass("email")}
+                  placeholder="contacto@restaurante.com"
+                />
+                {errors.email && (
+                  <div className="invalid-feedback">{errors.email}</div>
+                )}
+              </div>
+ 
+            </div>
+          </div>
+        </div>
