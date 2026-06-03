@@ -63,3 +63,60 @@ export default function CreateRestaurant() {
                                   e.email        = "Ingresa un email válido.";
     return e;
   };
+  
+  // ── Submit ────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    const validaciones = validar();
+    if (Object.keys(validaciones).length > 0) {
+      setErrors(validaciones);
+      return;
+    }
+ 
+    setLoading(true);
+    try {
+      await agregarRestaurante({
+        ...form,
+        telefono:       parseInt(form.telefono) || null,
+        mesas:          parseInt(form.mesas),
+        horarioApertura: form.horarioApertura,
+        horarioCierre:   form.horarioCierre,
+      });
+      navigate("/intranet/restaurantes");
+    } catch (err) {
+      setError("Error al crear el restaurante: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+ 
+  // ── Helpers de estilo para feedback visual ────────────────────────────────
+  const fieldClass = (name) =>
+    `form-control${errors[name] ? " is-invalid" : ""}`;
+ 
+  return (
+    <div className="container py-4" style={{ maxWidth: 860 }}>
+      {/* Cabecera */}
+      <div className="d-flex align-items-center gap-3 mb-4">
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          onClick={() => navigate("/intranet/restaurantes")}
+        >
+          <i className="bi bi-arrow-left me-1" />
+          Volver
+        </button>
+        <h4 className="mb-0">
+          <i className="bi bi-shop-window me-2 text-warning" />
+          Crear restaurante
+        </h4>
+      </div>
+ 
+      {error && (
+        <div className="alert alert-danger d-flex align-items-center gap-2">
+          <i className="bi bi-exclamation-triangle-fill" />
+          {error}
+        </div>
+      )}
+ 
+      <form onSubmit={handleSubmit} noValidate></form>
