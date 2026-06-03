@@ -28,6 +28,7 @@ function RegisterRestaurant() {
   const { agregarSolicitud } = useRestaurants();
   const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
+  const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -58,6 +59,7 @@ function RegisterRestaurant() {
   const handleImagen = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
@@ -92,21 +94,33 @@ function RegisterRestaurant() {
       return;
     }
 
-    const payload = {
-      nombre:              form.nombre.trim(),
-      propietario:         form.propietario.trim(),
-      email:               form.email.trim(),
-      tipo:                form.tipo,
-      distrito:            form.distrito.trim(),
-      direccion:           form.direccion.trim(),
-      telefono:            parseInt(form.telefono),
-      descripcion:         form.descripcion.trim() || "Solicitud enviada desde el formulario público.",
-      mensajePersonalizado: form.mensajePersonalizado.trim() || null,
-      horarioApertura:     form.horarioApertura || null,
-      horarioCierre:       form.horarioCierre || null,
+    const buildPayload = async () => {
+      let imagenBase64 = null;
+      if (imageFile) {
+        imagenBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(imageFile);
+        });
+      }
+      return {
+        nombre:              form.nombre.trim(),
+        propietario:         form.propietario.trim(),
+        email:               form.email.trim(),
+        tipo:                form.tipo,
+        distrito:            form.distrito.trim(),
+        direccion:           form.direccion.trim(),
+        telefono:            parseInt(form.telefono),
+        descripcion:         form.descripcion.trim() || "Solicitud enviada desde el formulario público.",
+        mensajePersonalizado: form.mensajePersonalizado.trim() || null,
+        horarioApertura:     form.horarioApertura || null,
+        horarioCierre:       form.horarioCierre || null,
+        imagen:              imagenBase64,
+      };
     };
 
     try {
+      const payload = await buildPayload();
       await agregarSolicitud(payload);
       setSubmitted(true);
     } catch (err) {
@@ -165,7 +179,7 @@ function RegisterRestaurant() {
               padding: "12px 28px", borderRadius: 10, border: "1.5px solid #e8e0d8",
               background: "white", color: "#555", fontWeight: 600, cursor: "pointer", fontSize: "0.9rem",
             }}>Volver al inicio</button>
-            <button onClick={() => { setForm(initialForm); setPreview(null); setSubmitted(false); }} style={{
+            <button onClick={() => { setForm(initialForm); setPreview(null); setImageFile(null); setSubmitted(false); }} style={{
               padding: "12px 28px", borderRadius: 10, border: "none",
               background: "#F4956A",
               color: "white", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
@@ -396,7 +410,7 @@ function RegisterRestaurant() {
                   {preview ? (
                     <>
                       <img src={preview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      <button type="button" onClick={() => setPreview(null)} style={{
+                      <button type="button" onClick={() => { setPreview(null); setImageFile(null); }} style={{
                         position: "absolute", top: 6, right: 6, background: "#ef4444",
                         color: "white", border: "none", borderRadius: "50%",
                         width: 26, height: 26, cursor: "pointer", fontSize: "1.1rem",
@@ -419,8 +433,8 @@ function RegisterRestaurant() {
                   <p style={{ fontSize: "0.78rem", color: "#bbb", marginTop: 8, marginBottom: 0 }}>
                     Formatos: JPG, PNG, WEBP · Máx. 5MB
                   </p>
-                  <p style={{ fontSize: "0.78rem", color: "#e67e22", marginTop: 8, marginBottom: 0 }}>
-                    ℹ️ La imagen podrá cargarse una vez que tu solicitud sea aceptada.
+                  <p style={{ fontSize: "0.78rem", color: "#22c55e", marginTop: 8, marginBottom: 0 }}>
+                    ✓ La imagen se enviará junto con tu solicitud y aparecerá visible al admin.
                   </p>
                 </div>
               </div>
@@ -441,7 +455,7 @@ function RegisterRestaurant() {
 
               <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", flexWrap: "wrap" }}>
                 <button type="button"
-                  onClick={() => { setForm(initialForm); setPreview(null); setErrors({}); }}
+                  onClick={() => { setForm(initialForm); setPreview(null); setImageFile(null); setErrors({}); }}
                   style={{
                     padding: "12px 24px", borderRadius: 10, border: "1.5px solid #e8e0d8",
                     background: "white", color: "#999", fontWeight: 600, cursor: "pointer", fontSize: "0.9rem",
