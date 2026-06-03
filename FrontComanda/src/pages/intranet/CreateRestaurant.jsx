@@ -31,6 +31,8 @@ const initialForm = {
 
 export default function CreateRestaurant() {
   const { agregarRestaurante } = useRestaurants();
+  // FIX: la ruta definida en App.jsx es /intranet/restaurants (inglés)
+  // Antes se redirigía a /intranet/restaurantes (español) → pantalla en blanco
   const navigate = useNavigate();
 
   const [form, setForm] = useState(initialForm);
@@ -42,7 +44,6 @@ export default function CreateRestaurant() {
   const handle = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    // Limpiar el error del campo al escribir
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -78,12 +79,13 @@ export default function CreateRestaurant() {
     try {
       await agregarRestaurante({
         ...form,
-        telefono:       parseInt(form.telefono) || null,
-        mesas:          parseInt(form.mesas),
+        telefono:        parseInt(form.telefono) || null,
+        mesas:           parseInt(form.mesas),
         horarioApertura: form.horarioApertura,
         horarioCierre:   form.horarioCierre,
       });
-      navigate("/intranet/restaurantes");
+      // FIX: ruta corregida de /intranet/restaurantes → /intranet/restaurants
+      navigate("/intranet/restaurants");
     } catch (err) {
       setError("Error al crear el restaurante: " + err.message);
     } finally {
@@ -91,7 +93,6 @@ export default function CreateRestaurant() {
     }
   };
 
-  // ── Helpers de estilo para feedback visual ────────────────────────────────
   const fieldClass = (name) =>
     `form-control${errors[name] ? " is-invalid" : ""}`;
 
@@ -101,7 +102,8 @@ export default function CreateRestaurant() {
       <div className="d-flex align-items-center gap-3 mb-4">
         <button
           className="btn btn-outline-secondary btn-sm"
-          onClick={() => navigate("/intranet/restaurantes")}
+          // FIX: ruta corregida aquí también
+          onClick={() => navigate("/intranet/restaurants")}
         >
           <i className="bi bi-arrow-left me-1" />
           Volver
@@ -388,7 +390,7 @@ export default function CreateRestaurant() {
           <button
             type="button"
             className="btn btn-outline-secondary"
-            onClick={() => navigate("/intranet/restaurantes")}
+            onClick={() => navigate("/intranet/restaurants")}
           >
             Cancelar
           </button>
