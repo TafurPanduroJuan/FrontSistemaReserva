@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRestaurants } from "../../context/RestaurantsContext";
- 
+
 // ── Opciones reutilizadas del formulario público ──────────────────────────────
 const tiposComida = [
   "Criolla", "Italiana", "Japonesa", "Mariscos", "Vegana",
   "Parrilla", "Mexicana", "Peruana", "Francesa", "Fusión",
   "Moderna", "Asiática", "Postres",
 ];
- 
+
 const sugerenciasDistritos = [
   "Miraflores", "San Isidro", "Barranco", "Surco", "La Molina",
   "Chorrillos", "Lince", "Jesús María", "Pueblo Libre", "Magdalena",
 ];
- 
+
 // ── Estado inicial (todos los campos de RestaurantEntity) ─────────────────────
 const initialForm = {
   nombre: "",
@@ -28,16 +28,16 @@ const initialForm = {
   horarioApertura: "",
   horarioCierre: "",
 };
- 
+
 export default function CreateRestaurant() {
   const { agregarRestaurante } = useRestaurants();
   const navigate = useNavigate();
- 
+
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
- 
+
   // ── Manejador genérico de campos ──────────────────────────────────────────
   const handle = (e) => {
     const { name, value } = e.target;
@@ -45,7 +45,7 @@ export default function CreateRestaurant() {
     // Limpiar el error del campo al escribir
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
- 
+
   // ── Validaciones ──────────────────────────────────────────────────────────
   const validar = () => {
     const e = {};
@@ -73,7 +73,7 @@ export default function CreateRestaurant() {
       setErrors(validaciones);
       return;
     }
- 
+
     setLoading(true);
     try {
       await agregarRestaurante({
@@ -90,11 +90,11 @@ export default function CreateRestaurant() {
       setLoading(false);
     }
   };
- 
+
   // ── Helpers de estilo para feedback visual ────────────────────────────────
   const fieldClass = (name) =>
     `form-control${errors[name] ? " is-invalid" : ""}`;
- 
+
   return (
     <div className="container py-4" style={{ maxWidth: 860 }}>
       {/* Cabecera */}
@@ -111,17 +111,17 @@ export default function CreateRestaurant() {
           Crear restaurante
         </h4>
       </div>
- 
+
       {error && (
         <div className="alert alert-danger d-flex align-items-center gap-2">
           <i className="bi bi-exclamation-triangle-fill" />
           {error}
         </div>
       )}
- 
-      <form onSubmit={handleSubmit} noValidate></form>
 
-      {/* ── Sección 1: Identidad ──────────────────────────────────────── */}
+      <form onSubmit={handleSubmit} noValidate>
+
+        {/* ── Sección 1: Identidad ──────────────────────────────────────── */}
         <div className="card mb-4 shadow-sm">
           <div className="card-header fw-semibold">
             <i className="bi bi-info-circle me-2 text-primary" />
@@ -129,7 +129,7 @@ export default function CreateRestaurant() {
           </div>
           <div className="card-body">
             <div className="row g-3">
- 
+
               {/* Nombre */}
               <div className="col-md-6">
                 <label className="form-label fw-semibold">
@@ -147,7 +147,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.nombre}</div>
                 )}
               </div>
- 
+
               {/* Tipo */}
               <div className="col-md-6">
                 <label className="form-label fw-semibold">
@@ -168,7 +168,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.tipo}</div>
                 )}
               </div>
- 
+
               {/* Mensaje personalizado */}
               <div className="col-12">
                 <label className="form-label fw-semibold">
@@ -184,11 +184,11 @@ export default function CreateRestaurant() {
                   placeholder="Ej: ¡El mejor sabor norteño en el corazón de la ciudad!"
                 />
               </div>
- 
+
             </div>
           </div>
         </div>
- 
+
         {/* ── Sección 2: Ubicación y Horarios ──────────────────────────── */}
         <div className="card mb-4 shadow-sm">
           <div className="card-header fw-semibold">
@@ -197,7 +197,7 @@ export default function CreateRestaurant() {
           </div>
           <div className="card-body">
             <div className="row g-3">
- 
+
               {/* Distrito */}
               <div className="col-md-5">
                 <label className="form-label fw-semibold">
@@ -221,7 +221,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.distrito}</div>
                 )}
               </div>
- 
+
               {/* Dirección */}
               <div className="col-md-7">
                 <label className="form-label fw-semibold">
@@ -239,7 +239,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.direccion}</div>
                 )}
               </div>
- 
+
               {/* Horario apertura */}
               <div className="col-md-4">
                 <label className="form-label fw-semibold">
@@ -256,7 +256,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.horarioApertura}</div>
                 )}
               </div>
- 
+
               {/* Horario cierre */}
               <div className="col-md-4">
                 <label className="form-label fw-semibold">
@@ -273,7 +273,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.horarioCierre}</div>
                 )}
               </div>
- 
+
             </div>
           </div>
         </div>
@@ -286,7 +286,7 @@ export default function CreateRestaurant() {
           </div>
           <div className="card-body">
             <div className="row g-3">
- 
+
               {/* Mesas */}
               <div className="col-md-4">
                 <label className="form-label fw-semibold">
@@ -305,7 +305,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.mesas}</div>
                 )}
               </div>
- 
+
               {/* Imagen (URL) */}
               <div className="col-md-8">
                 <label className="form-label fw-semibold">
@@ -330,7 +330,7 @@ export default function CreateRestaurant() {
                   />
                 )}
               </div>
- 
+
             </div>
           </div>
         </div>
@@ -343,7 +343,7 @@ export default function CreateRestaurant() {
           </div>
           <div className="card-body">
             <div className="row g-3">
- 
+
               {/* Teléfono */}
               <div className="col-md-4">
                 <label className="form-label fw-semibold">Teléfono</label>
@@ -362,7 +362,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.telefono}</div>
                 )}
               </div>
- 
+
               {/* Email */}
               <div className="col-md-8">
                 <label className="form-label fw-semibold">Email</label>
@@ -378,7 +378,7 @@ export default function CreateRestaurant() {
                   <div className="invalid-feedback">{errors.email}</div>
                 )}
               </div>
- 
+
             </div>
           </div>
         </div>
@@ -410,7 +410,7 @@ export default function CreateRestaurant() {
             )}
           </button>
         </div>
- 
+
       </form>
     </div>
   );
