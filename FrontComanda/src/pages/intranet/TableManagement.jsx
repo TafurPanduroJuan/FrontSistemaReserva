@@ -10,7 +10,7 @@ const ESTADOS = {
 };
 
 function TableManagement() {
-  const { getMesas, crearMesa, eliminarMesa } = useTables();
+  const { getMesas, crearMesa, eliminarMesa, mesasDesactualizadas, setMesasDesactualizadas } = useTables();
   const { restaurantes: restaurantesCtx } = useRestaurants();
   const { user, isAdmin } = useAuth();
 
@@ -47,6 +47,14 @@ function TableManagement() {
       loadMesas(restauranteActivo.id);
     }
   }, [restauranteActivo]);
+
+  // Recargar mesas si una reserva fue cancelada desde Bookings
+  useEffect(() => {
+    if (mesasDesactualizadas && restauranteActivo?.id) {
+      loadMesas(restauranteActivo.id);
+      setMesasDesactualizadas(false);
+    }
+  }, [mesasDesactualizadas]);
 
   const loadMesas = async (restaurantId) => {
     setCargando(true);
