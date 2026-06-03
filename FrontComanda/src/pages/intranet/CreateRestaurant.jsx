@@ -382,3 +382,36 @@ export default function CreateRestaurant() {
             </div>
           </div>
         </div>
+
+        {/* ── Botones de acción ─────────────────────────────────────────── */}
+        <div className="d-flex gap-3 justify-content-end">
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={() => navigate("/intranet/restaurantes")}
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="btn btn-warning fw-semibold px-4"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" />
+                Creando...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-plus-circle me-2" />
+                Crear restaurante
+              </>
+            )}
+          </button>
+        </div>
+ 
+      </form>
+    </div>
+  );
+}
