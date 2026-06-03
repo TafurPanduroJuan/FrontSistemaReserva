@@ -277,3 +277,60 @@ export default function CreateRestaurant() {
             </div>
           </div>
         </div>
+
+        {/* ── Sección 3: Operación ──────────────────────────────────────── */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header fw-semibold">
+            <i className="bi bi-gear me-2 text-success" />
+            Sección 3 — Operación
+          </div>
+          <div className="card-body">
+            <div className="row g-3">
+ 
+              {/* Mesas */}
+              <div className="col-md-4">
+                <label className="form-label fw-semibold">
+                  Cantidad de mesas <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="mesas"
+                  value={form.mesas}
+                  onChange={handle}
+                  min="1"
+                  className={fieldClass("mesas")}
+                  placeholder="Ej: 12"
+                />
+                {errors.mesas && (
+                  <div className="invalid-feedback">{errors.mesas}</div>
+                )}
+              </div>
+ 
+              {/* Imagen (URL) */}
+              <div className="col-md-8">
+                <label className="form-label fw-semibold">
+                  URL de imagen{" "}
+                  <span className="text-muted fw-normal">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="imagen"
+                  value={form.imagen}
+                  onChange={handle}
+                  className="form-control"
+                  placeholder="https://ejemplo.com/foto.jpg"
+                />
+                {form.imagen && (
+                  <img
+                    src={form.imagen}
+                    alt="Preview"
+                    className="mt-2 rounded"
+                    style={{ height: 80, objectFit: "cover" }}
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                )}
+              </div>
+ 
+            </div>
+          </div>
+        </div>
