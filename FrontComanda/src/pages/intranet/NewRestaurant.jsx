@@ -90,11 +90,13 @@ function NewRestaurant() {
   /* ── Validación ── */
   const validate = () => {
     const e = {};
-    if (!form.nombre.trim())    e.nombre    = "El nombre es requerido";
-    if (!form.tipo)             e.tipo      = "Selecciona un tipo de cocina";
-    if (!form.distrito.trim())  e.distrito  = "Ingresa un distrito o zona";
-    if (!form.direccion.trim()) e.direccion = "La dirección exacta es requerida";
-    if (!form.email.trim())     e.email     = "El email es requerido";
+    if (!form.nombre.trim())           e.nombre           = "El nombre es requerido";
+    if (!form.tipo)                    e.tipo             = "Selecciona un tipo de cocina";
+    if (!form.distrito.trim())         e.distrito         = "Ingresa un distrito o zona";
+    if (!form.direccion.trim())        e.direccion        = "La dirección exacta es requerida";
+    if (!form.horario_apertura.trim()) e.horario_apertura = "El horario de apertura es requerido";
+    if (!form.horario_cierre.trim())   e.horario_cierre   = "El horario de cierre es requerido";
+    if (!form.email.trim())            e.email            = "El email es requerido";
     if (!form.telefono.trim()) {
       e.telefono = "El teléfono es requerido";
     } else if (form.telefono.length !== 9) {
@@ -256,14 +258,16 @@ function NewRestaurant() {
             </p>
             <div className="row g-3">
               <div className="col-md-4">
-                <label style={lbl}>Horario de Apertura</label>
-                <input name="horario_apertura" value={form.horario_apertura} onChange={handle}
-                  style={inp("horario_apertura")} placeholder="Ej: 12:00 PM" />
+                <label style={lbl}>Horario de Apertura *</label>
+                <input type="time" name="horario_apertura" value={form.horario_apertura} onChange={handle}
+                  style={inp("horario_apertura")} />
+                {errors.horario_apertura && <small style={{ color:"#ef4444" }}>{errors.horario_apertura}</small>}
               </div>
               <div className="col-md-4">
-                <label style={lbl}>Horario de Cierre</label>
-                <input name="horario_cierre" value={form.horario_cierre} onChange={handle}
-                  style={inp("horario_cierre")} placeholder="Ej: 11:00 PM" />
+                <label style={lbl}>Horario de Cierre *</label>
+                <input type="time" name="horario_cierre" value={form.horario_cierre} onChange={handle}
+                  style={inp("horario_cierre")} />
+                {errors.horario_cierre && <small style={{ color:"#ef4444" }}>{errors.horario_cierre}</small>}
               </div>
               <div className="col-md-4">
                 <label style={lbl}>N° de Mesas</label>
