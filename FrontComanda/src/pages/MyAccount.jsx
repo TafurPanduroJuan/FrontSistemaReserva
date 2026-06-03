@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import '../assets/styles/myAccount.css'
+import { apiFetch } from "../services/api";
+import '../assets/styles/myAccount.css';
 
 const TABS = ["reservas", "favoritos", "perfil"];
 
@@ -19,8 +20,9 @@ function puedeCancel(reserva) {
 }
 
 export default function MyAccount() {
-  const { user, logout, updateProfile } = useAuth();
+  const { user, token, logout } = useAuth();
   const navigate = useNavigate();
+
   const [tab, setTab] = useState("reservas");
   const [editMode, setEditMode] = useState(false);
   const [profileForm, setProfileForm] = useState({
@@ -28,7 +30,10 @@ export default function MyAccount() {
     email: user?.email || "",
   });
   const [saveMsg, setSaveMsg] = useState("");
+
+  // ── Reservas desde el backend ─────────────────────────────────────────────
   const [reservasUsuario, setReservasUsuario] = useState([]);
+  const [cargandoReservas, setCargandoReservas] = useState(false);
 
   // Modal de confirmación de cancelación
   const [modalCancel, setModalCancel] = useState(null); // null | reservaObj
@@ -38,28 +43,75 @@ export default function MyAccount() {
     return null;
   }
 
+  // ── Cargar reservas del usuario autenticado ───────────────────────────────
+  const cargarReservas = async () => {
+    if (!token) return;
+    setCargandoReservas(true);
+    try {
+      const data = await apiFetch("/api/reservations/me", {}, token);
+      setReservasUsuario(data);
+    } catch (err) {
+      console.error("Error cargando reservas:", err);
+    } finally {
+      setCargandoReservas(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarReservas();
+  }, [token]);
+
   const reservas = reservasUsuario;
   const favoritos = user.favoritos || [];
 
-  function handleSaveProfile(e) {
+  // ── Guardar perfil (llama al backend) ─────────────────────────────────────
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    updateProfile({ nombre: profileForm.nombre });
-    setSaveMsg("¡Perfil actualizado!");
-    setEditMode(false);
-    setTimeout(() => setSaveMsg(""), 3000);
-  }
+    try {
+      await apiFetch(
+        "/api/users/me",
+        {
+          method: "PUT",
+          body: JSON.stringify({ nombre: profileForm.nombre }),
+        },
+        token
+      );
+      setSaveMsg("Perfil actualizado correctamente");
+      setEditMode(false);
+      setTimeout(() => setSaveMsg(""), 3000);
+    } catch {
+      setSaveMsg("Error al guardar el perfil");
+    }
+  };
 
+  // ── Cancelar reserva (llama al backend) ───────────────────────────────────
   function handleSolicitarCancel(reserva) {
-    if (!puedeCancel(reserva)) return; // botón deshabilitado pero por seguridad
+    if (!puedeCancel(reserva)) return;
     setModalCancel(reserva);
   }
 
-  function handleConfirmarCancel() {
+  const handleConfirmarCancel = async () => {
     if (!modalCancel) return;
-    cancelarReservaEnStorage(modalCancel.id);
-    setModalCancel(null);
-    setReservasUsuario(loadTodasReservasUsuario(user.id, user.email));
-  }
+    try {
+      await apiFetch(
+        `/api/reservations/${modalCancel.id}/status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ estado: "cancelada_cliente" }),
+        },
+        token
+      );
+      setReservasUsuario((prev) =>
+        prev.map((r) =>
+          r.id === modalCancel.id ? { ...r, estado: "cancelada_cliente" } : r
+        )
+      );
+      setModalCancel(null);
+    } catch (err) {
+      alert("No se pudo cancelar: " + err.message);
+      setModalCancel(null);
+    }
+  };
 
   return (
     <div className="mi-cuenta-page">
@@ -73,9 +125,10 @@ export default function MyAccount() {
             </div>
             <h4 className="cancel-modal-title">¿Cancelar esta reserva?</h4>
             <p className="cancel-modal-body">
-              Estás a punto de cancelar tu reserva en <strong>{modalCancel.restaurante}</strong> el{" "}
-              <strong>{modalCancel.fecha}</strong> a las <strong>{modalCancel.hora}</strong>.
-              Esta acción no se puede deshacer.
+              Estás a punto de cancelar tu reserva en{" "}
+              <strong>{modalCancel.restaurante}</strong> el{" "}
+              <strong>{modalCancel.fecha}</strong> a las{" "}
+              <strong>{modalCancel.hora}</strong>. Esta acción no se puede deshacer.
             </p>
             <div className="cancel-modal-actions">
               <button
@@ -95,6 +148,7 @@ export default function MyAccount() {
           </div>
         </div>
       )}
+
       {/* Header */}
       <div className="cuenta-header">
         <div className="cuenta-header-inner">
@@ -134,12 +188,12 @@ export default function MyAccount() {
       <div className="cuenta-stats">
         <div className="stat-card">
           <i className="bi bi-calendar-check stat-icon" />
-          <span className="stat-num">{reservas.filter(r => r.estado === "confirmada").length}</span>
+          <span className="stat-num">{reservas.filter((r) => r.estado === "confirmada").length}</span>
           <span className="stat-label">Confirmadas</span>
         </div>
         <div className="stat-card">
           <i className="bi bi-clock stat-icon" />
-          <span className="stat-num">{reservas.filter(r => r.estado === "pendiente").length}</span>
+          <span className="stat-num">{reservas.filter((r) => r.estado === "pendiente").length}</span>
           <span className="stat-label">Pendientes</span>
         </div>
         <div className="stat-card">
@@ -150,7 +204,7 @@ export default function MyAccount() {
         <div className="stat-card">
           <i className="bi bi-person-check stat-icon" />
           <span className="stat-num">
-            {new Date(user.fechaRegistro).getFullYear()}
+            {user.fechaRegistro ? new Date(user.fechaRegistro).getFullYear() : "—"}
           </span>
           <span className="stat-label">Miembro desde</span>
         </div>
@@ -174,6 +228,7 @@ export default function MyAccount() {
 
       {/* Contenido */}
       <div className="cuenta-content content-center">
+
         {/* ── RESERVAS ──────────────────────────────────────── */}
         {tab === "reservas" && (
           <div>
@@ -184,7 +239,13 @@ export default function MyAccount() {
                 Nueva reserva
               </Link>
             </div>
-            {reservas.length === 0 ? (
+
+            {cargandoReservas ? (
+              <div className="text-center py-4">
+                <div className="spinner-border text-warning" role="status" />
+                <p className="mt-2 text-muted">Cargando reservas...</p>
+              </div>
+            ) : reservas.length === 0 ? (
               <div className="cuenta-empty">
                 <i className="bi bi-calendar-x" />
                 <p>Aún no tienes reservas.</p>
@@ -204,20 +265,18 @@ export default function MyAccount() {
                   }[r.estado] || { color: "#888", icon: "bi-question-circle", label: r.estado };
 
                   return (
-                    <div key={r.id} className="reserva-card" style={{ borderLeft: `4px solid ${estadoConfig.color}` }}>
+                    <div
+                      key={r.id}
+                      className="reserva-card"
+                      style={{ borderLeft: `4px solid ${estadoConfig.color}` }}
+                    >
                       <div className="reserva-restaurante">
                         <i className="bi bi-shop me-2" />
-                        <strong>{r.restaurante}</strong>
+                        <strong>{r.restaurante || r.restaurant?.nombre}</strong>
                       </div>
                       <div className="reserva-details">
-                        <span>
-                          <i className="bi bi-calendar3 me-1" />
-                          {r.fecha}
-                        </span>
-                        <span>
-                          <i className="bi bi-clock me-1" />
-                          {r.hora}
-                        </span>
+                        <span><i className="bi bi-calendar3 me-1" />{r.fecha}</span>
+                        <span><i className="bi bi-clock me-1" />{r.hora}</span>
                         <span>
                           <i className="bi bi-people me-1" />
                           {r.personas} persona{r.personas > 1 ? "s" : ""}
@@ -231,7 +290,10 @@ export default function MyAccount() {
                       </div>
                       <div className="reserva-card-right">
                         <span className="reserva-estado" style={{ color: estadoConfig.color }}>
-                          <i className={`bi ${estadoConfig.icon} me-1`} style={{ fontSize: "0.85rem" }} />
+                          <i
+                            className={`bi ${estadoConfig.icon} me-1`}
+                            style={{ fontSize: "0.85rem" }}
+                          />
                           {estadoConfig.label}
                         </span>
                         {r.estado === "confirmada" && (
@@ -360,22 +422,19 @@ export default function MyAccount() {
               <div className="perfil-info-list">
                 <div className="perfil-info-row">
                   <span className="perfil-info-label">
-                    <i className="bi bi-person me-2" />
-                    Nombre
+                    <i className="bi bi-person me-2" />Nombre
                   </span>
                   <span className="perfil-info-value">{user.nombre}</span>
                 </div>
                 <div className="perfil-info-row">
                   <span className="perfil-info-label">
-                    <i className="bi bi-envelope me-2" />
-                    Email
+                    <i className="bi bi-envelope me-2" />Email
                   </span>
                   <span className="perfil-info-value">{user.email}</span>
                 </div>
                 <div className="perfil-info-row">
                   <span className="perfil-info-label">
-                    <i className="bi bi-shield me-2" />
-                    Rol
+                    <i className="bi bi-shield me-2" />Rol
                   </span>
                   <span className="perfil-info-value">
                     <span className="cuenta-badge">Usuario</span>
@@ -383,8 +442,7 @@ export default function MyAccount() {
                 </div>
                 <div className="perfil-info-row">
                   <span className="perfil-info-label">
-                    <i className="bi bi-calendar me-2" />
-                    Miembro desde
+                    <i className="bi bi-calendar me-2" />Miembro desde
                   </span>
                   <span className="perfil-info-value">{user.fechaRegistro}</span>
                 </div>
