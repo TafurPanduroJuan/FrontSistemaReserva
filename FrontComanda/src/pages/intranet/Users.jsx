@@ -38,7 +38,15 @@ export default function Users() {
     if (!token) return;
     setCargando(true);
     try {
-      const data = await apiFetch("/api/users", {}, token);
+      const raw = await apiFetch("/api/users", {}, token);
+      const data = raw.map(u => ({
+        ...u,
+        nombre: u.name || u.nombre || "",
+        rol: (u.role || u.rol || "usuario").toLowerCase(),
+        restaurante: u.restaurant || u.restaurante || null,
+        fechaRegistro: u.createdAt || u.fechaRegistro || "",
+        activo: u.activo !== false,
+      }));
       setUsers(data);
     } catch (err) {
       console.error("Error cargando usuarios:", err);
@@ -74,7 +82,7 @@ export default function Users() {
     try {
       await apiFetch(`/api/users/${userId}/role`, {
         method: "PUT",
-        body: JSON.stringify({ role: editForm.rol }),
+        body: JSON.stringify({ rol: editForm.rol }),
       }, token);
       setUsers((prev) =>
         prev.map((u) =>
@@ -128,7 +136,7 @@ export default function Users() {
       if (createForm.rol !== "usuario") {
         await apiFetch(`/api/users/${newUser.id}/role`, {
           method: "PUT",
-          body: JSON.stringify({ role: createForm.rol }),
+          body: JSON.stringify({ rol: createForm.rol }),
         }, token);
       }
       setShowCreate(false);
