@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -28,7 +27,6 @@ import NewRestaurant from './pages/intranet/NewRestaurant';
 import TableManagement from './pages/intranet/TableManagement';            
 import Bookings from './pages/intranet/Bookings';                           
 import RegisteredRestaurants from './pages/intranet/RegisteredRestaurants'; 
-import CreateRestaurant from './pages/intranet/CreateRestaurant'; // ← TAREA 3.1
 
 // ── Context ───────────────────────────────────────────────────────────────────
 import { RestaurantsProvider } from './context/RestaurantsContext';  
@@ -84,7 +82,7 @@ function App() {
                       <IntranetLayout />
                     </ProtectedRoute>
                   }
-                >
+                />
                   {/* Rutas para administradores */}
                   <Route
                     index
@@ -135,34 +133,6 @@ function App() {
                     }
                   />
 
-                  {/* ── TAREA 3.1: Crear restaurante desde intranet ──────── */}
-                  <Route
-                    path="create-restaurant"
-                    element={
-                      <ProtectedRoute allowedRoles={["administrador"]}>
-                        <CreateRestaurant />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  {/* Rutas accesibles para administrador y personal */}
-                  <Route
-                    path="tables"  
-                    element={
-                      <ProtectedRoute allowedRoles={["administrador", "personal"]}>
-                        <TableManagement />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="bookings"  
-                    element={
-                      <ProtectedRoute allowedRoles={["administrador", "personal"]}>
-                        <Bookings />
-                      </ProtectedRoute>
-                    }
-                  />
-                </Route>
 
               </Routes>
             </Router>
