@@ -5,17 +5,16 @@ const tiposComida = ["Criolla","Italiana","Japonesa","Mariscos","Vegana","Parril
 const sugerenciasDistritos = ["Miraflores","San Isidro","Barranco","Surco","La Molina","Chorrillos","Lince","Jesús María","Pueblo Libre","Magdalena"];
 
 const initialForm = {
-  nombre:"", tipo:"", distrito:"", direccion:"",
-  horario_apertura:"", horario_cierre:"", precio:"",
-  mesas:"", descripcion:"", telefono:"", email:"",
-  etiqueta:"", mensaje_personalizado:""
+  nombre: "", tipo: "", distrito: "", direccion: "",
+  horario_apertura: "", horario_cierre: "", precio: "",
+  mesas: "", descripcion: "", telefono: "", email: "",
+  etiqueta: "", mensaje_personalizado: "",
+  imagen: "",
 };
 
 function NewRestaurant() {
   const { agregarRestaurante } = useRestaurants();
   const [form, setForm] = useState(initialForm);
-  const [imagen, setImagen] = useState(null);
-  const [preview, setPreview] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -35,17 +34,6 @@ function NewRestaurant() {
     }
   };
   const telefonoValido = form.telefono.length === 9;
-  const handleImagen = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagen(file);
-      setPreview(reader.result); 
-    };
-    reader.readAsDataURL(file);
-  }
-};
 
   const validate = () => {
     const e = {};
@@ -74,7 +62,6 @@ function NewRestaurant() {
     agregarRestaurante({
       ...form,
       mesas: parseInt(form.mesas) || 0,
-      imagen: preview || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400",
     });
     setSubmitted(true);
   };
@@ -165,21 +152,23 @@ function NewRestaurant() {
             <p style={{ fontWeight:"700", color:"#ff6b00", fontSize:"0.9rem", marginBottom:"15px" }}>3. MULTIMEDIA Y CONTACTO</p>
             <div className="row g-3">
               <div className="col-md-6">
-                <label style={labelStyle}>Foto de la Fachada</label>
-                <div style={{ border:"2px dashed #e8e0d8", borderRadius:"12px", height:"160px", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", position:"relative", background:"#fcfcfc" }}>
-                  {preview ? (
-                    <>
-                      <img src={preview} alt="Preview" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
-                      <button type="button" onClick={() => { setPreview(null); setImagen(null); }} style={{ position:"absolute", top:"8px", right:"8px", background:"#ef4444", color:"white", border:"none", borderRadius:"50%", width:"25px", height:"25px", cursor:"pointer" }}>&times;</button>
-                    </>
-                  ) : (
-                    <div style={{ textAlign:"center", color:"#aaa" }}>
-                      <i className="bi bi-camera" style={{ fontSize:"1.8rem" }}></i>
-                      <p style={{ fontSize:"0.7rem", marginTop:"5px" }}>Subir imagen de fachada</p>
-                      <input type="file" accept="image/*" onChange={handleImagen} style={{ position:"absolute", top:0, left:0, width:"100%", height:"100%", opacity:0, cursor:"pointer" }} />
-                    </div>
-                  )}
-                </div>
+                <label style={labelStyle}>URL de Imagen de Fachada</label>
+                <input
+                  type="text"
+                  name="imagen"
+                  value={form.imagen}
+                  onChange={handle}
+                  style={inputStyle("imagen")}
+                  placeholder="https://ejemplo.com/foto-fachada.jpg"
+                />
+                {form.imagen && (
+                  <img
+                    src={form.imagen}
+                    alt="Preview"
+                    style={{ marginTop: 8, height: 70, borderRadius: 8, objectFit: "cover", maxWidth: "100%" }}
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                )}
               </div>
               <div className="col-md-6">
                 <div style={{ marginBottom:"15px" }}>
@@ -216,7 +205,7 @@ function NewRestaurant() {
           </div>
 
           <div style={{ display:"flex", gap:"12px", justifyContent:"flex-end", marginTop:"10px" }}>
-            <button type="button" onClick={() => { setForm(initialForm); setPreview(null); setImagen(null); }} style={{ padding:"12px 25px", borderRadius:"10px", border:"1px solid #e8e0d8", background:"white", color:"#999", fontWeight:"600", cursor:"pointer" }}>
+            <button type="button" onClick={() => setForm(initialForm)} style={{ padding:"12px 25px", borderRadius:"10px", border:"1px solid #e8e0d8", background:"white", color:"#999", fontWeight:"600", cursor:"pointer" }}>
               Limpiar
             </button>
             <button type="submit" style={{ padding:"12px 35px", borderRadius:"10px", border:"none", background:"#ff6b00", color:"white", fontWeight:"700", cursor:"pointer", boxShadow:"0 4px 12px rgba(255,107,0,0.2)" }}>
