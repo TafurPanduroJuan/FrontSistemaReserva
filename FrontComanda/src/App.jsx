@@ -1,4 +1,3 @@
-// ── MODIFIED: All imports renamed to English, routes standardized to kebab-case ──
 
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
@@ -29,6 +28,7 @@ import NewRestaurant from './pages/intranet/NewRestaurant';
 import TableManagement from './pages/intranet/TableManagement';            
 import Bookings from './pages/intranet/Bookings';                           
 import RegisteredRestaurants from './pages/intranet/RegisteredRestaurants'; 
+import CreateRestaurant from './pages/intranet/CreateRestaurant'; // ← TAREA 3.1
 
 // ── Context ───────────────────────────────────────────────────────────────────
 import { RestaurantsProvider } from './context/RestaurantsContext';  
@@ -85,7 +85,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 >
-                  {/* Ruta para administradores */}
+                  {/* Rutas para administradores */}
                   <Route
                     index
                     element={
@@ -135,7 +135,17 @@ function App() {
                     }
                   />
 
-                  {/*Rutas accesibles para administrador y personal */}
+                  {/* ── TAREA 3.1: Crear restaurante desde intranet ──────── */}
+                  <Route
+                    path="create-restaurant"
+                    element={
+                      <ProtectedRoute allowedRoles={["administrador"]}>
+                        <CreateRestaurant />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Rutas accesibles para administrador y personal */}
                   <Route
                     path="tables"  
                     element={

@@ -1,40 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTables } from '../context/TablesContext';
 import "../assets/styles/bookingModal.css";
-
-// ── localStorage helpers ──────────────────────────────────────────────────────
-function loadReservas() {
-  try {
-    const raw = localStorage.getItem("comanda_reservas_maestro");
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveReserva(reserva) {
-  try {
-    const todas = loadReservas();
-    const nueva = { ...reserva, id: Date.now() };
-    const actualizadas = [...todas, nueva];
-    localStorage.setItem("comanda_reservas_maestro", JSON.stringify(actualizadas));
-    // Notificar a la intranet si está abierta en la misma pestaña
-    window.dispatchEvent(
-      new CustomEvent("comanda_nueva_reserva", { detail: actualizadas })
-    );
-    return nueva;
-  } catch { return reserva; }
-}
-
-// ── Genera mesas según la capacidad del restaurante ───────────────────────────
-function generarMesas(totalMesas) {
-  const zonas = ["Terraza", "Salón Interior", "VIP"];
-  const n = Math.max(totalMesas || 6, 3);
-  return Array.from({ length: n }, (_, i) => ({
-    id: i + 1,
-    numero: i + 1,
-    zona: zonas[Math.floor(i / Math.ceil(n / 3))] || "Salón Interior",
-    capacidad: [2, 4, 4, 6, 2, 4, 2, 8, 4, 4, 2, 4][i] || 4,
-  }));
-}
 
 const STEPS = [
   { label: "Restaurante" },
@@ -45,8 +12,13 @@ const STEPS = [
 ];
 
 const BookingModal = ({ isOpen, onClose, restaurante }) => {
-  const { user, addReserva } = useAuth();
+  const { user } = useAuth();
+  const { getMesasDisponibles, agregarReserva } = useTables();
+
   const [step, setStep] = useState(1);
+  const [mesas, setMesas] = useState([]);
+  const [cargandoMesas, setCargandoMesas] = useState(false);
+  const [enviando, setEnviando] = useState(false);
 
   const minDate = useMemo(() => {
     const m = new Date();
@@ -59,6 +31,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
     hora: '18:00',
     personas: 2,
     mesa: null,
+    mesaNumero: null,
     zona: '',
     nombre: user?.nombre || '',
     email: user?.email || '',
@@ -67,10 +40,21 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
   });
 
   const horarios = ["12:00", "13:00", "14:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
-  const mesas = useMemo(() => generarMesas(restaurante?.mesas), [restaurante]);
+
+  // Cargar mesas reales del backend al llegar al paso 3
+  useEffect(() => {
+    if (step === 3 && restaurante?.id) {
+      setCargandoMesas(true);
+      getMesasDisponibles(restaurante.id, formData.zona || null)
+        .then(setMesas)
+        .catch(console.error)
+        .finally(() => setCargandoMesas(false));
+    }
+  }, [step, restaurante?.id, formData.zona]);
+
   const zonas = useMemo(() => [...new Set(mesas.map(m => m.zona))], [mesas]);
   const mesasFiltradas = formData.zona ? mesas.filter(m => m.zona === formData.zona) : mesas;
-  
+
   const handleTelefono = (e) => {
     const valor = e.target.value.replace(/\D/g, "").slice(0, 9);
     setFormData({ ...formData, telefono: valor });
@@ -78,7 +62,6 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
   const telefonoValido = formData.telefono.length === 9;
 
   if (!isOpen || !restaurante) return null;
-  
 
   const canProceed = () => {
     if (step === 2) return !!formData.fecha && !!formData.hora;
@@ -87,28 +70,28 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
     return true;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === 5) {
-      const reservaData = {
-        cliente: formData.nombre,
-        email: formData.email,
-        tel: formData.telefono,
-        restaurante: restaurante.nombre,
-        fecha: formData.fecha,
-        hora: formData.hora,
-        personas: formData.personas,
-        mesa: formData.mesa,
-        zona: formData.zona,
-        notas: formData.notas,
-        estado: "pendiente",
-        ...(user ? { userId: user.id } : {}),
-      };
-      const reservaGuardada = saveReserva(reservaData);
-      // Si hay sesión activa, vincular la reserva al usuario
-      if (user) {
-        addReserva({ ...reservaData, id: reservaGuardada.id });
+      setEnviando(true);
+      try {
+        await agregarReserva({
+          restaurantId: restaurante.id,
+          mesaNumero:   formData.mesaNumero,
+          zona:         formData.zona,
+          cliente:      formData.nombre,
+          email:        formData.email,
+          tel:          parseInt(formData.telefono),
+          fecha:        formData.fecha,
+          hora:         formData.hora,
+          personas:     formData.personas,
+          notas:        formData.notas || null,
+        });
+        onClose();
+      } catch (err) {
+        alert("Error al confirmar la reserva: " + err.message);
+      } finally {
+        setEnviando(false);
       }
-      onClose();
     } else {
       setStep(prev => prev + 1);
     }
@@ -214,40 +197,53 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem', color: '#555' }}>🏠 Filtrar por zona</label>
                 <div className="zona-chips">
                   <button className={`zona-chip ${formData.zona === '' ? 'active' : ''}`}
-                    onClick={() => setFormData({ ...formData, zona: '', mesa: null })}>Todas</button>
+                    onClick={() => setFormData({ ...formData, zona: '', mesa: null, mesaNumero: null })}>Todas</button>
                   {zonas.map(z => (
                     <button key={z} className={`zona-chip ${formData.zona === z ? 'active' : ''}`}
-                      onClick={() => setFormData({ ...formData, zona: z, mesa: null })}>{z}</button>
+                      onClick={() => setFormData({ ...formData, zona: z, mesa: null, mesaNumero: null })}>{z}</button>
                   ))}
                 </div>
               </div>
               <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, fontSize: '0.9rem', color: '#555' }}>🪑 Selecciona una mesa</label>
-              <div className="mesas-grid">
-                {mesasFiltradas.map(m => {
-                  const isSelected = formData.mesa === m.id;
-                  const tooSmall = m.capacidad < formData.personas;
-                  const emoji = m.capacidad >= 6 ? '🏯' : m.capacidad >= 4 ? '🍽️' : '☕';
-                  return (
-                    <div key={m.id}
-                      className={`mesa-card ${isSelected ? 'selected' : ''} ${tooSmall ? 'too-small' : ''}`}
-                      onClick={() => !tooSmall && setFormData({ ...formData, mesa: m.id, zona: m.zona })}
-                    >
-                      {isSelected && <div className="mesa-check">✓</div>}
-                      <div className="mesa-emoji">{emoji}</div>
-                      <div className="mesa-num">Mesa {m.numero}</div>
-                      <div className="mesa-info">{m.zona}</div>
-                      <div className="mesa-cap">
-                        {tooSmall
-                          ? <span style={{ color: '#e74c3c', fontSize: '0.65rem' }}>Cap. insuficiente</span>
-                          : `${m.capacidad} pers.`}
+              {cargandoMesas ? (
+                <p style={{ textAlign: "center", color: "#aaa" }}>Cargando mesas disponibles...</p>
+              ) : mesasFiltradas.length === 0 ? (
+                <p style={{ textAlign: "center", color: "#e74c3c" }}>
+                  No hay mesas disponibles para esta zona.
+                </p>
+              ) : (
+                <div className="mesas-grid">
+                  {mesasFiltradas.map(m => {
+                    const isSelected = formData.mesa === m.id;
+                    const tooSmall = m.capacidad < formData.personas;
+                    const emoji = m.capacidad >= 6 ? '🏯' : m.capacidad >= 4 ? '🍽️' : '☕';
+                    return (
+                      <div key={m.id}
+                        className={`mesa-card ${isSelected ? 'selected' : ''} ${tooSmall ? 'too-small' : ''}`}
+                        onClick={() => !tooSmall && setFormData({
+                          ...formData,
+                          mesa:       m.id,
+                          mesaNumero: m.numero,
+                          zona:       m.zona,
+                        })}
+                      >
+                        {isSelected && <div className="mesa-check">✓</div>}
+                        <div className="mesa-emoji">{emoji}</div>
+                        <div className="mesa-num">Mesa {m.numero}</div>
+                        <div className="mesa-info">{m.zona}</div>
+                        <div className="mesa-cap">
+                          {tooSmall
+                            ? <span style={{ color: '#e74c3c', fontSize: '0.65rem' }}>Cap. insuficiente</span>
+                            : `${m.capacidad} pers.`}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
               {formData.mesa && (
                 <p style={{ color: '#2ecc71', fontWeight: 600, marginTop: '14px', textAlign: 'center', fontSize: '0.9rem' }}>
-                  ✓ Mesa {formData.mesa} — {formData.zona}
+                  ✓ Mesa {formData.mesaNumero} — {formData.zona}
                 </p>
               )}
             </div>
@@ -294,7 +290,6 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                 </div>
                 <div className="input-group full-width">
                   <label>Observaciones (opcional)</label>
-                  {/* MODIFIED: description field confirmed as textarea - no change needed */}
                   <textarea placeholder="Cumpleaños, alergias, preferencias de ubicación..."
                     className="modern-field observations-field" value={formData.notas}
                     onChange={(e) => setFormData({ ...formData, notas: e.target.value })} />
@@ -314,7 +309,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                   ["Fecha", formData.fecha],
                   ["Hora", formData.hora],
                   ["Personas", formData.personas],
-                  ["Mesa", `Mesa ${formData.mesa} — ${formData.zona}`],
+                  ["Mesa", `Mesa ${formData.mesaNumero} — ${formData.zona}`],
                   ["Nombre", formData.nombre],
                   ["Contacto", `${formData.email} · ${formData.telefono}`],
                   ...(formData.notas ? [["Notas", formData.notas]] : []),
@@ -333,16 +328,16 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
 
         {/* FOOTER */}
         <div className="modal-footer-actions">
-          <button className="btn-back" onClick={handleBack}>
+          <button className="btn-back" onClick={handleBack} disabled={enviando}>
             {step === 1 ? '✕ Cerrar' : '← Atrás'}
           </button>
           <button
             className="btn-next-red"
             onClick={handleNext}
-            disabled={!canProceed()}
-            style={{ opacity: canProceed() ? 1 : 0.5, cursor: canProceed() ? 'pointer' : 'not-allowed' }}
+            disabled={!canProceed() || enviando}
+            style={{ opacity: canProceed() && !enviando ? 1 : 0.5, cursor: canProceed() && !enviando ? 'pointer' : 'not-allowed' }}
           >
-            {step === 5 ? '✓ Confirmar Reserva' : 'Siguiente →'}
+            {enviando ? 'Confirmando...' : step === 5 ? '✓ Confirmar Reserva' : 'Siguiente →'}
           </button>
         </div>
       </div>

@@ -14,9 +14,9 @@ const sugerenciasDistritos = [
 
 const initialForm = {
   nombre: "", tipo: "", distrito: "", direccion: "",
-  horario_apertura: "", horario_cierre: "", precio: "",
-  mesas: "", descripcion: "", telefono: "", email: "",
-  propietario: "", mensaje_personalizado: "",
+  horarioApertura: "", horarioCierre: "",
+  descripcion: "", telefono: "", email: "",
+  propietario: "", mensajePersonalizado: "",
 };
 
 // Solo letras, tildes y espacios
@@ -84,7 +84,7 @@ function RegisterRestaurant() {
     return e;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -92,18 +92,27 @@ function RegisterRestaurant() {
       return;
     }
 
-    agregarSolicitud({
-      nombre: form.nombre,
-      propietario: form.propietario,
-      email: form.email,
-      tipo: form.tipo,
-      ciudad: form.distrito,
-      telefono: form.telefono,
-      descripcion: form.descripcion || form.mensaje_personalizado || "Solicitud enviada desde el formulario público.",
-      imagen: preview || null,
-    });
+    const payload = {
+      nombre:              form.nombre.trim(),
+      propietario:         form.propietario.trim(),
+      email:               form.email.trim(),
+      tipo:                form.tipo,
+      distrito:            form.distrito.trim(),
+      direccion:           form.direccion.trim(),
+      telefono:            parseInt(form.telefono),
+      descripcion:         form.descripcion.trim() || "Solicitud enviada desde el formulario público.",
+      mensajePersonalizado: form.mensajePersonalizado.trim() || null,
+      horarioApertura:     form.horarioApertura || null,
+      horarioCierre:       form.horarioCierre || null,
+    };
 
-    setSubmitted(true);
+    try {
+      await agregarSolicitud(payload);
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Error al enviar solicitud:", err);
+      alert("Ocurrió un error al enviar la solicitud. Por favor intenta nuevamente.");
+    }
   };
 
   // ── Estilos ────────────────────────────────────────────────────────────────
@@ -238,8 +247,8 @@ function RegisterRestaurant() {
                 </div>
                 <div className="col-12">
                   <label style={labelStyle}>Eslogan o mensaje de bienvenida <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span></label>
-                  <input name="mensaje_personalizado" value={form.mensaje_personalizado} onChange={handle}
-                    style={inputStyle("mensaje_personalizado")}
+                  <input name="mensajePersonalizado" value={form.mensajePersonalizado} onChange={handle}
+                    style={inputStyle("mensajePersonalizado")}
                     placeholder='Ej: "El mejor sabor norteño en el corazón de la ciudad"' />
                 </div>
                 <div className="col-12">
@@ -281,6 +290,30 @@ function RegisterRestaurant() {
                   <input name="direccion" value={form.direccion} onChange={handle}
                     style={inputStyle("direccion")} placeholder="Av. / Jr. / Calle y número" />
                   {errorMsg("direccion")}
+                </div>
+                <div className="col-md-3">
+                  <label style={labelStyle}>
+                    Horario Apertura <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="horarioApertura"
+                    value={form.horarioApertura}
+                    onChange={handle}
+                    style={inputStyle("horarioApertura")}
+                  />
+                </div>
+                <div className="col-md-3">
+                  <label style={labelStyle}>
+                    Horario Cierre <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="horarioCierre"
+                    value={form.horarioCierre}
+                    onChange={handle}
+                    style={inputStyle("horarioCierre")}
+                  />
                 </div>
               </div>
             </div>
@@ -385,6 +418,9 @@ function RegisterRestaurant() {
                   </p>
                   <p style={{ fontSize: "0.78rem", color: "#bbb", marginTop: 8, marginBottom: 0 }}>
                     Formatos: JPG, PNG, WEBP · Máx. 5MB
+                  </p>
+                  <p style={{ fontSize: "0.78rem", color: "#e67e22", marginTop: 8, marginBottom: 0 }}>
+                    ℹ️ La imagen podrá cargarse una vez que tu solicitud sea aceptada.
                   </p>
                 </div>
               </div>

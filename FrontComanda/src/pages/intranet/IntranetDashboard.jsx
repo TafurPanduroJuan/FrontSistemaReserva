@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../assets/styles/intranetDashboard.css";
 import { useRestaurants } from "../../context/RestaurantsContext";
 import { useComments } from "../../context/CommentsContext";
@@ -21,6 +21,7 @@ function IntranetDashboard() {
   const { comentarios } = useComments();
   const { token } = useAuth();
 
+  // ── Usuarios desde el backend (reemplaza lectura de localStorage) ─────────
   const [usuarios, setUsuarios] = useState([]);
 
   useEffect(() => {
@@ -39,17 +40,17 @@ function IntranetDashboard() {
     usuarios: usuarios.length,
   };
 
-  // Últimas 5 solicitudes (las más recientes primero)
+  // Últimas 5 solicitudes (más recientes primero)
   const solicitudesRecientes = [...solicitudes]
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
     .slice(0, 5);
 
-  // Últimos 4 usuarios registrados (los más recientes primero)
+  // Últimos 4 usuarios registrados
   const usuariosRecientes = [...usuarios]
     .sort((a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro))
     .slice(0, 4);
 
-  // Últimos 6 comentarios (más recientes primero)
+  // Últimos 6 comentarios
   const comentariosRecientes = [...comentarios]
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
     .slice(0, 6);
