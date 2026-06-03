@@ -82,7 +82,7 @@ export default function Users() {
     try {
       await apiFetch(`/api/users/${userId}/role`, {
         method: "PUT",
-        body: JSON.stringify({ rol: editForm.rol }),
+        body: JSON.stringify({ rol: editForm.rol, restaurante: editForm.restaurante || "" }),
       }, token);
       setUsers((prev) =>
         prev.map((u) =>
