@@ -297,7 +297,9 @@ El backend quedará disponible en `http://localhost:8080` y Swagger UI en `http:
 |---|---|
 | **Frontend (Vercel)** | https://front-sistema-reserva.vercel.app |
 | **API Docs (Apidog)** | https://ms7yixnffg.apidog.io |
-| **Backend (Render)** | Render Cloud — Managed PostgreSQL |
+| **Backend (Render)** | https://backsistemareserva-1fzv.onrender.com |
+| **Swagger** | https://backsistemareserva-1fzv.onrender.com/swagger-ui/index.html |
+
 
 ---
 
