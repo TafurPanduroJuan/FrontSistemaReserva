@@ -15,6 +15,7 @@
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Instalación y Ejecución](#-instalación-y-ejecución)
 - [Despliegue](#-despliegue)
+- [Credenciales](#-credenciales)
 - [Equipo](#-equipo)
 
 ---
@@ -300,6 +301,15 @@ El backend quedará disponible en `http://localhost:8080` y Swagger UI en `http:
 | **Backend (Render)** | https://backsistemareserva-1fzv.onrender.com |
 | **Swagger** | https://backsistemareserva-1fzv.onrender.com/swagger-ui/index.html |
 
+
+---
+## Credenciales
+
+| Cuenta | Correo | Contraseña |
+|---|---|---|
+| **Administrador** | admin@comanda.com | admin123 |
+| **Personal** | maria@gmail.com | maria12345 |
+| **Usuario** | miguel@gmail.com | miguel123 |
 
 ---
 
