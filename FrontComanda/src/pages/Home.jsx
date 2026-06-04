@@ -301,13 +301,13 @@ useEffect(() => {
               <span className="fw-bold h-100 px-2 py-1 mb-4 rounded-pill" id="cuadro"><i className="bi bi-stars fs-4 me-2"></i>Para Restaurantes</span>
             </div>
 
-            <h2 className="mb-3 w-100 text-white">¿Tienes un Restaurante?</h2>
-            <p className="mb-4 text-white">
+            <h2 className="mb-3 w-100 text-dark">¿Tienes un Restaurante?</h2>
+            <p className="mb-4 text-dark">
               Únete a Comanda y conecta con miles de comensales.
               <br />
               Aumenta tus reservas y lleva tu negocio al siguiente nivel.
             </p>
-            <ul className="list-unstyled mb-4 pt-2 text-white">
+            <ul className="list-unstyled mb-4 pt-2 text-dark">
               <li><i className="bi bi-check-circle-fill fs-4 me-2"></i>Sistema de reservas automatizado</li>
               <li><i className="bi bi-check-circle-fill fs-4 me-2"></i> Dashboard de gestión completo</li>
               <li><i className="bi bi-check-circle-fill fs-4 me-2"></i> Incrementa tus reservas hasta 40%</li>
@@ -328,7 +328,7 @@ useEffect(() => {
           <div className="col-lg-6 col-12 mt-4 mt-lg-0">
             <div className="row text-center">
               <div className="col-6 mb-4">
-                <div className="p-4 text-white shadow-lg">
+                <div className="p-4 text-dark shadow-lg">
                   <div className="icono-cuadro mb-3">
                     <i className="bi bi-graph-up-arrow fs-2"></i>
                   </div>
@@ -337,7 +337,7 @@ useEffect(() => {
                 </div>
               </div>
               <div className="col-6 mb-4">
-                <div className="p-4  text-white  shadow-lg">
+                <div className="p-4  text-dark  shadow-lg">
                   <div className="icono-cuadro mb-3">
                     <i className="bi bi-people fs-2"></i>
                   </div>
@@ -346,7 +346,7 @@ useEffect(() => {
                 </div>
               </div>
               <div className="col-6 mb-4">
-                <div className="p-4  text-white  shadow-lg">
+                <div className="p-4  text-dark  shadow-lg">
                   <div className="icono-cuadro mb-3">
                     <i className="bi bi-award-fill fs-2 "></i>
                   </div>
@@ -355,7 +355,7 @@ useEffect(() => {
                 </div>
               </div>
               <div className="col-6 mb-4">
-                <div className="p-4  text-white  shadow-lg">
+                <div className="p-4  text-dark  shadow-lg">
                   <div className="icono-cuadro mb-3">
                     <i className="bi bi-heart fs-2"></i>
                   </div>
