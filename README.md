@@ -42,7 +42,7 @@ Comanda digitaliza ese proceso de punta a punta:
 
 ---
 
-## 🛠️ Stack Tecnológico
+##   Stack Tecnológico
 
 ### Frontend
 | Herramienta | Versión |
