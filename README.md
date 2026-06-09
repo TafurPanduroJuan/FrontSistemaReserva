@@ -1,10 +1,10 @@
-# 🍽️ Comanda — Sistema de Reservas de Restaurante
+# Comanda — Sistema de Reservas de Restaurante
 
 > Plataforma web que conecta comensales con restaurantes de Lima, permitiendo descubrir, reservar y gestionar mesas de forma digital, inmediata y desde cualquier dispositivo.
 
 ---
 
-## 📋 Tabla de Contenidos
+## Tabla de Contenidos
 
 - [Descripción](#-descripción)
 - [Funcionalidades](#-funcionalidades)
@@ -20,7 +20,7 @@
 
 ---
 
-## 📖 Descripción
+## Descripción
 
 **Comanda** nació para resolver un problema real en Lima: reservar una mesa en un restaurante obligaba al comensal a llamar por teléfono o acercarse físicamente al local, sin garantía de disponibilidad y dependiendo del horario de atención. Del lado del restaurante, la gestión manual de reservas provocaba errores, mesas vacías por olvidos y la ausencia de un registro centralizado.
 
@@ -32,13 +32,13 @@ Comanda digitaliza ese proceso de punta a punta:
 
 ---
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 | Rol | Funcionalidad |
 |---|---|
-| 🧑 **Cliente** | Registro e inicio de sesión · Búsqueda y filtrado de restaurantes · Reserva de mesa (zona, fecha, hora, personas) · Historial y cancelación de reservas · Comentarios y calificaciones |
-| 🏪 **Personal del restaurante** | Panel de intranet · Gestión de mesas (estado en tiempo real) · Confirmación / cancelación de reservas · Dashboard de comentarios |
-| 🔑 **Administrador** | Gestión de usuarios y roles · Aprobación o rechazo de solicitudes de restaurantes · Administración completa de la plataforma |
+|   **Cliente** | Registro e inicio de sesón · Búsqueda y filtrado de restaurantes · -Reserva de mesa (zona, fecha, hora, personas) · Historial y cancelación de reservas · Comentarios y calificaciones |
+|   **Personal del restaurante** | Panel de intranet · Gestión de mesas (estado en tiempo real) · Confirmación / cancelación de reservas · Dashboard de comentarios |
+|   **Administrador** | Gestión de usuarios y roles · Aprobación o rechazo de solicitudes de restaurantes · Administración completa de la plataforma |
 
 ---
 
@@ -75,7 +75,7 @@ Comanda digitaliza ese proceso de punta a punta:
 
 ---
 
-## 🏗️ Arquitectura
+##   Arquitectura
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -114,7 +114,7 @@ El backend sigue una **arquitectura en capas (MVC)** con:
 
 ---
 
-## 🗄️ Modelo de Datos
+##   Modelo de Datos
 
 ```
 UserEntity              RestaurantEntity           RestaurantRequestEntity
@@ -151,7 +151,7 @@ zona                    fecha / hora               asunto
 
 ---
 
-## 🔌 Endpoints de la API
+##   Endpoints de la API
 
 La API REST cuenta con **6 controllers** y **27 endpoints** protegidos por JWT.
 
@@ -208,15 +208,15 @@ La API REST cuenta con **6 controllers** y **27 endpoints** protegidos por JWT.
 | GET | `/unread-count` | Conteo dashboard | Personal |
 | DELETE | `/{id}` | Eliminar | Admin |
 
-> 📖 Documentación interactiva completa (Swagger UI): disponible en `/swagger-ui.html` del backend desplegado.  
-> 📖 Colección Apidog: [https://ms7yixnffg.apidog.io](https://ms7yixnffg.apidog.io)
+>  Documentación interactiva completa (Swagger UI): disponible en `/swagger-ui.html` del backend desplegado.  
+>  Colección Apidog: [https://ms7yixnffg.apidog.io](https://ms7yixnffg.apidog.io)
 
 ---
 
-## 📁 Estructura del Proyecto
+##  Estructura del Proyecto
 
 ```
-── 📂 FrontComanda/               # Aplicación React
+──   FrontComanda/               # Aplicación React
    ├── src/
    │   ├── components/            # Navbar, Footer, BookingModal, ProtectedRoute
    │   │   └── intranet/          # Componentes del panel de gestión
@@ -229,7 +229,7 @@ La API REST cuenta con **6 controllers** y **27 endpoints** protegidos por JWT.
    ├── vite.config.js
    └── vercel.json                # Configuración de despliegue
 
-── 📂 Comanda/                    # Aplicación Spring Boot
+──   Comanda/                    # Aplicación Spring Boot
     ├── src/main/java/com/grupo6/
     │   ├── controller/            # 6 REST controllers
     │   ├── service/               # Lógica de negocio
@@ -245,7 +245,7 @@ La API REST cuenta con **6 controllers** y **27 endpoints** protegidos por JWT.
 
 ---
 
-## 🚀 Instalación y Ejecución
+##   Instalación y Ejecución
 
 ### Prerrequisitos
 - Node.js ≥ 18 y npm
@@ -292,7 +292,7 @@ El backend quedará disponible en `http://localhost:8080` y Swagger UI en `http:
 
 ---
 
-## ☁️ Despliegue
+##   Despliegue
 
 | Servicio | URL |
 |---|---|
@@ -313,7 +313,7 @@ El backend quedará disponible en `http://localhost:8080` y Swagger UI en `http:
 
 ---
 
-## 👥 Equipo
+##   Equipo
 
 | Integrante | Área principal |
 |---|---|
