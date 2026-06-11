@@ -35,7 +35,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
     zona: '',
     nombre: user?.nombre || '',
     email: user?.email || '',
-    telefono: '',
+    telefono: user?.telefono ? String(user.telefono) : '',
     notas: '',
   });
 
