@@ -20,7 +20,7 @@ function puedeCancel(reserva) {
 }
 
 export default function MyAccount() {
-  const { user, token, logout } = useAuth();
+  const { user, token, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
 
   const [tab, setTab] = useState("reservas");
@@ -68,22 +68,15 @@ export default function MyAccount() {
   // ── Guardar perfil (llama al backend) ─────────────────────────────────────
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    try {
-      await apiFetch(
-        "/api/users/me",
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            nombre: profileForm.nombre,
-            telefono: profileForm.telefono ? parseInt(profileForm.telefono) : null,
-          }),
-        },
-        token
-      );
+    const result = await updateProfile({
+      nombre: profileForm.nombre,
+      telefono: profileForm.telefono ? parseInt(profileForm.telefono) : null,
+    });
+    if (result.ok) {
       setSaveMsg("Perfil actualizado correctamente");
       setEditMode(false);
       setTimeout(() => setSaveMsg(""), 3000);
-    } catch {
+    } else {
       setSaveMsg("Error al guardar el perfil");
     }
   };
