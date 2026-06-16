@@ -28,6 +28,7 @@ export default function MyAccount() {
   const [profileForm, setProfileForm] = useState({
     nombre: user?.nombre || "",
     email: user?.email || "",
+    telefono: user?.telefono || "",
   });
   const [saveMsg, setSaveMsg] = useState("");
 
@@ -72,7 +73,10 @@ export default function MyAccount() {
         "/api/users/me",
         {
           method: "PUT",
-          body: JSON.stringify({ nombre: profileForm.nombre }),
+          body: JSON.stringify({
+            nombre: profileForm.nombre,
+            telefono: profileForm.telefono ? parseInt(profileForm.telefono) : null,
+          }),
         },
         token
       );
@@ -405,6 +409,23 @@ export default function MyAccount() {
                   </div>
                   <small className="text-muted">El email no se puede cambiar.</small>
                 </div>
+                <div className="auth-field">
+                  <label className="auth-label">Teléfono</label>
+                  <div className="auth-input-wrap">
+                    <i className="bi bi-telephone auth-input-icon" />
+                    <input
+                      type="tel"
+                      className="auth-input"
+                      placeholder="987654321"
+                      maxLength={9}
+                      value={profileForm.telefono}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, telefono: e.target.value })
+                      }
+                    />
+                  </div>
+                  <small className="text-muted">9 dígitos exactos.</small>
+                </div>
                 <div className="d-flex gap-2 mt-3">
                   <button type="submit" className="auth-submit-btn" style={{ flex: 1 }}>
                     <i className="bi bi-check-lg me-1" /> Guardar
@@ -438,6 +459,14 @@ export default function MyAccount() {
                   </span>
                   <span className="perfil-info-value">
                     <span className="cuenta-badge">Usuario</span>
+                  </span>
+                </div>
+                <div className="perfil-info-row">
+                  <span className="perfil-info-label">
+                    <i className="bi bi-telephone me-2" />Teléfono
+                  </span>
+                  <span className="perfil-info-value">
+                    {user.telefono || "No registrado"}
                   </span>
                 </div>
                 <div className="perfil-info-row">
