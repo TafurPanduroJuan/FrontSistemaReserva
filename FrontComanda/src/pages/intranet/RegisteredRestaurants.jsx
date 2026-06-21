@@ -374,6 +374,31 @@ function RegisteredRestaurants() {
                   </div>
                 </div>
 
+                {/* Sección 4 */}
+                <div style={{ marginBottom: "22px" }}>
+                  <p className="rr-section-label">4. HORARIO DE ATENCIÓN</p>
+                  <div className="row g-3">
+                    <div className="col-12 col-md-6">
+                      <label className="rr-label">Hora de apertura</label>
+                      <input
+                        type="time"
+                        className="rr-input"
+                        value={editData.horarioApertura || ""}
+                        onChange={e => setEditData({ ...editData, horarioApertura: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="rr-label">Hora de cierre</label>
+                      <input
+                        type="time"
+                        className="rr-input"
+                        value={editData.horarioCierre || ""}
+                        onChange={e => setEditData({ ...editData, horarioCierre: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="rr-modal-actions">
                   <button type="button" className="rr-btn-cancelar" onClick={() => setShowModal(false)}>Cancelar</button>
                   <button type="submit" className="rr-btn-guardar">Guardar Cambios</button>
