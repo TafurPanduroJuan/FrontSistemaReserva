@@ -177,6 +177,35 @@ function RegisteredRestaurants() {
         }
         .rr-btn-eliminar:hover { background: #fee2e2; }
 
+        .rr-btn-cerrar {
+          background: #fff7ed; color: #c2410c;
+          border: none; padding: 8px 14px;
+          border-radius: 9px; cursor: pointer;
+          font-size: 0.82rem; font-weight: 600;
+          display: flex; align-items: center; gap: 5px;
+          transition: background 0.2s;
+        }
+        .rr-btn-cerrar:hover { background: #ffedd5; }
+
+        .rr-btn-reabrir {
+          background: #f0fdf4; color: #15803d;
+          border: none; padding: 8px 14px;
+          border-radius: 9px; cursor: pointer;
+          font-size: 0.82rem; font-weight: 600;
+          display: flex; align-items: center; gap: 5px;
+          transition: background 0.2s;
+        }
+        .rr-btn-reabrir:hover { background: #dcfce7; }
+
+        .rr-badge-cerrado {
+          background: #fff7ed; color: #c2410c;
+          border: 1px solid #fed7aa;
+          padding: 6px 10px; border-radius: 8px;
+          font-size: 0.78rem; font-weight: 600;
+          margin-bottom: 8px;
+          display: flex; align-items: center;
+        }
+
         /* Modal */
         .rr-modal-overlay {
           position: fixed; inset: 0;
