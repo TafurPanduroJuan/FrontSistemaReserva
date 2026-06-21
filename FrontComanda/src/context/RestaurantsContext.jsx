@@ -66,6 +66,17 @@ export function RestaurantsProvider({ children }) {
     return actualizado;
   };
 
+  const toggleCierre = async (id, cerradoHoy, motivoCierre) => {
+    const actualizado = await apiFetch(`/api/restaurants/${id}/cierre`, {
+      method: "PUT",
+      body: JSON.stringify({ cerradoHoy, motivoCierre }),
+    }, token);
+    setRestaurantes((prev) =>
+      prev.map((r) => (r.id === actualizado.id ? normalizeRestaurant(actualizado) : r))
+    );
+    return actualizado;
+  };
+
   const eliminarRestaurante = async (id) => {
     await apiFetch(`/api/restaurants/${id}`, { method: "DELETE" }, token);
     setRestaurantes((prev) => prev.filter((r) => r.id !== id));
@@ -123,6 +134,7 @@ export function RestaurantsProvider({ children }) {
         cargarRestaurantes,
         agregarRestaurante,
         editarRestaurante,
+        toggleCierre,
         eliminarRestaurante,
         agregarSolicitud,
         aceptarSolicitud,
