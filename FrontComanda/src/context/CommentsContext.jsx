@@ -54,6 +54,24 @@ export function CommentsProvider({ children }) {
     }
   };
 
+  // ── Responder a un comentario (admin/personal) ────────────────────────────
+  const responderComentario = async (id, respuesta) => {
+    const data = await apiFetch(
+      `/api/comments/${id}/reply`,
+      { method: "POST", body: JSON.stringify({ respuesta }) },
+      token
+    );
+    // Actualizar localmente
+    setComentarios((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? { ...c, respuestaRestaurante: respuesta, fechaRespuesta: data.fechaRespuesta, leido: true }
+          : c
+      )
+    );
+    return data;
+  };
+
   // ── Refrescar lista manualmente ───────────────────────────────────────────
   // agregarComentario ya no se usa desde el context (Form.jsx llama directo al API).
   // Se expone refrescar() por si alguna vista necesita recargar.
@@ -66,6 +84,7 @@ export function CommentsProvider({ children }) {
         noLeidos,
         marcarLeido,
         archivarComentario,
+        responderComentario,
         refrescar,
       }}
     >

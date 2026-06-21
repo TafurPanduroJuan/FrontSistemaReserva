@@ -82,11 +82,13 @@ export function TablesProvider({ children }) {
   };
 
   // ── Cambiar estado de una reserva (intranet — requiere token) ─────────────
-  const cambiarEstadoReserva = async (reservaId, nuevoEstado) => {
+  const cambiarEstadoReserva = async (reservaId, nuevoEstado, motivoCancelacion = null) => {
     try {
+      const body = { estado: nuevoEstado };
+      if (motivoCancelacion) body.motivoCancelacion = motivoCancelacion;
       await apiFetch(
         `/api/reservations/${reservaId}/status`,
-        { method: "PATCH", body: JSON.stringify({ estado: nuevoEstado }) },
+        { method: "PATCH", body: JSON.stringify(body) },
         token
       );
       // Actualizar localmente sin recargar
