@@ -5,15 +5,37 @@ const tiposComida = ["Criolla","Italiana","Japonesa","Mariscos","Vegana","Parril
 const sugerenciasDistritos = ["Miraflores","San Isidro","Barranco","Surco","La Molina","Chorrillos","Lince","Jesús María","Pueblo Libre","Magdalena"];
 
 function RegisteredRestaurants() {
-  const { restaurantes, editarRestaurante, eliminarRestaurante } = useRestaurants();
+  const { restaurantes, editarRestaurante, eliminarRestaurante, toggleCierre } = useRestaurants();
   const [busqueda, setBusqueda] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [preview, setPreview] = useState(null);
 
+  const [modalCierre, setModalCierre] = useState(null); // null | restaurantObj
+  const [motivoCierre, setMotivoCierre] = useState("");
+
   const handleEliminar = (id) => {
     if (window.confirm("¿Eliminar este restaurante permanentemente?")) {
       eliminarRestaurante(id);
+    }
+  };
+
+  const handleToggleCierre = async () => {
+    if (!modalCierre) return;
+    try {
+      await toggleCierre(modalCierre.id, true, motivoCierre);
+      setModalCierre(null);
+      setMotivoCierre("");
+    } catch (err) {
+      alert("Error al cerrar el restaurante: " + err.message);
+    }
+  };
+
+  const handleReabrir = async (restaurant) => {
+    try {
+      await toggleCierre(restaurant.id, false, null);
+    } catch (err) {
+      alert("Error al reabrir el restaurante: " + err.message);
     }
   };
 
@@ -265,6 +287,14 @@ function RegisteredRestaurants() {
                   <p className="rr-distrito">
                     <i className="bi bi-geo-alt me-1"></i>{res.distrito}
                   </p>
+                  
+                  {res.cerradoHoy && (
+                    <div className="rr-badge-cerrado">
+                      <i className="bi bi-door-closed-fill me-1"></i>
+                      Cerrado hoy — {res.motivoCierre || "Sin motivo especificado"}
+                    </div>
+                  )}
+
                   {res.mensaje_personalizado && (
                     <div className="rr-slogan">"{res.mensaje_personalizado}"</div>
                   )}
@@ -272,6 +302,17 @@ function RegisteredRestaurants() {
                     <button className="rr-btn-editar" onClick={() => abrirEditar(res)}>
                       <i className="bi bi-pencil-square"></i> Editar
                     </button>
+
+                    {res.cerradoHoy ? (
+                      <button className="rr-btn-reabrir" onClick={() => handleReabrir(res)}>
+                        <i className="bi bi-door-open"></i> Reabrir
+                      </button>
+                    ) : (
+                      <button className="rr-btn-cerrar" onClick={() => { setModalCierre(res); setMotivoCierre(""); }}>
+                        <i className="bi bi-door-closed"></i> Cerrar
+                      </button>
+                    )}
+
                     <button className="rr-btn-eliminar" onClick={() => handleEliminar(res.id)}>
                       <i className="bi bi-trash"></i>
                     </button>
@@ -404,6 +445,40 @@ function RegisteredRestaurants() {
                   <button type="submit" className="rr-btn-guardar">Guardar Cambios</button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal de motivo de cierre */}
+      {modalCierre && (
+        <div className="rr-modal-overlay" onClick={(e) => { if (e.target.classList.contains("rr-modal-overlay")) setModalCierre(null); }}>
+          <div className="rr-modal" style={{ maxWidth: "420px" }}>
+            <div className="rr-modal-header">
+              <h5 className="rr-modal-title">Cerrar: {modalCierre.nombre}</h5>
+              <button className="rr-modal-close" onClick={() => setModalCierre(null)}>&times;</button>
+            </div>
+            <div className="rr-modal-body">
+              <label className="rr-label">Motivo del cierre</label>
+              <textarea
+                className="rr-input"
+                rows={3}
+                placeholder="Ej: Mantenimiento de cocina, falta de personal, etc."
+                value={motivoCierre}
+                onChange={(e) => setMotivoCierre(e.target.value)}
+              />
+              <div className="rr-modal-actions">
+                <button type="button" className="rr-btn-cancelar" onClick={() => setModalCierre(null)}>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="rr-btn-guardar"
+                  disabled={!motivoCierre.trim()}
+                  onClick={handleToggleCierre}
+                >
+                  Confirmar cierre
+                </button>
+              </div>
             </div>
           </div>
         </div>
