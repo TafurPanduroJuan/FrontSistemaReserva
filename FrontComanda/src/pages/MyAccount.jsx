@@ -293,6 +293,12 @@ export default function MyAccount() {
                           />
                           {estadoConfig.label}
                         </span>
+                        {r.estado === "cancelada" && r.motivoCancelacion && (
+                          <span className="reserva-motivo-cancelacion">
+                            <i className="bi bi-info-circle me-1" />
+                            {r.motivoCancelacion}
+                          </span>
+                        )}
                         {r.estado === "confirmada" && (
                           <button
                             className={`btn-cancelar-reserva ${!cancelable ? "disabled" : ""}`}
