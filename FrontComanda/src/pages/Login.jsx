@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../assets/styles/auth.css";
 import loginImg from "../assets/img/login.jpg"
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-
+  const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,9 +33,17 @@ export default function Login() {
     }
 
     const { rol } = result.user;
-    if (rol === "administrador") navigate("/intranet");
-    else if (rol === "personal") navigate("/intranet/tables");
-    else navigate("/my-account");
+    const from = location.state?.from;
+
+    if (from) {
+      navigate(from);
+    } else if (rol === "administrador") {
+      navigate("/intranet");
+    } else if (rol === "personal") {
+      navigate("/intranet/tables");
+    } else {
+      navigate("/my-account");
+    }
   }
 
   return (
