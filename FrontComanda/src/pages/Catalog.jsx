@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import "../assets/styles/catalog.css";
 import BookingModal from "../components/BookingModal";
+import { useAuth } from "../context/AuthContext";
 
 const PRECIOS = ["$", "$$", "$$$", "$$$$"];
 const DISPONIBILIDADES = ["Todos", "Hoy", "Mañana"];
@@ -36,6 +37,8 @@ function normalizarRestaurante(r) {
 function Catalog() {
   const [searchParams] = useSearchParams();
   const [restaurantesBackend, setRestaurantesBackend] = useState([]);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/restaurants`)
@@ -74,6 +77,10 @@ function Catalog() {
   const [selectedRest, setSelectedRest] = useState(null);
 
   const handleBooking = (restaurante) => {
+    if (!user) {
+      navigate("/login", { state: { from: "/catalogo", mensaje: "Inicia sesión para hacer una reserva" } });
+      return;
+    }
     setSelectedRest(restaurante);
     setIsModalOpen(true);
   };
