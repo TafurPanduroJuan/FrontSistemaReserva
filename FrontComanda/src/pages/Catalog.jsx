@@ -78,7 +78,7 @@ function Catalog() {
 
   const handleBooking = (restaurante) => {
     if (!user) {
-      navigate("/login", { state: { from: "/catalogo", mensaje: "Inicia sesión para hacer una reserva" } });
+      navigate("/login", { state: { from: "/catalog", mensaje: "Inicia sesión para hacer una reserva" } });      
       return;
     }
     setSelectedRest(restaurante);
