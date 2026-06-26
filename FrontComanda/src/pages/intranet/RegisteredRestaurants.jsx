@@ -5,15 +5,37 @@ const tiposComida = ["Criolla","Italiana","Japonesa","Mariscos","Vegana","Parril
 const sugerenciasDistritos = ["Miraflores","San Isidro","Barranco","Surco","La Molina","Chorrillos","Lince","Jesús María","Pueblo Libre","Magdalena"];
 
 function RegisteredRestaurants() {
-  const { restaurantes, editarRestaurante, eliminarRestaurante } = useRestaurants();
+  const { restaurantes, editarRestaurante, eliminarRestaurante, toggleCierre } = useRestaurants();
   const [busqueda, setBusqueda] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [preview, setPreview] = useState(null);
 
+  const [modalCierre, setModalCierre] = useState(null); // null | restaurantObj
+  const [motivoCierre, setMotivoCierre] = useState("");
+
   const handleEliminar = (id) => {
     if (window.confirm("¿Eliminar este restaurante permanentemente?")) {
       eliminarRestaurante(id);
+    }
+  };
+
+  const handleToggleCierre = async () => {
+    if (!modalCierre) return;
+    try {
+      await toggleCierre(modalCierre.id, true, motivoCierre);
+      setModalCierre(null);
+      setMotivoCierre("");
+    } catch (err) {
+      alert("Error al cerrar el restaurante: " + err.message);
+    }
+  };
+
+  const handleReabrir = async (restaurant) => {
+    try {
+      await toggleCierre(restaurant.id, false, null);
+    } catch (err) {
+      alert("Error al reabrir el restaurante: " + err.message);
     }
   };
 
@@ -155,6 +177,35 @@ function RegisteredRestaurants() {
         }
         .rr-btn-eliminar:hover { background: #fee2e2; }
 
+        .rr-btn-cerrar {
+          background: #fff7ed; color: #c2410c;
+          border: none; padding: 8px 14px;
+          border-radius: 9px; cursor: pointer;
+          font-size: 0.82rem; font-weight: 600;
+          display: flex; align-items: center; gap: 5px;
+          transition: background 0.2s;
+        }
+        .rr-btn-cerrar:hover { background: #ffedd5; }
+
+        .rr-btn-reabrir {
+          background: #f0fdf4; color: #15803d;
+          border: none; padding: 8px 14px;
+          border-radius: 9px; cursor: pointer;
+          font-size: 0.82rem; font-weight: 600;
+          display: flex; align-items: center; gap: 5px;
+          transition: background 0.2s;
+        }
+        .rr-btn-reabrir:hover { background: #dcfce7; }
+
+        .rr-badge-cerrado {
+          background: #fff7ed; color: #c2410c;
+          border: 1px solid #fed7aa;
+          padding: 6px 10px; border-radius: 8px;
+          font-size: 0.78rem; font-weight: 600;
+          margin-bottom: 8px;
+          display: flex; align-items: center;
+        }
+
         /* Modal */
         .rr-modal-overlay {
           position: fixed; inset: 0;
@@ -265,6 +316,14 @@ function RegisteredRestaurants() {
                   <p className="rr-distrito">
                     <i className="bi bi-geo-alt me-1"></i>{res.distrito}
                   </p>
+                  
+                  {res.cerradoHoy && (
+                    <div className="rr-badge-cerrado">
+                      <i className="bi bi-door-closed-fill me-1"></i>
+                      Cerrado hoy — {res.motivoCierre || "Sin motivo especificado"}
+                    </div>
+                  )}
+
                   {res.mensaje_personalizado && (
                     <div className="rr-slogan">"{res.mensaje_personalizado}"</div>
                   )}
@@ -272,6 +331,17 @@ function RegisteredRestaurants() {
                     <button className="rr-btn-editar" onClick={() => abrirEditar(res)}>
                       <i className="bi bi-pencil-square"></i> Editar
                     </button>
+
+                    {res.cerradoHoy ? (
+                      <button className="rr-btn-reabrir" onClick={() => handleReabrir(res)}>
+                        <i className="bi bi-door-open"></i> Reabrir
+                      </button>
+                    ) : (
+                      <button className="rr-btn-cerrar" onClick={() => { setModalCierre(res); setMotivoCierre(""); }}>
+                        <i className="bi bi-door-closed"></i> Cerrar
+                      </button>
+                    )}
+
                     <button className="rr-btn-eliminar" onClick={() => handleEliminar(res.id)}>
                       <i className="bi bi-trash"></i>
                     </button>
@@ -374,11 +444,70 @@ function RegisteredRestaurants() {
                   </div>
                 </div>
 
+                {/* Sección 4 */}
+                <div style={{ marginBottom: "22px" }}>
+                  <p className="rr-section-label">4. HORARIO DE ATENCIÓN</p>
+                  <div className="row g-3">
+                    <div className="col-12 col-md-6">
+                      <label className="rr-label">Hora de apertura</label>
+                      <input
+                        type="time"
+                        className="rr-input"
+                        value={editData.horarioApertura || ""}
+                        onChange={e => setEditData({ ...editData, horarioApertura: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="rr-label">Hora de cierre</label>
+                      <input
+                        type="time"
+                        className="rr-input"
+                        value={editData.horarioCierre || ""}
+                        onChange={e => setEditData({ ...editData, horarioCierre: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="rr-modal-actions">
                   <button type="button" className="rr-btn-cancelar" onClick={() => setShowModal(false)}>Cancelar</button>
                   <button type="submit" className="rr-btn-guardar">Guardar Cambios</button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal de motivo de cierre */}
+      {modalCierre && (
+        <div className="rr-modal-overlay" onClick={(e) => { if (e.target.classList.contains("rr-modal-overlay")) setModalCierre(null); }}>
+          <div className="rr-modal" style={{ maxWidth: "420px" }}>
+            <div className="rr-modal-header">
+              <h5 className="rr-modal-title">Cerrar: {modalCierre.nombre}</h5>
+              <button className="rr-modal-close" onClick={() => setModalCierre(null)}>&times;</button>
+            </div>
+            <div className="rr-modal-body">
+              <label className="rr-label">Motivo del cierre</label>
+              <textarea
+                className="rr-input"
+                rows={3}
+                placeholder="Ej: Mantenimiento de cocina, falta de personal, etc."
+                value={motivoCierre}
+                onChange={(e) => setMotivoCierre(e.target.value)}
+              />
+              <div className="rr-modal-actions">
+                <button type="button" className="rr-btn-cancelar" onClick={() => setModalCierre(null)}>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="rr-btn-guardar"
+                  disabled={!motivoCierre.trim()}
+                  onClick={handleToggleCierre}
+                >
+                  Confirmar cierre
+                </button>
+              </div>
             </div>
           </div>
         </div>

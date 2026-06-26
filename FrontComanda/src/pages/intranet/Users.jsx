@@ -34,6 +34,10 @@ export default function Users() {
   const [createErrors, setCreateErrors]   = useState({});
   const [cargando, setCargando]           = useState(false);
 
+  const [modalReset, setModalReset] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [resetMsg, setResetMsg] = useState("");
+  
   const loadUsers = async () => {
     if (!token) return;
     setCargando(true);
@@ -108,6 +112,28 @@ export default function Users() {
     } catch (err) {
       setModalEliminar(null);
       notify("❌ " + err.message);
+    }
+  }
+
+  async function handleResetPassword() {
+    if (!modalReset || !newPassword) return;
+    try {
+      await apiFetch(
+        `/api/users/${modalReset.id}/reset-password`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ password: newPassword }),
+        },
+        token
+      );
+      setResetMsg("Contraseña actualizada correctamente");
+      setTimeout(() => {
+        setModalReset(null);
+        setNewPassword("");
+        setResetMsg("");
+      }, 2000);
+    } catch (err) {
+      setResetMsg("Error: " + err.message);
     }
   }
 
@@ -340,26 +366,47 @@ export default function Users() {
                           <i className="bi bi-pencil" /> Editar
                         </button>
 
-                          <button
-                            onClick={() => setModalEliminar(u)}
-                            disabled={isMe}
-                            title={isMe ? "No puedes eliminar tu propia cuenta" : "Eliminar cuenta"}
-                            style={{
-                              background: isMe ? "#f5f5f5" : "#fff0ef",
-                              color: isMe ? "#ccc" : "#842029",
-                              border: `1.5px solid ${isMe ? "#eee" : "#fecaca"}`,
-                              borderRadius: 8,
-                              padding: "5px 12px",
-                              fontSize: "0.78rem",
-                              fontWeight: 600,
-                              cursor: isMe ? "not-allowed" : "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 4,
-                            }}
-                          >
-                            <i className="bi bi-trash" /> Eliminar
-                          </button>                        
+                        <button
+                          onClick={() => setModalEliminar(u)}
+                          disabled={isMe}
+                          title={isMe ? "No puedes eliminar tu propia cuenta" : "Eliminar cuenta"}
+                          style={{
+                            background: isMe ? "#f5f5f5" : "#fff0ef",
+                            color: isMe ? "#ccc" : "#842029",
+                            border: `1.5px solid ${isMe ? "#eee" : "#fecaca"}`,
+                            borderRadius: 8,
+                            padding: "5px 12px",
+                            fontSize: "0.78rem",
+                            fontWeight: 600,
+                            cursor: isMe ? "not-allowed" : "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
+                          <i className="bi bi-trash" /> Eliminar
+                        </button>
+
+                        <button
+                          onClick={() => { setModalReset(u); setNewPassword(""); setResetMsg(""); }}
+                          disabled={isMe}
+                          title={isMe ? "No puedes resetear tu propia contraseña" : "Resetear contraseña"}
+                          style={{
+                            background: isMe ? "#f5f5f5" : "#f0f4ff",
+                            color: isMe ? "#ccc" : "#1d4ed8",
+                            border: `1.5px solid ${isMe ? "#eee" : "#bfdbfe"}`,
+                            borderRadius: 8,
+                            padding: "5px 12px",
+                            fontSize: "0.78rem",
+                            fontWeight: 600,
+                            cursor: isMe ? "not-allowed" : "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
+                          <i className="bi bi-key" /> Reset
+                        </button>                          
                       </div>
                     )}
                   </td>
@@ -561,6 +608,94 @@ export default function Users() {
                 </div>
               </div>
             )}
+      {modalReset && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setModalReset(null); }}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: 18,
+              padding: "28px 24px",
+              width: "100%",
+              maxWidth: 400,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🔑</div>
+            <h3 style={{ margin: "0 0 8px", fontSize: "1.1rem", fontWeight: 800, color: "#1a1a2e" }}>
+              Resetear contraseña
+            </h3>
+            <p style={{ color: "#666", fontSize: "0.88rem", marginBottom: 16 }}>
+              Nueva contraseña para <strong>{modalReset.nombre}</strong>
+            </p>
+            <input
+              type="password"
+              placeholder="Nueva contraseña"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "9px 12px",
+                border: "1.5px solid #e8ddd3",
+                borderRadius: 8,
+                fontSize: "0.9rem",
+                marginBottom: 8,
+                outline: "none",
+              }}
+            />
+            {resetMsg && (
+              <p style={{ color: resetMsg.startsWith("Error") ? "#842029" : "#1d9e75", fontSize: "0.85rem", marginBottom: 8 }}>
+                {resetMsg}
+              </p>
+            )}
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 12 }}>
+              <button
+                onClick={() => setModalReset(null)}
+                style={{
+                  background: "#f5f5f5",
+                  color: "#888",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "9px 20px",
+                  fontWeight: 600,
+                  fontSize: "0.88rem",
+                  cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleResetPassword}
+                disabled={!newPassword}
+                style={{
+                  background: !newPassword ? "#ccc" : "#1d4ed8",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "9px 20px",
+                  fontWeight: 700,
+                  fontSize: "0.88rem",
+                  cursor: !newPassword ? "not-allowed" : "pointer",
+                }}
+              >
+                <i className="bi bi-key me-2" /> Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
