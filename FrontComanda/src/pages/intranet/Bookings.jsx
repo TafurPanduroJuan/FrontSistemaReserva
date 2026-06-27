@@ -354,10 +354,18 @@ function Bookings() {
                     )}
 
                     {/* Motivo de cancelación — visible para el personal */}
-                    {(r.estado === "cancelada" || r.estado === "cancelada_cliente") && r.motivoCancelacion && (
+                    {r.estado === "cancelada" && r.motivoCancelacion && (
                       <div className="rv-motivo-box">
                         <i className="bi bi-info-circle-fill me-1" />
-                        <strong>Motivo de cancelación:</strong> {r.motivoCancelacion}
+                        <strong>Motivo de cancelación (restaurante):</strong> {r.motivoCancelacion}
+                      </div>
+                    )}
+
+                    {/* Mensaje personalizado del cliente al cancelar */}
+                    {r.estado === "cancelada_cliente" && r.motivoCancelacion && (
+                      <div className="rv-motivo-box" style={{ background: "#f5f3ff", borderColor: "#ddd6fe", color: "#5b21b6" }}>
+                        <i className="bi bi-person-x-fill me-1" />
+                        <strong>Mensaje del cliente:</strong> {r.motivoCancelacion}
                       </div>
                     )}
 
