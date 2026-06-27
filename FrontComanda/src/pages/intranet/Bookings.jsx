@@ -26,7 +26,12 @@ function Bookings() {
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [fechaFiltro, setFechaFiltro] = useState("");
 
-  // Para personal: filtrar por su restaurante asignado (buscamos por nombre en la lista)
+  // Modal de motivo de cancelación
+  const [modalMotivo, setModalMotivo] = useState(null); // { reservaId, accion }
+  const [motivoInput, setMotivoInput] = useState("");
+  const [cancelando, setCancelando] = useState(false);
+
+  // Para personal: filtrar por su restaurante asignado
   const restaurantePersonal = restaurantesCtx.find(
     (r) => r.nombre === user?.restaurante
   );
@@ -37,21 +42,18 @@ function Bookings() {
 
   const [restauranteActivo, setRestauranteActivo] = useState(null);
 
-  // Inicializar restaurante activo
   useEffect(() => {
     if (listaRestaurantes.length > 0 && !restauranteActivo) {
       setRestauranteActivo(listaRestaurantes[0]);
     }
   }, [listaRestaurantes]);
 
-  // Cargar reservas cuando cambia el restaurante activo
   useEffect(() => {
     if (restauranteActivo?.id) {
       cargarReservas(restauranteActivo.id, fechaFiltro || null, null);
     }
   }, [restauranteActivo]);
 
-  // Recargar cuando cambia la fecha
   useEffect(() => {
     if (restauranteActivo?.id) {
       cargarReservas(restauranteActivo.id, fechaFiltro || null, null);
@@ -70,6 +72,31 @@ function Bookings() {
 
   const handleCambiarRestaurante = (rest) => {
     setRestauranteActivo(rest);
+  };
+
+  // Abrir modal antes de cancelar
+  const abrirModalCancelacion = (reservaId, accion) => {
+    setMotivoInput("");
+    setModalMotivo({ reservaId, accion });
+  };
+
+  // Confirmar cancelación con motivo
+  const confirmarCancelacion = async () => {
+    if (!modalMotivo) return;
+    setCancelando(true);
+    try {
+      await cambiarEstadoReserva(
+        modalMotivo.reservaId,
+        modalMotivo.accion,
+        motivoInput.trim() || null
+      );
+      setModalMotivo(null);
+      setMotivoInput("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCancelando(false);
+    }
   };
 
   return (
@@ -109,6 +136,7 @@ function Bookings() {
         .rv-info-val { font-size: 0.78rem; font-weight: 800; color: #1a1a2e; display: block; }
         .rv-info-lbl { font-size: 0.58rem; color: #bbb; font-weight: 700; text-transform: uppercase; display: block; }
         .rv-notas { background: #fffaf0; border: 1px dashed #ff9f22; border-radius: 11px; padding: 11px 14px; font-size: 0.8rem; color: #92400e; margin-bottom: 16px; line-height: 1.5; }
+        .rv-motivo-box { background: #fff1f1; border: 1px solid #fecaca; border-radius: 11px; padding: 10px 14px; font-size: 0.78rem; color: #991b1b; margin-bottom: 14px; line-height: 1.5; }
         .rv-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
         .rv-btn-confirmar { flex: 2; min-width: 120px; padding: 9px; border-radius: 11px; border: none; background: #22c55e; color: white; font-weight: 700; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 5px; transition: opacity 0.2s; }
         .rv-btn-confirmar:hover { opacity: 0.88; }
@@ -117,6 +145,19 @@ function Bookings() {
         .rv-btn-anular { width: 100%; padding: 9px; border-radius: 11px; border: 1.5px solid #fee2e2; background: white; color: #dc3545; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: background 0.2s; }
         .rv-btn-anular:hover { background: #fff5f5; }
         .rv-empty { text-align: center; padding: 60px 20px; color: #aaa; background: white; border-radius: 16px; }
+        /* Modal */
+        .rv-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .rv-modal { background: white; border-radius: 20px; padding: 28px; max-width: 460px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        .rv-modal-title { font-weight: 800; font-size: 1.15rem; color: #1a1a2e; margin: 0 0 6px; }
+        .rv-modal-sub { font-size: 0.83rem; color: #888; margin: 0 0 20px; }
+        .rv-modal-label { font-size: 0.75rem; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+        .rv-modal-textarea { width: 100%; border: 1.5px solid #e0d8d0; border-radius: 11px; padding: 11px 14px; font-size: 0.85rem; font-family: inherit; resize: vertical; min-height: 90px; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+        .rv-modal-textarea:focus { border-color: #F4956A; }
+        .rv-modal-hint { font-size: 0.72rem; color: #aaa; margin: 5px 0 20px; }
+        .rv-modal-btns { display: flex; gap: 10px; }
+        .rv-modal-btn-cancel { flex: 1; padding: 10px; border-radius: 11px; border: 1.5px solid #e0e0e0; background: white; color: #666; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
+        .rv-modal-btn-confirm { flex: 2; padding: 10px; border-radius: 11px; border: none; background: #dc3545; color: white; font-weight: 700; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .rv-modal-btn-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
         @media (max-width: 768px) {
           .rv-page { padding: 12px; }
           .rv-header { flex-direction: column; align-items: flex-start; }
@@ -131,6 +172,52 @@ function Bookings() {
           .rv-filter-btn { padding: 6px 10px; font-size: 0.73rem; }
         }
       `}</style>
+
+      {/* Modal de motivo de cancelación */}
+      {modalMotivo && (
+        <div className="rv-modal-overlay" onClick={() => setModalMotivo(null)}>
+          <div className="rv-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="rv-modal-title">
+              <i className="bi bi-x-circle-fill me-2" style={{ color: "#dc3545" }} />
+              Cancelar reserva
+            </h3>
+            <p className="rv-modal-sub">
+              Se notificará al cliente por email. Puedes indicar el motivo de la cancelación.
+            </p>
+            <label className="rv-modal-label">Motivo de cancelación</label>
+            <textarea
+              className="rv-modal-textarea"
+              placeholder="Ej: Cierre por mantenimiento, aforo completo, emergencia operativa..."
+              value={motivoInput}
+              onChange={(e) => setMotivoInput(e.target.value)}
+              autoFocus
+            />
+            <p className="rv-modal-hint">
+              <i className="bi bi-info-circle me-1" />
+              El motivo es opcional pero recomendado para el cliente.
+            </p>
+            <div className="rv-modal-btns">
+              <button
+                className="rv-modal-btn-cancel"
+                onClick={() => setModalMotivo(null)}
+                disabled={cancelando}
+              >
+                Volver
+              </button>
+              <button
+                className="rv-modal-btn-confirm"
+                onClick={confirmarCancelacion}
+                disabled={cancelando}
+              >
+                {cancelando
+                  ? <><span className="spinner-border spinner-border-sm" />Cancelando...</>
+                  : <><i className="bi bi-x-circle" />Confirmar cancelación</>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="rv-page">
 
@@ -266,6 +353,14 @@ function Bookings() {
                       </div>
                     )}
 
+                    {/* Motivo de cancelación — visible para el personal */}
+                    {(r.estado === "cancelada" || r.estado === "cancelada_cliente") && r.motivoCancelacion && (
+                      <div className="rv-motivo-box">
+                        <i className="bi bi-info-circle-fill me-1" />
+                        <strong>Motivo de cancelación:</strong> {r.motivoCancelacion}
+                      </div>
+                    )}
+
                     <div className="rv-acciones">
                       {r.estado === "pendiente" && (
                         <>
@@ -277,7 +372,7 @@ function Bookings() {
                           </button>
                           <button
                             className="rv-btn-cancelar-res"
-                            onClick={() => cambiarEstadoReserva(r.id, "cancelada")}
+                            onClick={() => abrirModalCancelacion(r.id, "cancelada")}
                           >
                             Cancelar
                           </button>
@@ -286,7 +381,7 @@ function Bookings() {
                       {r.estado === "confirmada" && (
                         <button
                           className="rv-btn-anular"
-                          onClick={() => cambiarEstadoReserva(r.id, "cancelada")}
+                          onClick={() => abrirModalCancelacion(r.id, "cancelada")}
                         >
                           Anular Confirmación
                         </button>
