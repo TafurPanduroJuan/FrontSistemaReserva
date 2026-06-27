@@ -6,24 +6,32 @@ import { useAuth } from "./AuthContext";
 const CommentsContext = createContext(null);
 
 export function CommentsProvider({ children }) {
-  const { token } = useAuth();
+  const { token, user, isPersonal, isAdmin } = useAuth();
   const [comentarios, setComentarios] = useState([]);
 
   // ── Cargar comentarios desde el backend ───────────────────────────────────
-  // GET /api/comments es público (SecurityConfig)
+  // - ADMINISTRADOR: GET /api/comments  (todos)
+  // - PERSONAL:      GET /api/comments/my-restaurant  (solo su restaurante, requiere token)
+  // - Sin sesión/USUARIO: GET /api/comments  (público)
   const cargar = useCallback(async () => {
     try {
-      const data = await apiFetch("/api/comments");
+      let data;
+      if (isPersonal && token) {
+        // El personal solo ve los comentarios de su restaurante
+        data = await apiFetch("/api/comments/my-restaurant", {}, token);
+      } else {
+        data = await apiFetch("/api/comments");
+      }
       // Normalizar: el backend devuelve restaurant (objeto), no restaurante (string)
       const normalizados = data.map((c) => ({
         ...c,
-        restaurante: c.restaurant?.nombre || null, // compatibilidad con vistas existentes
+        restaurante: c.restaurant?.nombre || null,
       }));
       setComentarios(normalizados);
     } catch (err) {
       console.error("Error al cargar comentarios:", err);
     }
-  }, []);
+  }, [token, isPersonal]);
 
   useEffect(() => {
     cargar();
