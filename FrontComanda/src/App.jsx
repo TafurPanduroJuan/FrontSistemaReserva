@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import MyAccount from './pages/MyAccount';
 
 // ── Public Components ─────────────────────────────────────────────────────────
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
                 {/* ── Mi cuenta (solo rol usuario) ─────────────────────── */}
                 <Route
@@ -124,7 +126,7 @@ function App() {
                   <Route
                     path="comments"
                     element={
-                      <ProtectedRoute allowedRoles={["administrador"]}>
+                      <ProtectedRoute allowedRoles={["administrador", "personal"]}>
                         <Comments />
                       </ProtectedRoute>
                     }
