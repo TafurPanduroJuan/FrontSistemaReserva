@@ -1,5 +1,3 @@
-
-
 import { useState } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -34,6 +32,7 @@ const PERSONAL_NAV = [
     items: [
       { path: "/intranet/tables",   label: "Gestión de Mesas", icon: "bi-grid-3x3-gap" },
       { path: "/intranet/bookings", label: "Reservas",         icon: "bi-calendar-check" },
+      { path: "/intranet/comments", label: "Comentarios",      icon: "bi-chat-square-text" },
     ],
   },
 ];
