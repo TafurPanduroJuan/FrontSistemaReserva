@@ -6,20 +6,22 @@ import { useAuth } from "./AuthContext";
 const CommentsContext = createContext(null);
 
 export function CommentsProvider({ children }) {
-  const { token, user, isPersonal, isAdmin } = useAuth();
+  const { token, isPersonal } = useAuth();
   const [comentarios, setComentarios] = useState([]);
 
   // ── Cargar comentarios desde el backend ───────────────────────────────────
-  // - ADMINISTRADOR: GET /api/comments  (todos)
-  // - PERSONAL:      GET /api/comments/my-restaurant  (solo su restaurante, requiere token)
-  // - Sin sesión/USUARIO: GET /api/comments  (público)
+  // Estrategia: si hay token Y el usuario es PERSONAL, usar /my-restaurant.
+  // En cualquier otro caso usar /api/comments (público).
+  // El useCallback depende de token e isPersonal para re-ejecutarse cuando
+  // el AuthContext termine de hidratarse desde localStorage.
   const cargar = useCallback(async () => {
     try {
       let data;
-      if (isPersonal && token) {
-        // El personal solo ve los comentarios de su restaurante
+      if (token && isPersonal) {
+        // PERSONAL: solo los comentarios de su restaurante (requiere JWT)
         data = await apiFetch("/api/comments/my-restaurant", {}, token);
       } else {
+        // Admin o sin sesión: todos los comentarios (público)
         data = await apiFetch("/api/comments");
       }
       // Normalizar: el backend devuelve restaurant (objeto), no restaurante (string)
@@ -69,7 +71,7 @@ export function CommentsProvider({ children }) {
       { method: "POST", body: JSON.stringify({ respuesta }) },
       token
     );
-    // Actualizar localmente
+    // Actualizar localmente sin recargar
     setComentarios((prev) =>
       prev.map((c) =>
         c.id === id
@@ -81,8 +83,6 @@ export function CommentsProvider({ children }) {
   };
 
   // ── Refrescar lista manualmente ───────────────────────────────────────────
-  // agregarComentario ya no se usa desde el context (Form.jsx llama directo al API).
-  // Se expone refrescar() por si alguna vista necesita recargar.
   const refrescar = () => cargar();
 
   return (
