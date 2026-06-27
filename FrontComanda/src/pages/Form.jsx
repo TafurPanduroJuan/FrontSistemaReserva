@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import "../assets/styles/form.css";
 
 const tipoOptions = [
@@ -45,6 +46,7 @@ const initialForm = {
 };
 
 function Form() {
+  const { user } = useAuth();
   const [restaurantesApi, setRestaurantesApi] = useState([]);
 
   useEffect(() => {
@@ -56,6 +58,23 @@ function Form() {
 
   const [form, setForm] = useState(initialForm);
   const [hoverStar, setHoverStar] = useState(0);
+
+  // ── Autocompletar con datos del usuario autenticado ───────────────────────
+  useEffect(() => {
+    if (!user) return;
+    // El backend guarda el nombre completo en un solo campo; lo dividimos
+    const partes = (user.nombre || "").trim().split(/\s+/);
+    const nombreAuto   = partes[0] || "";
+    const apellidoAuto = partes.slice(1).join(" ") || "";
+    const telefonoAuto = user.telefono ? String(user.telefono).replace(/\D/g, "").slice(0, 9) : "";
+    setForm((prev) => ({
+      ...prev,
+      nombre:   prev.nombre   || nombreAuto,
+      apellido: prev.apellido || apellidoAuto,
+      correo:   prev.correo   || user.email || "",
+      telefono: prev.telefono || telefonoAuto,
+    }));
+  }, [user]);
   const [enviado, setEnviado] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [errores, setErrores] = useState({});
@@ -155,7 +174,19 @@ function Form() {
     }
   };
 
-  const resetForm = () => { setForm(initialForm); setEnviado(false); setStep(1); setErrores({}); };
+  const resetForm = () => {
+    const partes = (user?.nombre || "").trim().split(/\s+/);
+    const base = user ? {
+      nombre:   partes[0] || "",
+      apellido: partes.slice(1).join(" ") || "",
+      correo:   user.email || "",
+      telefono: user.telefono ? String(user.telefono).replace(/\D/g, "").slice(0, 9) : "",
+    } : {};
+    setForm({ ...initialForm, ...base });
+    setEnviado(false);
+    setStep(1);
+    setErrores({});
+  };
   const tipoSeleccionado = tipoOptions.find((t) => t.value === form.tipo);
 
   // ── Pantalla de éxito ──────────────────────────────────────────────────────
@@ -242,20 +273,39 @@ function Form() {
                     <p className="step-desc">Necesitamos saber quién eres para responder a tu mensaje.</p>
                   </div>
                 </div>
+
+                {/* Banner de autocompletado — solo visible si hay sesión */}
+                {user && (
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: "linear-gradient(135deg, #eff6ff, #e0f2fe)",
+                    border: "1.5px solid #bae6fd", borderRadius: 12,
+                    padding: "10px 16px", marginBottom: 20, fontSize: "0.83rem",
+                  }}>
+                    <i className="bi bi-lightning-charge-fill" style={{ color: "#0284c7", fontSize: "1rem", flexShrink: 0 }} />
+                    <span style={{ color: "#0369a1" }}>
+                      <strong>¡Datos prellenados!</strong> Hemos completado el formulario con la información de tu cuenta.
+                      Puedes editarlos si lo necesitas.
+                    </span>
+                  </div>
+                )}
+
                 <div className="form-row-2">
                   <div className="form-group">
                     <label className="form-label">Nombre <span className="required">*</span></label>
-                    <div className="input-wrapper">
+                    <div className="input-wrapper" style={user && form.nombre ? { borderColor: "#0ea5e9" } : {}}>
                       <i className="bi bi-person input-icon"></i>
                       <input type="text" name="nombre" className={`form-input ${errores.nombre ? "input-error" : ""}`} placeholder="Ej: María" value={form.nombre} onChange={handleChange} autoComplete="given-name" />
+                      {user && form.nombre && <i className="bi bi-check-circle-fill" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#0ea5e9", fontSize: "0.85rem", pointerEvents: "none" }} />}
                     </div>
                     {errores.nombre && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.nombre}</span>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Apellido <span className="required">*</span></label>
-                    <div className="input-wrapper">
+                    <div className="input-wrapper" style={user && form.apellido ? { borderColor: "#0ea5e9" } : {}}>
                       <i className="bi bi-person input-icon"></i>
                       <input type="text" name="apellido" className={`form-input ${errores.apellido ? "input-error" : ""}`} placeholder="Ej: García" value={form.apellido} onChange={handleChange} autoComplete="family-name" />
+                      {user && form.apellido && <i className="bi bi-check-circle-fill" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#0ea5e9", fontSize: "0.85rem", pointerEvents: "none" }} />}
                     </div>
                     {errores.apellido && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.apellido}</span>}
                   </div>
@@ -263,15 +313,26 @@ function Form() {
                 <div className="form-row-2">
                   <div className="form-group">
                     <label className="form-label">Correo electrónico <span className="required">*</span></label>
-                    <div className="input-wrapper">
+                    <div className="input-wrapper" style={user ? { borderColor: "#0ea5e9", background: "#f0f9ff" } : {}}>
                       <i className="bi bi-envelope input-icon"></i>
-                      <input type="email" name="correo" className={`form-input ${errores.correo ? "input-error" : ""}`} placeholder="tu@correo.com" value={form.correo} onChange={handleChange} autoComplete="email" />
+                      <input
+                        type="email" name="correo"
+                        className={`form-input ${errores.correo ? "input-error" : ""}`}
+                        placeholder="tu@correo.com"
+                        value={form.correo}
+                        onChange={handleChange}
+                        autoComplete="email"
+                        readOnly={!!user}
+                        style={user ? { cursor: "default", color: "#0369a1", fontWeight: 600 } : {}}
+                      />
+                      {user && <i className="bi bi-lock-fill" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#0ea5e9", fontSize: "0.8rem", pointerEvents: "none" }} />}
                     </div>
+                    {user && <span style={{ fontSize: "0.72rem", color: "#0284c7", marginTop: 3, display: "block" }}><i className="bi bi-info-circle me-1" />Vinculado a tu cuenta · no editable</span>}
                     {errores.correo && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.correo}</span>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Teléfono <span className="optional">(opcional)</span></label>
-                    <div className="input-wrapper">
+                    <div className="input-wrapper" style={user && form.telefono ? { borderColor: "#0ea5e9" } : {}}>
                       <i className="bi bi-telephone input-icon"></i>
                       <input
                         type="text"
@@ -284,6 +345,7 @@ function Form() {
                         autoComplete="tel"
                         maxLength={9}
                       />
+                      {user && form.telefono && <i className="bi bi-check-circle-fill" style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#0ea5e9", fontSize: "0.85rem", pointerEvents: "none" }} />}
                     </div>
                     {errores.telefono && <span className="error-msg"><i className="bi bi-exclamation-circle me-1"></i>{errores.telefono}</span>}
                     {!errores.telefono && form.telefono.length === 9 && (
