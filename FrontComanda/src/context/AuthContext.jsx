@@ -10,21 +10,20 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // ── Normaliza la respuesta del backend al formato interno ─────────────────
   function normalizeSession(data) {
     return {
-      id:     data.id,
-      nombre: data.nombre || data.name || data.nombre, // backend devuelve 'nombre'
-      email:  data.email,
-      rol:    (data.role || data.rol || "usuario").toLowerCase(),
-      token:  data.token,
+      id:          data.id,
+      nombre:      data.nombre || data.name,
+      email:       data.email,
+      rol:         (data.role || data.rol || "usuario").toLowerCase(),
+      token:       data.token,
       restaurante: data.restaurant || data.restaurante || null,
       avatar:      data.avatar     || null,
       telefono:    data.telefono   || null,
+      googleEmail: data.googleEmail || null,
     };
   }
 
-  // ── Login ──────────────────────────────────────────────────────────────────
   async function login(email, password) {
     try {
       const data = await apiFetch("/api/auth/login", {
@@ -40,13 +39,26 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ── Logout ─────────────────────────────────────────────────────────────────
+  async function loginWithGoogle(idToken) {
+    try {
+      const data = await apiFetch("/api/auth/google", {
+        method: "POST",
+        body: JSON.stringify({ idToken }),
+      });
+      const session = normalizeSession(data);
+      setUser(session);
+      localStorage.setItem("comanda_session", JSON.stringify(session));
+      return { ok: true, user: session };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }
+
   function logout() {
     setUser(null);
     localStorage.removeItem("comanda_session");
   }
 
-  // ── Registro ───────────────────────────────────────────────────────────────
   async function register({ nombre, email, password }) {
     try {
       const data = await apiFetch("/api/auth/register", {
@@ -62,23 +74,36 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ── Reset password (simulado — el backend no implementa email aún) ────────
-  function resetPassword(email) {
-    if (!email) return { ok: false, error: "Ingresa un email válido." };
-    // Por ahora simplemente simulamos que el email existe
-    // cuando el backend implemente la funcionalidad de email se conectará aquí
-    return { ok: true };
+  async function forgotPassword(email) {
+    try {
+      await apiFetch("/api/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
   }
 
-  // ── Cambiar rol de usuario (admin — llama al backend) ─────────────────────
+  async function resetPassword(token, newPassword) {
+    try {
+      await apiFetch("/api/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({ token, newPassword }),
+      });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }
+
   async function changeUserRole(userId, newRol, restaurante = null) {
     try {
       await apiFetch(`/api/users/${userId}/role`, {
         method: "PUT",
         body: JSON.stringify({ rol: newRol, restaurante: restaurante || "" }),
       }, user?.token);
-
-      // Si el usuario activo es el afectado, actualizar sesión
       if (user && user.id === userId) {
         const newSession = { ...user, rol: newRol, restaurante };
         setUser(newSession);
@@ -90,7 +115,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ── Eliminar usuario (admin — llama al backend) ────────────────────────────
   async function deleteUser(userId) {
     try {
       await apiFetch(`/api/users/${userId}`, { method: "DELETE" }, user?.token);
@@ -100,7 +124,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ── Actualizar perfil de usuario (PUT /api/users/me) ──────────────────────
   async function updateProfile(data) {
     try {
       const updated = await apiFetch(
@@ -110,9 +133,10 @@ export function AuthProvider({ children }) {
       );
       const newSession = {
         ...user,
-        nombre: updated.name || updated.nombre || user.nombre,
-        avatar: updated.avatar || user.avatar,
-        telefono: updated.telefono || user.telefono,
+        nombre:      updated.name || updated.nombre || user.nombre,
+        avatar:      updated.avatar    || user.avatar,
+        telefono:    updated.telefono  || user.telefono,
+        googleEmail: updated.googleEmail ?? user.googleEmail,
       };
       setUser(newSession);
       localStorage.setItem("comanda_session", JSON.stringify(newSession));
@@ -128,8 +152,10 @@ export function AuthProvider({ children }) {
         user,
         token: user?.token || null,
         login,
+        loginWithGoogle,
         logout,
         register,
+        forgotPassword,
         resetPassword,
         changeUserRole,
         deleteUser,
