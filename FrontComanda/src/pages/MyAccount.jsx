@@ -37,6 +37,7 @@ export default function MyAccount() {
   const [reservasUsuario, setReservasUsuario] = useState([]);
   const [cargandoReservas, setCargandoReservas] = useState(false);
   const [modalCancel, setModalCancel] = useState(null);
+  const [motivoCancelCliente, setMotivoCancelCliente] = useState("");
 
   // ── Comentarios del usuario ───────────────────────────────────────────────
   const [comentariosUsuario, setComentariosUsuario] = useState([]);
@@ -118,20 +119,25 @@ export default function MyAccount() {
   // ── Cancelar reserva ───────────────────────────────────────────────────────
   function handleSolicitarCancel(reserva) {
     if (!puedeCancel(reserva)) return;
+    setMotivoCancelCliente("");
     setModalCancel(reserva);
   }
 
   const handleConfirmarCancel = async () => {
     if (!modalCancel) return;
     try {
+      const body = { estado: "cancelada_cliente" };
+      if (motivoCancelCliente.trim()) body.motivoCancelacion = motivoCancelCliente.trim();
       await apiFetch(
         `/api/reservations/${modalCancel.id}/status`,
-        { method: "PATCH", body: JSON.stringify({ estado: "cancelada_cliente" }) },
+        { method: "PATCH", body: JSON.stringify(body) },
         token
       );
       setReservasUsuario((prev) =>
         prev.map((r) =>
-          r.id === modalCancel.id ? { ...r, estado: "cancelada_cliente" } : r
+          r.id === modalCancel.id
+            ? { ...r, estado: "cancelada_cliente", motivoCancelacion: motivoCancelCliente.trim() || null }
+            : r
         )
       );
       setModalCancel(null);
@@ -187,6 +193,23 @@ export default function MyAccount() {
               <strong>{modalCancel.fecha}</strong> a las{" "}
               <strong>{modalCancel.hora}</strong>. Esta acción no se puede deshacer.
             </p>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#555", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
+                Motivo de cancelación <span style={{ fontWeight: 400, color: "#aaa", textTransform: "none" }}>(opcional)</span>
+              </label>
+              <textarea
+                style={{ width: "100%", border: "1.5px solid #e0d8d0", borderRadius: 10, padding: "10px 13px", fontSize: "0.85rem", fontFamily: "inherit", resize: "vertical", minHeight: 80, outline: "none", boxSizing: "border-box", transition: "border-color 0.2s" }}
+                placeholder="Ej: Surgió un imprevisto, cambié de planes..."
+                value={motivoCancelCliente}
+                onChange={(e) => setMotivoCancelCliente(e.target.value)}
+                maxLength={300}
+                onFocus={(e) => (e.target.style.borderColor = "#dc3545")}
+                onBlur={(e) => (e.target.style.borderColor = "#e0d8d0")}
+              />
+              <div style={{ fontSize: "0.71rem", color: "#bbb", marginTop: 3 }}>
+                {motivoCancelCliente.length}/300 · El restaurante podrá ver este motivo
+              </div>
+            </div>
             <div className="cancel-modal-actions">
               <button className="cancel-modal-btn-no" onClick={() => setModalCancel(null)}>
                 Mantener reserva
