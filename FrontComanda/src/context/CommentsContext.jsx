@@ -20,14 +20,21 @@ export function CommentsProvider({ children }) {
       if (token && isPersonal) {
         // PERSONAL: solo los comentarios de su restaurante (requiere JWT)
         data = await apiFetch("/api/comments/my-restaurant", {}, token);
+      } else if (token) {
+        // Admin autenticado: todos los comentarios (con token para evitar 401)
+        data = await apiFetch("/api/comments", {}, token);
       } else {
-        // Admin o sin sesión: todos los comentarios (público)
+        // Sin sesión: todos los comentarios (público)
         data = await apiFetch("/api/comments");
       }
-      // Normalizar: el backend devuelve restaurant (objeto), no restaurante (string)
+      // Normalizar campos del backend al formato que usa el frontend
       const normalizados = data.map((c) => ({
         ...c,
-        restaurante: c.restaurant?.nombre || null,
+        restaurante:          c.restaurant?.nombre || c.restaurante || null,
+        respuestaRestaurante: c.respuestaRestaurante || null,
+        fechaRespuesta:       c.fechaRespuesta || null,
+        leido:                c.leido ?? false,
+        calificacion:         c.calificacion ?? 0,
       }));
       setComentarios(normalizados);
     } catch (err) {

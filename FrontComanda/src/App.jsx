@@ -126,7 +126,7 @@ function App() {
                   <Route
                     path="comments"
                     element={
-                      <ProtectedRoute allowedRoles={["administrador"]}>
+                      <ProtectedRoute allowedRoles={["administrador", "personal"]}>
                         <Comments />
                       </ProtectedRoute>
                     }
