@@ -113,10 +113,13 @@ export function RestaurantsProvider({ children }) {
     return actualizada;
   };
 
-  const rechazarSolicitud = async (id) => {
+  const rechazarSolicitud = async (id, motivo = null) => {
     await apiFetch(
       `/api/restaurants/requests/${id}/reject`,
-      { method: "PUT" },
+      {
+        method: "PUT",
+        body: motivo ? JSON.stringify({ motivo }) : undefined,
+      },
       token
     );
     setSolicitudes((prev) =>

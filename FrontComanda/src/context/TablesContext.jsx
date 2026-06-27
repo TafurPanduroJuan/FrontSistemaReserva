@@ -93,7 +93,11 @@ export function TablesProvider({ children }) {
       );
       // Actualizar localmente sin recargar
       setReservas((prev) =>
-        prev.map((r) => (r.id === reservaId ? { ...r, estado: nuevoEstado } : r))
+        prev.map((r) =>
+          r.id === reservaId
+            ? { ...r, estado: nuevoEstado, ...(motivoCancelacion ? { motivoCancelacion } : {}) }
+            : r
+        )
       );
       // Si se cancela la reserva, refrescar las mesas para que la mesa
       // vuelva a aparecer como "disponible" en TableManagement

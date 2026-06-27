@@ -6,6 +6,11 @@ function RestaurantRequests() {
   const [filtro, setFiltro] = useState("todos");
   const [confirmando, setConfirmando] = useState(null);
 
+  // Modal de rechazo con motivo
+  const [modalRechazo, setModalRechazo] = useState(null); // { id, nombre, email }
+  const [motivoRechazo, setMotivoRechazo] = useState("");
+  const [rechazando, setRechazando] = useState(false);
+
   const filtradas = solicitudes.filter(
     (s) => filtro === "todos" || s.estado === filtro
   );
@@ -16,8 +21,74 @@ function RestaurantRequests() {
     setTimeout(() => setConfirmando(null), 1200);
   };
 
+  const abrirModalRechazo = (s) => {
+    setMotivoRechazo("");
+    setModalRechazo({ id: s.id, nombre: s.nombre, email: s.email });
+  };
+
+  const confirmarRechazo = async () => {
+    if (!modalRechazo) return;
+    setRechazando(true);
+    try {
+      await rechazarSolicitud(modalRechazo.id, motivoRechazo.trim() || null);
+      setModalRechazo(null);
+      setMotivoRechazo("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRechazando(false);
+    }
+  };
+
   return (
     <div>
+      {/* Modal de rechazo con motivo */}
+      {modalRechazo && (
+        <div className="rq-modal-overlay" onClick={() => setModalRechazo(null)}>
+          <div className="rq-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="rq-modal-icon">
+              <i className="bi bi-x-circle-fill" style={{ color: "#dc3545", fontSize: "2rem" }} />
+            </div>
+            <h4 className="rq-modal-title">Rechazar solicitud</h4>
+            <p className="rq-modal-sub">
+              <strong>{modalRechazo.nombre}</strong> — el solicitante recibirá un email
+              a <strong>{modalRechazo.email}</strong> con la notificación del rechazo.
+            </p>
+            <label className="rq-modal-label">Motivo del rechazo</label>
+            <textarea
+              className="rq-modal-textarea"
+              placeholder="Ej: La documentación está incompleta, la dirección no corresponde a la zona de servicio..."
+              value={motivoRechazo}
+              onChange={(e) => setMotivoRechazo(e.target.value)}
+              autoFocus
+            />
+            <p className="rq-modal-hint">
+              <i className="bi bi-info-circle me-1" />
+              El motivo es opcional pero ayuda al solicitante a saber qué corregir.
+            </p>
+            <div className="rq-modal-btns">
+              <button
+                className="rq-modal-btn-cancel"
+                onClick={() => setModalRechazo(null)}
+                disabled={rechazando}
+              >
+                Volver
+              </button>
+              <button
+                className="rq-modal-btn-confirm"
+                onClick={confirmarRechazo}
+                disabled={rechazando}
+              >
+                {rechazando
+                  ? <><span className="spinner-border spinner-border-sm me-1" />Rechazando...</>
+                  : <><i className="bi bi-x-circle me-1" />Confirmar rechazo</>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="intra-page-header">
         <div className="intra-page-title">
           <i className="bi bi-shop-window"></i>
@@ -96,7 +167,7 @@ function RestaurantRequests() {
                     </button>
                     <button
                       className="btn-accion btn-rechazar flex-fill"
-                      onClick={() => rechazarSolicitud(s.id)}
+                      onClick={() => abrirModalRechazo(s)}
                     >
                       <i className="bi bi-x-circle me-1"></i> Rechazar
                     </button>
@@ -113,7 +184,7 @@ function RestaurantRequests() {
                 {s.estado === "rechazado" && (
                   <div className="estado-info estado-rechazado">
                     <i className="bi bi-x-circle-fill me-2"></i>
-                    Solicitud rechazada
+                    Solicitud rechazada — se notificó al solicitante
                   </div>
                 )}
               </div>
@@ -155,6 +226,20 @@ function RestaurantRequests() {
         .estado-info { padding:8px 14px; border-radius:8px; font-size:0.82rem; font-weight:600; display:flex; align-items:center; }
         .estado-aceptado { background:#d1fae5; color:#065f46; }
         .estado-rechazado { background:#fee2e2; color:#991b1b; }
+        /* Modal */
+        .rq-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px; }
+        .rq-modal { background:white; border-radius:20px; padding:28px; max-width:480px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.2); text-align:center; }
+        .rq-modal-icon { margin-bottom:12px; }
+        .rq-modal-title { font-weight:800; font-size:1.15rem; color:#1a1a2e; margin:0 0 6px; }
+        .rq-modal-sub { font-size:0.83rem; color:#666; margin:0 0 20px; text-align:left; background:#fff8f8; border-radius:8px; padding:10px 14px; }
+        .rq-modal-label { font-size:0.75rem; font-weight:800; color:#555; text-transform:uppercase; letter-spacing:0.5px; display:block; text-align:left; margin-bottom:6px; }
+        .rq-modal-textarea { width:100%; border:1.5px solid #e0d8d0; border-radius:11px; padding:11px 14px; font-size:0.85rem; font-family:inherit; resize:vertical; min-height:90px; outline:none; transition:border-color 0.2s; box-sizing:border-box; }
+        .rq-modal-textarea:focus { border-color:#dc3545; }
+        .rq-modal-hint { font-size:0.72rem; color:#aaa; margin:6px 0 20px; text-align:left; }
+        .rq-modal-btns { display:flex; gap:10px; }
+        .rq-modal-btn-cancel { flex:1; padding:10px; border-radius:11px; border:1.5px solid #e0e0e0; background:white; color:#666; font-weight:700; cursor:pointer; font-size:0.85rem; }
+        .rq-modal-btn-confirm { flex:2; padding:10px; border-radius:11px; border:none; background:#dc3545; color:white; font-weight:700; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:6px; }
+        .rq-modal-btn-confirm:disabled { opacity:0.6; cursor:not-allowed; }
       `}</style>
     </div>
   );
