@@ -30,9 +30,10 @@ const PERSONAL_NAV = [
   {
     section: "MI RESTAURANTE",
     items: [
-      { path: "/intranet/tables",   label: "Gestión de Mesas", icon: "bi-grid-3x3-gap" },
-      { path: "/intranet/bookings", label: "Reservas",         icon: "bi-calendar-check" },
-      { path: "/intranet/comments", label: "Comentarios",      icon: "bi-chat-square-text" },
+      { path: "/intranet/my-restaurant", label: "Gestión de Restaurante", icon: "bi-shop-window" },
+      { path: "/intranet/tables",        label: "Gestión de Mesas",       icon: "bi-grid-3x3-gap" },
+      { path: "/intranet/bookings",      label: "Reservas",               icon: "bi-calendar-check" },
+      { path: "/intranet/comments",      label: "Comentarios",            icon: "bi-chat-square-text" },
     ],
   },
 ];
