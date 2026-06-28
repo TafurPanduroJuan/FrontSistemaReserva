@@ -103,7 +103,7 @@ function normalizarRestaurante(r) {
     etiqueta:            r.cerradoHoy ? "Cerrado" : "Abierto hoy",
     cerrado:             r.cerradoHoy ?? false,
     motivoCierre:        r.motivoCierre || null,
-    eslogan:             r.mensajePersonalizado || null,
+    eslogan:             r.mensaje_personalizado || r.mensajePersonalizado || null,
     telefono:            r.telefono || null,
     email:               r.email    || null,
     etiquetas:           r.etiquetas || [],       // futuro campo del back
