@@ -11,6 +11,61 @@ const STEPS = [
   { label: "Confirmar" },
 ];
 
+// Mapeo día JS (0=Dom,1=Lun,...) → campo del restaurante
+const DIA_CAMPO = [
+  "horarioDomingo",   // 0 - domingo
+  "horarioLunes",     // 1 - lunes
+  "horarioMartes",    // 2 - martes
+  "horarioMiercoles", // 3 - miércoles
+  "horarioJueves",    // 4 - jueves
+  "horarioViernes",   // 5 - viernes
+  "horarioSabado",    // 6 - sábado
+];
+
+const DIA_LABEL = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+
+/**
+ * Dado un restaurante y una fecha ISO ("2026-06-29"),
+ * devuelve { abierto, apertura, cierre, horarioStr }
+ */
+function getHorarioDia(restaurante, fechaISO) {
+  if (!fechaISO || !restaurante) return { abierto: false };
+  const diaSemana = new Date(fechaISO + "T12:00:00").getDay(); // evitar UTC offset
+  const campo = DIA_CAMPO[diaSemana];
+  const val = restaurante[campo];
+  if (!val) return { abierto: false, diaNombre: DIA_LABEL[diaSemana] };
+  const [apertura, cierre] = val.split("-");
+  return { abierto: true, apertura, cierre, horarioStr: `${apertura} – ${cierre}`, diaNombre: DIA_LABEL[diaSemana] };
+}
+
+/**
+ * Genera slots horarios de apertura a cierre cada 1 hora.
+ * Excluye la última hora (si abre 11-22 → slots 11..21, el último slot de 21 termina a 22).
+ */
+function generarSlots(apertura, cierre) {
+  if (!apertura || !cierre) return [];
+  const [hA, mA] = apertura.split(":").map(Number);
+  const [hC, mC] = cierre.split(":").map(Number);
+  const slots = [];
+  for (let h = hA; h < hC; h++) {
+    // Si el último slot es la misma hora de cierre, omitir
+    if (h === hC && mA === mC) break;
+    slots.push(`${String(h).padStart(2, "0")}:${String(mA).padStart(2, "0")}`);
+  }
+  return slots;
+}
+
+/**
+ * Formatea fecha ISO a texto legible: "Lunes, 29 de junio de 2026"
+ */
+function formatFecha(fechaISO) {
+  if (!fechaISO) return "—";
+  const d = new Date(fechaISO + "T12:00:00");
+  return d.toLocaleDateString("es-PE", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  });
+}
+
 const BookingModal = ({ isOpen, onClose, restaurante }) => {
   const { user } = useAuth();
   const { getMesasDisponibles, agregarReserva } = useTables();
@@ -28,7 +83,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
 
   const [formData, setFormData] = useState({
     fecha: minDate,
-    hora: '18:00',
+    hora: '',
     personas: 2,
     mesa: null,
     mesaNumero: null,
@@ -39,9 +94,26 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
     notas: '',
   });
 
-  const horarios = ["12:00", "13:00", "14:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+  // ── Horario del día seleccionado ──
+  const horarioDia = useMemo(
+    () => getHorarioDia(restaurante, formData.fecha),
+    [restaurante, formData.fecha]
+  );
 
-  // Cargar mesas reales del backend al llegar al paso 3
+  // ── Slots disponibles según horario real ──
+  const slots = useMemo(() => {
+    if (!horarioDia.abierto) return [];
+    return generarSlots(horarioDia.apertura, horarioDia.cierre);
+  }, [horarioDia]);
+
+  // Al cambiar de fecha: resetear hora si ya no está en los slots
+  useEffect(() => {
+    if (formData.hora && !slots.includes(formData.hora)) {
+      setFormData(prev => ({ ...prev, hora: '' }));
+    }
+  }, [slots]);
+
+  // Cargar mesas al paso 3
   useEffect(() => {
     if (step === 3 && restaurante?.id) {
       setCargandoMesas(true);
@@ -64,9 +136,9 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
   if (!isOpen || !restaurante) return null;
 
   const canProceed = () => {
-    if (step === 2) return !!formData.fecha && !!formData.hora;
+    if (step === 2) return horarioDia.abierto && !!formData.fecha && !!formData.hora;
     if (step === 3) return formData.mesa !== null;
-    if (step === 4) return formData.nombre.trim() && formData.email.trim() && formData.telefono.trim();
+    if (step === 4) return formData.nombre.trim() && formData.email.trim() && telefonoValido;
     return true;
   };
 
@@ -164,11 +236,17 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
           {step === 2 && (
             <div className="step-container anim-fade-in p-1">
               <h3 className="section-title mb-2">📅 ¿Cuándo nos visitas?</h3>
+
               <div className="row-inputs">
                 <div className="input-group">
                   <label>📅 Fecha</label>
-                  <input type="date" className="modern-field" min={minDate} value={formData.fecha}
-                    onChange={(e) => setFormData({ ...formData, fecha: e.target.value })} />
+                  <input
+                    type="date"
+                    className="modern-field"
+                    min={minDate}
+                    value={formData.fecha}
+                    onChange={(e) => setFormData({ ...formData, fecha: e.target.value, hora: '' })}
+                  />
                 </div>
                 <div className="input-group center-content">
                   <label>👥 Personas</label>
@@ -179,17 +257,46 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                   </div>
                 </div>
               </div>
-              <label className="label-margin">🕒 Horarios disponibles</label>
-              <div className="time-grid">
-                {horarios.map((h) => (
-                  <button key={h} className={`time-chip ${formData.hora === h ? 'selected' : ''}`}
-                    onClick={() => setFormData({ ...formData, hora: h })}>{h}</button>
-                ))}
-              </div>
+
+              {/* ── Día cerrado ── */}
+              {!horarioDia.abierto ? (
+                <div className="closed-day-alert">
+                  <span className="alert-icon">🚫</span>
+                  <div>
+                    <span>El restaurante no atiende los {horarioDia.diaNombre}s</span>
+                    <small>Selecciona otra fecha para continuar con tu reserva.</small>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Badge con horario del día */}
+                  <div className="day-schedule-badge">
+                    🕒 {horarioDia.diaNombre}: {horarioDia.horarioStr}
+                  </div>
+
+                  <label className="label-margin">Horarios disponibles</label>
+                  <div className="time-grid">
+                    {slots.map((h) => (
+                      <button
+                        key={h}
+                        className={`time-chip ${formData.hora === h ? 'selected' : ''}`}
+                        onClick={() => setFormData({ ...formData, hora: h })}
+                      >
+                        {h}
+                      </button>
+                    ))}
+                  </div>
+                  {slots.length === 0 && (
+                    <p style={{ color: '#aaa', fontSize: '0.85rem', textAlign: 'center', marginTop: 12 }}>
+                      No hay horarios disponibles para este día.
+                    </p>
+                  )}
+                </>
+              )}
             </div>
           )}
 
-          {/* PASO 3: Mesa y ubicación */}
+          {/* PASO 3 */}
           {step === 3 && (
             <div className="step-container anim-fade-in">
               <h3 className="section-title">📍 Elige tu Ubicación</h3>
@@ -208,9 +315,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
               {cargandoMesas ? (
                 <p style={{ textAlign: "center", color: "#aaa" }}>Cargando mesas disponibles...</p>
               ) : mesasFiltradas.length === 0 ? (
-                <p style={{ textAlign: "center", color: "#e74c3c" }}>
-                  No hay mesas disponibles para esta zona.
-                </p>
+                <p style={{ textAlign: "center", color: "#e74c3c" }}>No hay mesas disponibles para esta zona.</p>
               ) : (
                 <div className="mesas-grid">
                   {mesasFiltradas.map(m => {
@@ -220,12 +325,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                     return (
                       <div key={m.id}
                         className={`mesa-card ${isSelected ? 'selected' : ''} ${tooSmall ? 'too-small' : ''}`}
-                        onClick={() => !tooSmall && setFormData({
-                          ...formData,
-                          mesa:       m.id,
-                          mesaNumero: m.numero,
-                          zona:       m.zona,
-                        })}
+                        onClick={() => !tooSmall && setFormData({ ...formData, mesa: m.id, mesaNumero: m.numero, zona: m.zona })}
                       >
                         {isSelected && <div className="mesa-check">✓</div>}
                         <div className="mesa-emoji">{emoji}</div>
@@ -267,13 +367,9 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                 <div className="input-group">
                   <label>Teléfono</label>
                   <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="999 123 456"
+                    type="text" inputMode="numeric" placeholder="999 123 456"
                     className={`modern-field ${formData.telefono.length > 0 && !telefonoValido ? "field-error" : ""}`}
-                    value={formData.telefono}
-                    onChange={handleTelefono}
-                    maxLength={9}
+                    value={formData.telefono} onChange={handleTelefono} maxLength={9}
                   />
                   {formData.telefono.length > 0 && !telefonoValido && (
                     <small className="field-hint-error">
@@ -283,8 +379,7 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
                   )}
                   {telefonoValido && (
                     <small className="field-hint-ok">
-                      <i className="bi bi-check-circle me-1" />
-                      Teléfono válido
+                      <i className="bi bi-check-circle me-1" /> Teléfono válido
                     </small>
                   )}
                 </div>
@@ -298,27 +393,65 @@ const BookingModal = ({ isOpen, onClose, restaurante }) => {
             </div>
           )}
 
-          {/* PASO 5 */}
+          {/* PASO 5 — Confirmación mejorada */}
           {step === 5 && (
             <div className="step-container anim-fade-in confirmation-view">
               <div className="success-icon">✓</div>
               <h3 className="section-title">¡Todo listo para tu reserva!</h3>
+
               <div className="summary-card">
-                {[
-                  ["Restaurante", restaurante.nombre],
-                  ["Fecha", formData.fecha],
-                  ["Hora", formData.hora],
-                  ["Personas", formData.personas],
-                  ["Mesa", `Mesa ${formData.mesaNumero} — ${formData.zona}`],
-                  ["Nombre", formData.nombre],
-                  ["Contacto", `${formData.email} · ${formData.telefono}`],
-                  ...(formData.notas ? [["Notas", formData.notas]] : []),
-                ].map(([label, val]) => (
-                  <div key={label} className="summary-item">
-                    <span>{label}:</span><strong>{val}</strong>
+                {/* Restaurante */}
+                <div className="summary-item">
+                  <span>🍽️ Restaurante:</span>
+                  <strong>{restaurante.nombre}</strong>
+                </div>
+                <div className="summary-item">
+                  <span>📍 Dirección:</span>
+                  <strong>{restaurante.lugar}</strong>
+                </div>
+                {/* Fecha y hora */}
+                <div className="summary-item">
+                  <span>📅 Fecha:</span>
+                  <strong className="summary-date-nice">{formatFecha(formData.fecha)}</strong>
+                </div>
+                <div className="summary-item">
+                  <span>🕒 Hora:</span>
+                  <strong>{formData.hora}</strong>
+                </div>
+                <div className="summary-item">
+                  <span>🕓 Horario del local:</span>
+                  <strong>{horarioDia.horarioStr}</strong>
+                </div>
+                {/* Mesa y personas */}
+                <div className="summary-item">
+                  <span>🪑 Mesa:</span>
+                  <strong>Mesa {formData.mesaNumero} — {formData.zona}</strong>
+                </div>
+                <div className="summary-item">
+                  <span>👥 Personas:</span>
+                  <strong>{formData.personas}</strong>
+                </div>
+                {/* Contacto */}
+                <div className="summary-item">
+                  <span>👤 Nombre:</span>
+                  <strong>{formData.nombre}</strong>
+                </div>
+                <div className="summary-item">
+                  <span>✉️ Email:</span>
+                  <strong>{formData.email}</strong>
+                </div>
+                <div className="summary-item">
+                  <span>📱 Teléfono:</span>
+                  <strong>{formData.telefono}</strong>
+                </div>
+                {formData.notas && (
+                  <div className="summary-item">
+                    <span>📝 Notas:</span>
+                    <strong>{formData.notas}</strong>
                   </div>
-                ))}
+                )}
               </div>
+
               <p style={{ marginTop: '14px', color: '#888', fontSize: '0.82rem', textAlign: 'center' }}>
                 Tu reserva quedará en estado <strong>pendiente</strong> hasta que el restaurante la confirme.
               </p>
