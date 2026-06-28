@@ -1,99 +1,110 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../services/api";
+import Navbar from "../components/Navbar";
 import '../assets/styles/myAccount.css';
 
-// Devuelve true si todavía se puede cancelar (faltan más de 2h)
 function puedeCancel(reserva) {
   try {
-    const ahora = new Date();
-    const fechaHoraReserva = new Date(`${reserva.fecha}T${reserva.hora}:00`);
-    const diffMs = fechaHoraReserva - ahora;
-    return diffMs / (1000 * 60 * 60) > 2;
+    const diff = new Date(`${reserva.fecha}T${reserva.hora}:00`) - new Date();
+    return diff / (1000 * 60 * 60) > 2;
   } catch { return false; }
 }
 
-// Formatea "2024-01-15" → "Enero 2024"
-function formatearFechaRegistro(fechaStr) {
-  if (!fechaStr) return null;
+function formatFechaRegistro(str) {
+  if (!str) return null;
   try {
-    const fecha = new Date(fechaStr + "T12:00:00");
-    return fecha.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
-  } catch { return fechaStr; }
+    return new Date(str + "T12:00:00").toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  } catch { return str; }
 }
 
-const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const ESTADO_CFG = {
+  pendiente:         { label: "Pendiente",                     icon: "bi-clock",            cls: "pendiente" },
+  confirmada:        { label: "Confirmada",                    icon: "bi-check-circle-fill", cls: "confirmada" },
+  cancelada:         { label: "Cancelada por el restaurante",  icon: "bi-x-circle-fill",     cls: "cancelada" },
+  cancelada_cliente: { label: "Cancelada por ti",              icon: "bi-person-x-fill",     cls: "cancelada_cliente" },
+};
+
+const TIPO_COM = {
+  comentario:  { label: "Comentario",  icon: "bi-chat-left-text",      color: "#3b82f6", bg: "#eff6ff" },
+  reclamo:     { label: "Reclamo",     icon: "bi-exclamation-triangle", color: "#ef4444", bg: "#fef2f2" },
+  experiencia: { label: "Experiencia", icon: "bi-star-fill",            color: "#f59e0b", bg: "#fffbeb" },
+};
+
+const TABS = [
+  { id: "proximas",  icon: "bi-calendar2-check",  label: "Próximas Reservas" },
+  { id: "historial", icon: "bi-clock-history",     label: "Historial" },
+  { id: "favoritos", icon: "bi-heart",             label: "Favoritos" },
+  { id: "resenas",   icon: "bi-chat-left-dots",    label: "Reseñas" },
+  { id: "perfil",    icon: "bi-person-gear",        label: "Perfil" },
+];
 
 export default function MyAccount() {
   const { user, token, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
 
-  const [tab, setTab] = useState("reservas");
+  const [tab, setTab]           = useState("proximas");
   const [editMode, setEditMode] = useState(false);
+  const [saveMsg, setSaveMsg]   = useState("");
   const [profileForm, setProfileForm] = useState({
     nombre:      user?.nombre      || "",
-    email:       user?.email       || "",
     telefono:    user?.telefono    || "",
     googleEmail: user?.googleEmail || "",
   });
-  const [saveMsg, setSaveMsg] = useState("");
 
-  // ── Reservas ──────────────────────────────────────────────────────────────
-  const [reservasUsuario, setReservasUsuario] = useState([]);
+  // Avatar modal
+  const [avatarModal, setAvatarModal]   = useState(false);
+  const [avatarUrl, setAvatarUrl]       = useState(user?.avatar || "");
+  const [avatarSaving, setAvatarSaving] = useState(false);
+
+  // Reservas
+  const [reservas, setReservas]               = useState([]);
   const [cargandoReservas, setCargandoReservas] = useState(false);
-  const [modalCancel, setModalCancel] = useState(null);
-  const [motivoCancelCliente, setMotivoCancelCliente] = useState("");
+  const [modalCancel, setModalCancel]         = useState(null);
+  const [motivoCancel, setMotivoCancel]       = useState("");
 
-  // ── Comentarios ───────────────────────────────────────────────────────────
-  const [comentariosUsuario, setComentariosUsuario] = useState([]);
-  const [cargandoComentarios, setCargandoComentarios] = useState(false);
-  const [expandidoComentario, setExpandidoComentario] = useState(null);
-  const [filtroComentarios, setFiltroComentarios] = useState("todos");
+  // Comentarios
+  const [comentarios, setComentarios]               = useState([]);
+  const [cargandoComs, setCargandoComs]             = useState(false);
+  const [expandCom, setExpandCom]                   = useState(null);
+  const [filtrocom, setFiltrocom]                   = useState("todos");
 
   if (!user) { navigate("/login"); return null; }
 
   const cargarReservas = async () => {
     if (!token) return;
     setCargandoReservas(true);
-    try {
-      const data = await apiFetch("/api/reservations/me", {}, token);
-      setReservasUsuario(data);
-    } catch (err) { console.error("Error cargando reservas:", err); }
+    try { setReservas(await apiFetch("/api/reservations/me", {}, token)); }
+    catch (e) { console.error(e); }
     finally { setCargandoReservas(false); }
   };
 
   const cargarComentarios = async () => {
     if (!token) return;
-    setCargandoComentarios(true);
+    setCargandoComs(true);
     try {
       const data = await apiFetch("/api/comments/me", {}, token);
-      setComentariosUsuario(data.map((c) => ({
-        ...c, restaurante: c.restaurant?.nombre || null,
-      })));
-    } catch (err) { console.error("Error cargando comentarios:", err); }
-    finally { setCargandoComentarios(false); }
+      setComentarios(data.map(c => ({ ...c, restaurante: c.restaurant?.nombre || null })));
+    } catch (e) { console.error(e); }
+    finally { setCargandoComs(false); }
   };
 
   useEffect(() => { cargarReservas(); }, [token]);
   useEffect(() => { cargarComentarios(); }, [token]);
 
-  const reservas = reservasUsuario;
+  const proximasReservas = reservas.filter(r => ["confirmada","pendiente"].includes(r.estado));
+  const historialReservas = reservas.filter(r => !["confirmada","pendiente"].includes(r.estado));
   const favoritos = user.favoritos || [];
-  const comentariosFiltrados = filtroComentarios === "respondidos"
-    ? comentariosUsuario.filter((c) => !!c.respuestaRestaurante)
-    : comentariosUsuario;
-  const cantidadRespondidos = comentariosUsuario.filter((c) => !!c.respuestaRestaurante).length;
-  const reservasCanceladas = reservasUsuario.filter((r) => r.estado === "cancelada" && r.motivoCancelacion);
+  const respondidos = comentarios.filter(c => !!c.respuestaRestaurante).length;
+  const comsFiltrados = filtrocom === "respondidos"
+    ? comentarios.filter(c => !!c.respuestaRestaurante)
+    : comentarios;
+  const canceladasRest = reservas.filter(r => r.estado === "cancelada" && r.motivoCancelacion);
+  const fechaMiembro = formatFechaRegistro(user.fechaRegistro);
 
-  // Stats
-  const totalReservas  = reservas.length;
-  const totalFavoritos = favoritos.length;
-  const totalResenas   = comentariosUsuario.length;
-
-  // Fecha miembro
-  const fechaMiembro = formatearFechaRegistro(user.fechaRegistro);
-
+  // ── Guardar perfil
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     const result = await updateProfile({
@@ -101,391 +112,413 @@ export default function MyAccount() {
       telefono:    profileForm.telefono ? parseInt(profileForm.telefono) : null,
       googleEmail: profileForm.googleEmail || "",
     });
-    if (result.ok) {
-      setSaveMsg("Perfil actualizado correctamente");
-      setEditMode(false);
-      setTimeout(() => setSaveMsg(""), 3000);
-    } else { setSaveMsg("Error al guardar el perfil"); }
+    if (result.ok) { setSaveMsg("Perfil actualizado"); setEditMode(false); setTimeout(() => setSaveMsg(""), 3000); }
+    else { setSaveMsg("Error al guardar"); }
   };
 
+  // ── Guardar avatar
+  const handleSaveAvatar = async () => {
+    if (!avatarUrl.trim()) return;
+    setAvatarSaving(true);
+    const result = await updateProfile({ avatar: avatarUrl.trim() });
+    setAvatarSaving(false);
+    if (result.ok) { setAvatarModal(false); setSaveMsg("Avatar actualizado"); setTimeout(() => setSaveMsg(""), 3000); }
+    else { setSaveMsg("Error al guardar avatar"); }
+  };
+
+  // ── Cancelar reserva
   const handleConfirmarCancel = async () => {
     if (!modalCancel) return;
     try {
       const body = { estado: "cancelada_cliente" };
-      if (motivoCancelCliente.trim()) body.motivoCancelacion = motivoCancelCliente.trim();
-      await apiFetch(`/api/reservations/${modalCancel.id}/status`,
-        { method: "PATCH", body: JSON.stringify(body) }, token);
-      setReservasUsuario((prev) =>
-        prev.map((r) => r.id === modalCancel.id
-          ? { ...r, estado: "cancelada_cliente", motivoCancelacion: motivoCancelCliente.trim() || null }
-          : r)
-      );
+      if (motivoCancel.trim()) body.motivoCancelacion = motivoCancel.trim();
+      await apiFetch(`/api/reservations/${modalCancel.id}/status`, { method: "PATCH", body: JSON.stringify(body) }, token);
+      setReservas(prev => prev.map(r => r.id === modalCancel.id ? { ...r, estado: "cancelada_cliente" } : r));
       setModalCancel(null);
-    } catch (err) { alert("No se pudo cancelar: " + err.message); setModalCancel(null); }
-  };
-
-  const tipoComConfig = {
-    comentario:  { label: "Comentario",  icon: "bi-chat-left-text",      color: "#3b82f6", bg: "#eff6ff" },
-    reclamo:     { label: "Reclamo",     icon: "bi-exclamation-triangle", color: "#ef4444", bg: "#fef2f2" },
-    experiencia: { label: "Experiencia", icon: "bi-star-fill",            color: "#f59e0b", bg: "#fffbeb" },
-  };
-
-  const estadoConfig = {
-    pendiente:        { color: "#f59e0b", icon: "bi-clock",            label: "Pendiente",                  cls: "pendiente" },
-    confirmada:       { color: "#22c55e", icon: "bi-check-circle-fill", label: "Confirmada",                cls: "confirmada" },
-    cancelada:        { color: "#dc3545", icon: "bi-x-circle-fill",     label: "Cancelada por el restaurante", cls: "cancelada" },
-    cancelada_cliente:{ color: "#7c3aed", icon: "bi-person-x-fill",     label: "Cancelada por ti",          cls: "cancelada_cliente" },
+    } catch (e) { alert("No se pudo cancelar: " + e.message); setModalCancel(null); }
   };
 
   return (
-    <div className="mi-cuenta-page">
+    <>
+      {/* Navbar global */}
+      <Navbar />
 
-      {/* ── Modal cancelación ── */}
-      {modalCancel && (
-        <div className="cancel-modal-overlay" onClick={() => setModalCancel(null)}>
-          <div className="cancel-modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="cancel-modal-icon"><i className="bi bi-exclamation-triangle-fill" /></div>
-            <h4 className="cancel-modal-title">¿Cancelar esta reserva?</h4>
-            <p className="cancel-modal-body">
-              Estás a punto de cancelar tu reserva en{" "}
-              <strong>{modalCancel.restaurante || modalCancel.restaurant?.nombre}</strong> el{" "}
-              <strong>{modalCancel.fecha}</strong> a las <strong>{modalCancel.hora}</strong>.
-            </p>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#555", marginBottom: 6 }}>
-                Motivo <span style={{ fontWeight: 400, color: "#aaa" }}>(opcional)</span>
-              </label>
-              <textarea
-                style={{ width: "100%", border: "1.5px solid #e0d8d0", borderRadius: 10, padding: "10px 13px", fontSize: "0.85rem", resize: "vertical", minHeight: 70, outline: "none", boxSizing: "border-box" }}
-                placeholder="Ej: Surgió un imprevisto..."
-                value={motivoCancelCliente}
-                onChange={(e) => setMotivoCancelCliente(e.target.value)}
-                maxLength={300}
-              />
-              <div style={{ fontSize: "0.71rem", color: "#bbb", marginTop: 2 }}>{motivoCancelCliente.length}/300</div>
+      <div className="mi-cuenta-page" style={{ paddingTop: 70 }}>
+
+        {/* ── MODAL AVATAR ── */}
+        {avatarModal && (
+          <div className="avatar-modal-overlay" onClick={() => setAvatarModal(false)}>
+            <div className="avatar-modal" onClick={e => e.stopPropagation()}>
+              <h4 className="avatar-modal-title">Cambiar foto de perfil</h4>
+              <p className="avatar-modal-sub">Ingresa la URL de tu imagen de perfil</p>
+              <div className="avatar-preview">
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="preview" onError={e => e.target.style.display="none"} />
+                  : <i className="bi bi-person-fill" />
+                }
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">URL de la imagen</label>
+                <div className="auth-input-wrap">
+                  <i className="bi bi-link-45deg auth-input-icon" />
+                  <input
+                    type="url" className="auth-input"
+                    placeholder="https://ejemplo.com/mi-foto.jpg"
+                    value={avatarUrl}
+                    onChange={e => setAvatarUrl(e.target.value)}
+                  />
+                </div>
+                <small className="text-muted" style={{ fontSize: "0.77rem" }}>
+                  Puedes usar servicios como imgur.com o cualquier URL pública de imagen.
+                </small>
+              </div>
+              <div className="avatar-modal-actions">
+                <button className="btn-avatar-cancel" onClick={() => setAvatarModal(false)}>Cancelar</button>
+                <button className="btn-avatar-save" onClick={handleSaveAvatar} disabled={avatarSaving}>
+                  {avatarSaving ? <><span className="spinner-border spinner-border-sm me-1" />Guardando…</> : "Guardar foto"}
+                </button>
+              </div>
             </div>
-            <div className="cancel-modal-actions">
-              <button className="cancel-modal-btn-no" onClick={() => setModalCancel(null)}>Mantener</button>
-              <button className="cancel-modal-btn-yes" onClick={handleConfirmarCancel}>
-                <i className="bi bi-x-circle me-1" />Cancelar reserva
+          </div>
+        )}
+
+        {/* ── MODAL CANCELAR RESERVA ── */}
+        {modalCancel && (
+          <div className="cancel-modal-overlay" onClick={() => setModalCancel(null)}>
+            <div className="cancel-modal-card" onClick={e => e.stopPropagation()}>
+              <div className="cancel-modal-icon"><i className="bi bi-exclamation-triangle-fill" /></div>
+              <h4 className="cancel-modal-title">¿Cancelar esta reserva?</h4>
+              <p className="cancel-modal-body">
+                Reserva en <strong>{modalCancel.restaurant?.nombre || modalCancel.restaurante}</strong> el <strong>{modalCancel.fecha}</strong> a las <strong>{modalCancel.hora}</strong>.
+              </p>
+              <div style={{ marginBottom: 14 }}>
+                <label className="auth-label" style={{ marginBottom: 5, display: "block" }}>Motivo <span style={{ fontWeight: 400, color: "#aaa", textTransform: "none" }}>(opcional)</span></label>
+                <textarea
+                  style={{ width: "100%", border: "1.5px solid #e8e8e8", borderRadius: 10, padding: "10px", fontSize: "0.85rem", resize: "vertical", minHeight: 70, outline: "none", boxSizing: "border-box" }}
+                  placeholder="Ej: Surgió un imprevisto..."
+                  value={motivoCancel} onChange={e => setMotivoCancel(e.target.value)} maxLength={300}
+                />
+                <div style={{ fontSize: "0.7rem", color: "#bbb" }}>{motivoCancel.length}/300</div>
+              </div>
+              <div className="cancel-modal-actions">
+                <button className="cancel-modal-btn-no" onClick={() => setModalCancel(null)}>Mantener</button>
+                <button className="cancel-modal-btn-yes" onClick={handleConfirmarCancel}>
+                  <i className="bi bi-x-circle me-1" />Cancelar reserva
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── HEADER ── */}
+        <div className="cuenta-header">
+          <div className="cuenta-header-inner">
+
+            {/* Avatar clickeable */}
+            <div className="cuenta-avatar-wrap">
+              <div className="cuenta-avatar" onClick={() => setAvatarModal(true)} title="Cambiar foto">
+                {user.avatar
+                  ? <img src={user.avatar} alt="avatar" />
+                  : <i className="bi bi-person-fill" />
+                }
+              </div>
+              <div className="avatar-edit-hint" onClick={() => setAvatarModal(true)}>
+                <i className="bi bi-pencil-fill" />
+              </div>
+            </div>
+
+            <div className="cuenta-info">
+              <h2 className="cuenta-nombre">{user.nombre}</h2>
+              {fechaMiembro && (
+                <span className="cuenta-miembro">
+                  <i className="bi bi-calendar3 me-1" />Miembro desde {fechaMiembro}
+                </span>
+              )}
+              <div className="cuenta-header-badges">
+                <span className="hdr-badge"><i className="bi bi-calendar-check" />{reservas.length} Reservas</span>
+                <span className="hdr-badge"><i className="bi bi-heart" />{favoritos.length} Favoritos</span>
+                <span className="hdr-badge"><i className="bi bi-chat-dots" />{comentarios.length} Reseñas</span>
+              </div>
+            </div>
+
+            <div className="cuenta-header-actions">
+              <button className="btn-editar-perfil" onClick={() => setTab("perfil")}>
+                <i className="bi bi-pencil" /> Editar Perfil
+              </button>
+              <button className="btn-header-icon" title="Cerrar sesión" onClick={() => { logout(); navigate("/login"); }}>
+                <i className="bi bi-box-arrow-right" />
               </button>
             </div>
           </div>
         </div>
-      )}
 
-      {/* ── HEADER BANNER ── */}
-      <div className="cuenta-header">
-        <div className="cuenta-header-inner">
-          <div className="cuenta-avatar">
-            {user.avatar
-              ? <img src={user.avatar} alt="avatar" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
-              : <i className="bi bi-person-fill" />
-            }
-          </div>
-          <div className="cuenta-info">
-            <h2 className="cuenta-nombre">{user.nombre}</h2>
-            {fechaMiembro && (
-              <span className="cuenta-miembro">
-                <i className="bi bi-calendar3 me-1" />Miembro desde {fechaMiembro}
-              </span>
-            )}
-            <div className="cuenta-header-badges">
-              <span className="hdr-badge"><i className="bi bi-calendar-check" />{totalReservas} Reservas</span>
-              <span className="hdr-badge"><i className="bi bi-heart" />{totalFavoritos} Favoritos</span>
-              <span className="hdr-badge"><i className="bi bi-chat-dots" />{totalResenas} Reseñas</span>
-            </div>
-          </div>
-          <div className="cuenta-header-actions">
-            <button className="btn-editar-perfil" onClick={() => setTab("perfil")}>
-              <i className="bi bi-pencil" /> Editar Perfil
-            </button>
-            <button className="btn-cuenta-logout" onClick={() => { logout(); navigate("/login"); }}>
-              <i className="bi bi-box-arrow-right" />
-            </button>
-          </div>
-        </div>
-      </div>
+        {/* ── BODY ── */}
+        <div className="cuenta-body">
 
-      {/* ── BODY: sidebar + main ── */}
-      <div className="cuenta-body">
+          {/* SIDEBAR */}
+          <aside className="cuenta-sidebar">
 
-        {/* ── SIDEBAR ── */}
-        <aside className="cuenta-sidebar">
-          {/* Info personal */}
-          <div className="sidebar-card">
-            <div className="sidebar-card-title">Información Personal</div>
-            <div className="sidebar-info-row">
-              <i className="bi bi-envelope sidebar-info-icon" />
-              <span style={{ fontSize: "0.82rem", wordBreak: "break-all" }}>{user.email}</span>
-            </div>
-            {user.telefono && (
+            {/* Información personal */}
+            <div className="sidebar-card">
+              <div className="sidebar-card-title">Información Personal</div>
               <div className="sidebar-info-row">
-                <i className="bi bi-telephone sidebar-info-icon" />
-                <span>+{user.telefono}</span>
+                <i className="bi bi-envelope sidebar-info-icon" />
+                <span style={{ fontSize: "0.82rem", wordBreak: "break-all" }}>{user.email}</span>
               </div>
-            )}
-          </div>
-
-          {/* Navegación */}
-          <div className="sidebar-card">
-            <div className="sidebar-card-title">Configuración</div>
-            <button className={`sidebar-menu-item`} onClick={() => setTab("perfil")}>
-              <i className="bi bi-gear sidebar-menu-icon" /> Configuración
-            </button>
-            <button className="sidebar-menu-item" onClick={() => setTab("comentarios")}>
-              <i className="bi bi-bell sidebar-menu-icon" /> Notificaciones
-            </button>
-            <button className="sidebar-menu-item" style={{ color: "#888" }}>
-              <i className="bi bi-credit-card sidebar-menu-icon" style={{ color: "#888" }} /> Métodos de Pago
-            </button>
-            <button className="sidebar-menu-item danger" onClick={() => { logout(); navigate("/login"); }}>
-              <i className="bi bi-box-arrow-right sidebar-menu-icon" /> Cerrar Sesión
-            </button>
-          </div>
-        </aside>
-
-        {/* ── CONTENIDO PRINCIPAL ── */}
-        <main className="cuenta-main">
-
-          {/* Notificaciones de cancelación por restaurante */}
-          {reservasCanceladas.length > 0 && (
-            <div className="notif-banner">
-              <div className="notif-banner-title">
-                <i className="bi bi-bell-fill me-2" />
-                {reservasCanceladas.length === 1
-                  ? "Una reserva fue cancelada por el restaurante"
-                  : `${reservasCanceladas.length} reservas fueron canceladas por el restaurante`}
-              </div>
-              {reservasCanceladas.map((r) => (
-                <div className="notif-item" key={r.id}>
-                  <div className="notif-rest"><i className="bi bi-shop me-1" />{r.restaurant?.nombre || r.restaurante} · {r.fecha} a las {r.hora}</div>
-                  <div className="notif-motivo"><i className="bi bi-info-circle me-1" />Motivo: {r.motivoCancelacion}</div>
+              {user.telefono && (
+                <div className="sidebar-info-row">
+                  <i className="bi bi-telephone sidebar-info-icon" />
+                  <span>+{user.telefono}</span>
                 </div>
-              ))}
+              )}
             </div>
-          )}
 
-          {/* ── Tabs ── */}
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[
-              { id: "reservas",    icon: "bi-calendar2-check", label: "Próximas Reservas" },
-              { id: "historial",   icon: "bi-clock-history",    label: "Historial" },
-              { id: "favoritos",   icon: "bi-heart",            label: "Favoritos" },
-              { id: "comentarios", icon: "bi-chat-left-dots",   label: "Reseñas" },
-              { id: "perfil",      icon: "bi-person-gear",      label: "Perfil" },
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                style={{
-                  padding: "8px 16px", borderRadius: 10, border: "none", cursor: "pointer",
-                  fontSize: "0.82rem", fontWeight: 700,
-                  background: tab === t.id ? "linear-gradient(135deg, #ff6b00, #e91e8c)" : "white",
-                  color: tab === t.id ? "white" : "#666",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-                  transition: "all 0.18s",
-                  display: "flex", alignItems: "center", gap: 5,
-                }}
-              >
-                <i className={`bi ${t.icon}`} />
-                {t.label}
-                {t.id === "comentarios" && cantidadRespondidos > 0 && (
-                  <span style={{ background: "white", color: "#3b82f6", borderRadius: "50%", width: 18, height: 18, fontSize: "0.62rem", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                    {cantidadRespondidos}
+            {/* Mis Reservas rápido */}
+            <div className="sidebar-card">
+              <div className="sidebar-card-title">Mis Reservas</div>
+              <button className={`sidebar-nav-item ${tab === "proximas" ? "active" : ""}`} onClick={() => setTab("proximas")}>
+                <i className="bi bi-calendar2-check sidebar-nav-icon" /> Próximas
+                {proximasReservas.length > 0 && (
+                  <span style={{ marginLeft: "auto", background: "#fdf0e8", color: "#F4956A", borderRadius: 20, padding: "1px 8px", fontSize: "0.72rem", fontWeight: 800 }}>
+                    {proximasReservas.length}
                   </span>
                 )}
               </button>
-            ))}
-          </div>
+              <button className={`sidebar-nav-item ${tab === "historial" ? "active" : ""}`} onClick={() => setTab("historial")}>
+                <i className="bi bi-clock-history sidebar-nav-icon" /> Historial
+                {historialReservas.length > 0 && (
+                  <span style={{ marginLeft: "auto", background: "#f5f5f5", color: "#888", borderRadius: 20, padding: "1px 8px", fontSize: "0.72rem", fontWeight: 800 }}>
+                    {historialReservas.length}
+                  </span>
+                )}
+              </button>
+              <hr className="sidebar-divider" />
+              <button className={`sidebar-nav-item ${tab === "favoritos" ? "active" : ""}`} onClick={() => setTab("favoritos")}>
+                <i className="bi bi-heart sidebar-nav-icon" /> Favoritos
+              </button>
+              <button className={`sidebar-nav-item ${tab === "resenas" ? "active" : ""}`} onClick={() => setTab("resenas")}>
+                <i className="bi bi-chat-left-dots sidebar-nav-icon" /> Reseñas
+                {respondidos > 0 && (
+                  <span style={{ marginLeft: "auto", background: "#eff6ff", color: "#3b82f6", borderRadius: 20, padding: "1px 8px", fontSize: "0.72rem", fontWeight: 800 }}>
+                    {respondidos}
+                  </span>
+                )}
+              </button>
+            </div>
 
-          {/* ── PRÓXIMAS RESERVAS ── */}
-          {tab === "reservas" && (
-            <div className="seccion-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
-                <h3 className="seccion-title" style={{ margin: 0 }}>Próximas Reservas</h3>
-                <Link to="/catalog" className="btn-nueva-reserva">
-                  <i className="bi bi-plus-circle" /> Nueva reserva
-                </Link>
+            {/* Configuración */}
+            <div className="sidebar-card">
+              <div className="sidebar-card-title">Configuración</div>
+              <button className={`sidebar-nav-item ${tab === "perfil" ? "active" : ""}`} onClick={() => setTab("perfil")}>
+                <i className="bi bi-gear sidebar-nav-icon" /> Configuración
+              </button>
+              <button className="sidebar-nav-item" onClick={() => setTab("resenas")}>
+                <i className="bi bi-bell sidebar-nav-icon" /> Notificaciones
+              </button>
+              <hr className="sidebar-divider" />
+              <button className="sidebar-nav-item danger" onClick={() => { logout(); navigate("/login"); }}>
+                <i className="bi bi-box-arrow-right sidebar-nav-icon" /> Cerrar Sesión
+              </button>
+            </div>
+
+          </aside>
+
+          {/* CONTENIDO */}
+          <main className="cuenta-main">
+
+            {/* Notif cancelaciones */}
+            {canceladasRest.length > 0 && (
+              <div className="notif-banner">
+                <div className="notif-banner-title"><i className="bi bi-bell-fill me-2" />
+                  {canceladasRest.length === 1 ? "Una reserva fue cancelada por el restaurante" : `${canceladasRest.length} reservas canceladas por el restaurante`}
+                </div>
+                {canceladasRest.map(r => (
+                  <div className="notif-item" key={r.id}>
+                    <div className="notif-rest"><i className="bi bi-shop me-1" />{r.restaurant?.nombre || r.restaurante} · {r.fecha} a las {r.hora}</div>
+                    <div className="notif-motivo"><i className="bi bi-info-circle me-1" />Motivo: {r.motivoCancelacion}</div>
+                  </div>
+                ))}
               </div>
+            )}
 
-              {cargandoReservas ? (
-                <div className="text-center py-4">
-                  <div className="spinner-border text-warning" role="status" />
-                  <p className="mt-2 text-muted" style={{ fontSize: "0.85rem" }}>Cargando reservas...</p>
+            {/* Tabs */}
+            <div className="cuenta-tabs">
+              {TABS.map(t => (
+                <button key={t.id} className={`cuenta-tab-btn ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
+                  <i className={`bi ${t.icon}`} />
+                  {t.label}
+                  {t.id === "resenas" && respondidos > 0 && (
+                    <span className="tab-notif-dot">{respondidos}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* ── PRÓXIMAS RESERVAS ── */}
+            {tab === "proximas" && (
+              <div className="seccion-card">
+                <div className="seccion-header">
+                  <h3 className="seccion-title">Próximas Reservas</h3>
+                  <Link to="/catalog" className="btn-primary-brand">
+                    <i className="bi bi-plus-circle" /> Nueva reserva
+                  </Link>
                 </div>
-              ) : reservas.filter(r => ["confirmada","pendiente"].includes(r.estado)).length === 0 ? (
-                <div className="cuenta-empty">
-                  <i className="bi bi-calendar-x" />
-                  <p>Sin próximas reservas.</p>
-                  <Link to="/catalog" className="btn-nueva-reserva">Explorar restaurantes</Link>
-                </div>
-              ) : (
-                reservas.filter(r => ["confirmada","pendiente"].includes(r.estado)).map((r) => {
-                  const cfg = estadoConfig[r.estado] || { color: "#888", icon: "bi-question-circle", label: r.estado, cls: "" };
+                {cargandoReservas ? (
+                  <div className="text-center py-4">
+                    <div className="spinner-border" style={{ color: "#F4956A" }} role="status" />
+                    <p className="mt-2 text-muted" style={{ fontSize: "0.84rem" }}>Cargando reservas…</p>
+                  </div>
+                ) : proximasReservas.length === 0 ? (
+                  <div className="cuenta-empty">
+                    <i className="bi bi-calendar-x" />
+                    <p>No tienes próximas reservas.</p>
+                    <Link to="/catalog" className="btn-primary-brand">Explorar restaurantes</Link>
+                  </div>
+                ) : proximasReservas.map(r => {
+                  const cfg = ESTADO_CFG[r.estado] || { label: r.estado, icon: "bi-question-circle", cls: "" };
                   const cancelable = r.estado === "confirmada" && puedeCancel(r);
                   return (
-                    <div key={r.id} className="reserva-card-nueva">
-                      <div className="reserva-img"><i className="bi bi-shop" /></div>
-                      <div className="reserva-body">
+                    <div key={r.id} className="reserva-card">
+                      <div className="reserva-card-img"><i className="bi bi-shop" /></div>
+                      <div className="reserva-card-body">
                         <div className="reserva-rest-nombre">{r.restaurant?.nombre || r.restaurante}</div>
-                        <span className={`reserva-estado-badge ${cfg.cls}`}>
+                        <span className={`estado-badge ${cfg.cls}`}>
                           <i className={`bi ${cfg.icon}`} />{cfg.label}
                         </span>
-                        <div className="reserva-meta-row">
+                        <div className="reserva-meta">
                           <span><i className="bi bi-calendar3" />{r.fecha}</span>
                           <span><i className="bi bi-clock" />{r.hora}</span>
                           <span><i className="bi bi-people" />{r.personas} persona{r.personas > 1 ? "s" : ""}</span>
                           {r.mesaNumero && <span><i className="bi bi-grid" />Mesa {r.mesaNumero}{r.zona ? ` · ${r.zona}` : ""}</span>}
                         </div>
-                        {r.estado === "cancelada" && r.motivoCancelacion && (
-                          <div style={{ background: "#fff1f1", border: "1px solid #fecaca", borderRadius: 8, padding: "6px 10px", fontSize: "0.77rem", color: "#991b1b", marginBottom: 8 }}>
-                            <i className="bi bi-info-circle me-1" /><strong>Motivo:</strong> {r.motivoCancelacion}
+                        {r.estado === "confirmada" && (
+                          <div className="reserva-actions">
+                            <button className="btn-accion-primary"><i className="bi bi-pencil me-1" />Modificar</button>
+                            <button className="btn-accion-ghost" disabled={!cancelable}
+                              onClick={() => cancelable && (setMotivoCancel(""), setModalCancel(r))}
+                              title={cancelable ? "Cancelar" : "Menos de 2h para la reserva"}>
+                              Cancelar
+                            </button>
                           </div>
                         )}
-                        <div className="reserva-acciones">
-                          {r.estado === "confirmada" && (
-                            <>
-                              <button className="btn-modificar">
-                                <i className="bi bi-pencil me-1" />Modificar
-                              </button>
-                              <button
-                                className="btn-cancelar-nuevo"
-                                onClick={() => cancelable && setModalCancel(r)}
-                                disabled={!cancelable}
-                                title={cancelable ? "Cancelar reserva" : "Menos de 2h para la reserva"}
-                              >
-                                Cancelar
-                              </button>
-                            </>
-                          )}
-                        </div>
                       </div>
                     </div>
                   );
-                })
-              )}
-            </div>
-          )}
+                })}
+              </div>
+            )}
 
-          {/* ── HISTORIAL ── */}
-          {tab === "historial" && (
-            <div className="seccion-card">
-              <h3 className="seccion-title">Historial de Reservas</h3>
-              {reservas.filter(r => !["confirmada","pendiente"].includes(r.estado)).length === 0 ? (
-                <div className="cuenta-empty">
-                  <i className="bi bi-clock-history" />
-                  <p>Sin historial de reservas.</p>
+            {/* ── HISTORIAL ── */}
+            {tab === "historial" && (
+              <div className="seccion-card">
+                <div className="seccion-header">
+                  <h3 className="seccion-title">Historial de Reservas</h3>
                 </div>
-              ) : (
-                reservas.filter(r => !["confirmada","pendiente"].includes(r.estado)).map((r) => {
-                  const cfg = estadoConfig[r.estado] || { color: "#888", icon: "bi-question-circle", label: r.estado };
+                {historialReservas.length === 0 ? (
+                  <div className="cuenta-empty">
+                    <i className="bi bi-clock-history" />
+                    <p>Sin historial de reservas aún.</p>
+                  </div>
+                ) : historialReservas.map(r => {
+                  const completada = r.estado !== "cancelada" && r.estado !== "cancelada_cliente";
                   return (
                     <div key={r.id} className="historial-item">
-                      <div className="historial-info">
+                      <div>
                         <div className="historial-nombre">{r.restaurant?.nombre || r.restaurante}</div>
                         <div className="historial-meta">
                           {r.fecha} &bull; {r.hora} &bull; {r.personas} persona{r.personas > 1 ? "s" : ""}
                         </div>
                       </div>
                       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                        {r.estado === "cancelada_cliente" || r.estado === "cancelada" ? (
-                          <span style={{ background: "#fee2e2", color: "#dc2626", fontSize: "0.72rem", fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>
-                            Cancelada
-                          </span>
-                        ) : (
+                        {completada ? (
                           <>
                             <span className="badge-completada">Completada</span>
-                            <button className="btn-resena">
-                              <i className="bi bi-pencil-square me-1" />Escribir Reseña
-                            </button>
+                            <button className="btn-resena"><i className="bi bi-pencil-square me-1" />Escribir Reseña</button>
                           </>
+                        ) : (
+                          <span className="badge-cancelada-hist">Cancelada</span>
                         )}
                       </div>
                     </div>
                   );
-                })
-              )}
-            </div>
-          )}
+                })}
+              </div>
+            )}
 
-          {/* ── FAVORITOS ── */}
-          {tab === "favoritos" && (
-            <div className="seccion-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <h3 className="seccion-title" style={{ margin: 0 }}>Restaurantes Favoritos</h3>
-                <i className="bi bi-heart-fill" style={{ color: "#dc3545", fontSize: "1.2rem" }} />
+            {/* ── FAVORITOS ── */}
+            {tab === "favoritos" && (
+              <div className="seccion-card">
+                <div className="seccion-header">
+                  <h3 className="seccion-title">Restaurantes Favoritos</h3>
+                  <i className="bi bi-heart-fill" style={{ color: "#dc3545", fontSize: "1.15rem" }} />
+                </div>
+                {favoritos.length === 0 ? (
+                  <div className="cuenta-empty">
+                    <i className="bi bi-heart" />
+                    <p>Aún no tienes favoritos guardados.</p>
+                    <Link to="/catalog" className="btn-primary-brand">Explorar restaurantes</Link>
+                  </div>
+                ) : (
+                  <div className="favoritos-grid">
+                    {favoritos.map(fav => (
+                      <div key={fav} className="fav-card">
+                        <div className="fav-card-img">
+                          <i className="bi bi-shop" />
+                          <div className="fav-heart"><i className="bi bi-heart-fill" /></div>
+                        </div>
+                        <div className="fav-card-body">
+                          <div className="fav-nombre">{fav}</div>
+                          <div className="fav-tipo">Restaurante</div>
+                        </div>
+                        <Link to="/catalog" className="btn-fav-reservar">Reservar</Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              {favoritos.length === 0 ? (
-                <div className="cuenta-empty">
-                  <i className="bi bi-heart" />
-                  <p>Aún no tienes favoritos guardados.</p>
-                  <Link to="/catalog" className="btn-nueva-reserva">Explorar restaurantes</Link>
-                </div>
-              ) : (
-                <div className="favoritos-grid">
-                  {favoritos.map((fav) => (
-                    <div key={fav} className="fav-card-nueva">
-                      <div className="fav-img">
-                        <i className="bi bi-shop" />
-                        <div className="fav-heart"><i className="bi bi-heart-fill" /></div>
-                      </div>
-                      <div className="fav-body">
-                        <div className="fav-nombre">{fav}</div>
-                        <div className="fav-tipo">Restaurante</div>
-                      </div>
-                      <Link to="/catalog" className="btn-fav-reservar">Reservar</Link>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+            )}
 
-          {/* ── RESEÑAS / COMENTARIOS ── */}
-          {tab === "comentarios" && (
-            <div className="seccion-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
-                <h3 className="seccion-title" style={{ margin: 0 }}>Mis Reseñas</h3>
-                <Link to="/form" className="btn-nueva-reserva">
-                  <i className="bi bi-plus-circle" /> Nueva reseña
-                </Link>
-              </div>
-              <div className="com-filtros">
-                <button className={`com-filtro-btn ${filtroComentarios === "todos" ? "active" : ""}`} onClick={() => setFiltroComentarios("todos")}>
-                  Todos ({comentariosUsuario.length})
-                </button>
-                <button className={`com-filtro-btn ${filtroComentarios === "respondidos" ? "active" : ""}`} onClick={() => setFiltroComentarios("respondidos")}>
-                  <i className="bi bi-reply-fill me-1" />Con respuesta ({cantidadRespondidos})
-                </button>
-              </div>
-              {cargandoComentarios ? (
-                <div className="text-center py-3">
-                  <div className="spinner-border" style={{ color: "#3b82f6" }} role="status" />
-                  <p className="mt-2 text-muted" style={{ fontSize: "0.85rem" }}>Cargando comentarios...</p>
+            {/* ── RESEÑAS ── */}
+            {tab === "resenas" && (
+              <div className="seccion-card">
+                <div className="seccion-header">
+                  <h3 className="seccion-title">Mis Reseñas</h3>
+                  <Link to="/form" className="btn-primary-brand"><i className="bi bi-plus-circle" /> Nueva reseña</Link>
                 </div>
-              ) : comentariosFiltrados.length === 0 ? (
-                <div className="com-empty">
-                  <i className="bi bi-chat-left" />
-                  <p>{filtroComentarios === "respondidos" ? "Aún no tienes comentarios con respuesta." : "Aún no has enviado comentarios."}</p>
+                <div className="com-filtros">
+                  <button className={`com-filtro-btn ${filtrocom === "todos" ? "active" : ""}`} onClick={() => setFiltrocom("todos")}>
+                    Todos ({comentarios.length})
+                  </button>
+                  <button className={`com-filtro-btn ${filtrocom === "respondidos" ? "active" : ""}`} onClick={() => setFiltrocom("respondidos")}>
+                    <i className="bi bi-reply-fill me-1" />Con respuesta ({respondidos})
+                  </button>
                 </div>
-              ) : (
-                comentariosFiltrados.map((c) => {
-                  const cfg = tipoComConfig[c.tipo] || tipoComConfig.comentario;
-                  const isOpen = expandidoComentario === c.id;
-                  const tieneRespuesta = !!c.respuestaRestaurante;
+                {cargandoComs ? (
+                  <div className="text-center py-3">
+                    <div className="spinner-border" style={{ color: "#3b82f6" }} role="status" />
+                  </div>
+                ) : comsFiltrados.length === 0 ? (
+                  <div className="cuenta-empty">
+                    <i className="bi bi-chat-left" />
+                    <p>{filtrocom === "respondidos" ? "Sin comentarios respondidos aún." : "Aún no has enviado reseñas."}</p>
+                    {filtrocom === "todos" && <Link to="/form" className="btn-primary-brand mt-2">Enviar reseña</Link>}
+                  </div>
+                ) : comsFiltrados.map(c => {
+                  const cfg = TIPO_COM[c.tipo] || TIPO_COM.comentario;
+                  const isOpen = expandCom === c.id;
                   return (
-                    <div key={c.id} className="com-card" style={{ borderLeftColor: cfg.color }} onClick={() => setExpandidoComentario(isOpen ? null : c.id)}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
-                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    <div key={c.id} className="com-card" style={{ borderLeftColor: cfg.color }}
+                      onClick={() => setExpandCom(isOpen ? null : c.id)}>
+                      <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
                           <span style={{ background: cfg.bg, color: cfg.color, padding: "3px 10px", borderRadius: 20, fontSize: "0.72rem", fontWeight: 700 }}>
                             <i className={`bi ${cfg.icon} me-1`} />{cfg.label}
                           </span>
-                          {tieneRespuesta && <span className="com-badge-resp"><i className="bi bi-reply-fill me-1" />Respondido</span>}
+                          {c.respuestaRestaurante && <span className="com-badge-resp"><i className="bi bi-reply-fill me-1" />Respondido</span>}
                         </div>
                         <span style={{ fontSize: "0.75rem", color: "#aaa" }}>{c.fecha}</span>
                       </div>
-                      <div className="com-asunto mt-2">{c.asunto}</div>
+                      <div className="com-asunto">{c.asunto}</div>
                       <div className="com-meta">
                         <i className="bi bi-shop me-1" />{c.restaurante || "—"}
                         {c.calificacion > 0 && (
@@ -495,9 +528,9 @@ export default function MyAccount() {
                         )}
                       </div>
                       {isOpen && (
-                        <div onClick={(e) => e.stopPropagation()}>
+                        <div onClick={e => e.stopPropagation()}>
                           <div className="com-mensaje">{c.mensaje}</div>
-                          {tieneRespuesta && (
+                          {c.respuestaRestaurante && (
                             <div className="com-respuesta-box">
                               <div className="com-respuesta-header"><i className="bi bi-reply-fill me-1" />Respuesta del restaurante · {c.fechaRespuesta}</div>
                               <div className="com-respuesta-text">{c.respuestaRestaurante}</div>
@@ -507,120 +540,108 @@ export default function MyAccount() {
                       )}
                     </div>
                   );
-                })
-              )}
-            </div>
-          )}
+                })}
+              </div>
+            )}
 
-          {/* ── PERFIL ── */}
-          {tab === "perfil" && (
-            <div className="seccion-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
-                <h3 className="seccion-title" style={{ margin: 0 }}>Mi Perfil</h3>
-                {!editMode && (
-                  <button className="btn-nueva-reserva" onClick={() => setEditMode(true)}>
-                    <i className="bi bi-pencil" /> Editar
-                  </button>
+            {/* ── PERFIL ── */}
+            {tab === "perfil" && (
+              <div className="seccion-card">
+                <div className="seccion-header">
+                  <h3 className="seccion-title">Mi Perfil</h3>
+                  {!editMode && (
+                    <button className="btn-primary-brand" onClick={() => { setEditMode(true); setProfileForm({ nombre: user.nombre || "", telefono: user.telefono || "", googleEmail: user.googleEmail || "" }); }}>
+                      <i className="bi bi-pencil" /> Editar
+                    </button>
+                  )}
+                </div>
+                {saveMsg && (
+                  <div className="auth-success-box" style={{ marginBottom: 16 }}>
+                    <i className="bi bi-check-circle me-2" />{saveMsg}
+                  </div>
+                )}
+                {editMode ? (
+                  <form onSubmit={handleSaveProfile} className="perfil-form">
+                    <div className="auth-field">
+                      <label className="auth-label">Nombre</label>
+                      <div className="auth-input-wrap">
+                        <i className="bi bi-person auth-input-icon" />
+                        <input type="text" className="auth-input" value={profileForm.nombre}
+                          onChange={e => setProfileForm({ ...profileForm, nombre: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="auth-field">
+                      <label className="auth-label">Email</label>
+                      <div className="auth-input-wrap">
+                        <i className="bi bi-envelope auth-input-icon" />
+                        <input type="email" className="auth-input" value={user.email} disabled />
+                      </div>
+                      <small className="text-muted">El email no se puede cambiar.</small>
+                    </div>
+                    <div className="auth-field">
+                      <label className="auth-label">Teléfono</label>
+                      <div className="auth-input-wrap">
+                        <i className="bi bi-telephone auth-input-icon" />
+                        <input type="tel" className="auth-input" placeholder="987654321" maxLength={9}
+                          value={profileForm.telefono}
+                          onChange={e => setProfileForm({ ...profileForm, telefono: e.target.value })} />
+                      </div>
+                      <small className="text-muted">9 dígitos exactos.</small>
+                    </div>
+                    <div className="auth-field">
+                      <label className="auth-label">Correo Google (recuperación)</label>
+                      <div className="auth-input-wrap">
+                        <i className="bi bi-envelope auth-input-icon" />
+                        <input type="email" className="auth-input" placeholder="tu@gmail.com"
+                          value={profileForm.googleEmail}
+                          onChange={e => setProfileForm({ ...profileForm, googleEmail: e.target.value })} />
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button type="submit" className="auth-submit-btn" style={{ flex: 1 }}>
+                        <i className="bi bi-check-lg me-1" /> Guardar cambios
+                      </button>
+                      <button type="button" className="cancel-modal-btn-no" style={{ flex: "0 0 auto" }} onClick={() => setEditMode(false)}>
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div>
+                    {/* Avatar editable dentro del perfil también */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "16px 0", borderBottom: "1px solid #f5f5f5" }}>
+                      <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#fdf0e8", border: "2px solid #F4956A", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem", color: "#F4956A", overflow: "hidden", flexShrink: 0 }}>
+                        {user.avatar ? <img src={user.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <i className="bi bi-person-fill" />}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>{user.nombre}</div>
+                        <button className="btn-primary-brand" style={{ fontSize: "0.77rem", padding: "5px 13px" }} onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarModal(true); }}>
+                          <i className="bi bi-camera" /> Cambiar foto
+                        </button>
+                      </div>
+                    </div>
+                    {[
+                      { icon: "bi-person",    label: "Nombre",         val: user.nombre },
+                      { icon: "bi-envelope",  label: "Email",          val: user.email },
+                      { icon: "bi-shield",    label: "Rol",            val: <span className="cuenta-badge">{user.rol || "Usuario"}</span> },
+                      { icon: "bi-telephone", label: "Teléfono",       val: user.telefono || <span style={{ color: "#ccc" }}>No registrado</span> },
+                      { icon: "bi-google",    label: "Google",         val: user.googleEmail ? <span style={{ color: "#22c55e" }}><i className="bi bi-check-circle-fill me-1" />{user.googleEmail}</span> : <span style={{ color: "#ccc", fontSize: "0.83rem" }}>No vinculado</span> },
+                      ...(fechaMiembro ? [{ icon: "bi-calendar", label: "Miembro desde", val: <span style={{ textTransform: "capitalize" }}>{fechaMiembro}</span> }] : []),
+                      { icon: "bi-chat-dots", label: "Reseñas",        val: `${comentarios.length} enviada${comentarios.length !== 1 ? "s" : ""}` },
+                    ].map(row => (
+                      <div key={row.label} className="perfil-info-row">
+                        <span className="perfil-info-label"><i className={`bi ${row.icon} me-2`} />{row.label}</span>
+                        <span className="perfil-info-value">{row.val}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
+            )}
 
-              {saveMsg && (
-                <div className="auth-success-box" style={{ marginBottom: 16 }}>
-                  <i className="bi bi-check-circle me-2" />{saveMsg}
-                </div>
-              )}
-
-              {editMode ? (
-                <form onSubmit={handleSaveProfile} className="perfil-form">
-                  <div className="auth-field">
-                    <label className="auth-label">Nombre</label>
-                    <div className="auth-input-wrap">
-                      <i className="bi bi-person auth-input-icon" />
-                      <input type="text" className="auth-input" value={profileForm.nombre}
-                        onChange={(e) => setProfileForm({ ...profileForm, nombre: e.target.value })} />
-                    </div>
-                  </div>
-                  <div className="auth-field">
-                    <label className="auth-label">Email</label>
-                    <div className="auth-input-wrap">
-                      <i className="bi bi-envelope auth-input-icon" />
-                      <input type="email" className="auth-input" value={profileForm.email} disabled />
-                    </div>
-                    <small className="text-muted">El email no se puede cambiar.</small>
-                  </div>
-                  <div className="auth-field">
-                    <label className="auth-label">Teléfono</label>
-                    <div className="auth-input-wrap">
-                      <i className="bi bi-telephone auth-input-icon" />
-                      <input type="tel" className="auth-input" placeholder="987654321" maxLength={9}
-                        value={profileForm.telefono}
-                        onChange={(e) => setProfileForm({ ...profileForm, telefono: e.target.value })} />
-                    </div>
-                    <small className="text-muted">9 dígitos exactos.</small>
-                  </div>
-                  <div className="auth-field">
-                    <label className="auth-label">Correo Google (recuperación)</label>
-                    <div className="auth-input-wrap">
-                      <i className="bi bi-envelope auth-input-icon" />
-                      <input type="email" className="auth-input" placeholder="tu@gmail.com"
-                        value={profileForm.googleEmail}
-                        onChange={(e) => setProfileForm({ ...profileForm, googleEmail: e.target.value })} />
-                    </div>
-                    <small className="text-muted">Para recuperar tu contraseña.</small>
-                  </div>
-                  <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
-                    <button type="submit" className="auth-submit-btn" style={{ flex: 1 }}>
-                      <i className="bi bi-check-lg me-1" /> Guardar cambios
-                    </button>
-                    <button type="button" className="cancel-modal-btn-no" onClick={() => setEditMode(false)}>
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="perfil-info-list">
-                  <div className="perfil-info-row">
-                    <span className="perfil-info-label"><i className="bi bi-person me-2" />Nombre</span>
-                    <span className="perfil-info-value">{user.nombre}</span>
-                  </div>
-                  <div className="perfil-info-row">
-                    <span className="perfil-info-label"><i className="bi bi-envelope me-2" />Email</span>
-                    <span className="perfil-info-value">{user.email}</span>
-                  </div>
-                  <div className="perfil-info-row">
-                    <span className="perfil-info-label"><i className="bi bi-shield me-2" />Rol</span>
-                    <span className="perfil-info-value"><span className="cuenta-badge">{user.rol || "Usuario"}</span></span>
-                  </div>
-                  <div className="perfil-info-row">
-                    <span className="perfil-info-label"><i className="bi bi-telephone me-2" />Teléfono</span>
-                    <span className="perfil-info-value">{user.telefono || <span style={{ color: "#bbb" }}>No registrado</span>}</span>
-                  </div>
-                  <div className="perfil-info-row">
-                    <span className="perfil-info-label"><i className="bi bi-google me-2" />Google</span>
-                    <span className="perfil-info-value">
-                      {user.googleEmail
-                        ? <span style={{ color: "#22c55e" }}><i className="bi bi-check-circle-fill me-1" />{user.googleEmail}</span>
-                        : <span style={{ color: "#bbb", fontSize: "0.83rem" }}>No vinculado</span>
-                      }
-                    </span>
-                  </div>
-                  {fechaMiembro && (
-                    <div className="perfil-info-row">
-                      <span className="perfil-info-label"><i className="bi bi-calendar me-2" />Miembro desde</span>
-                      <span className="perfil-info-value" style={{ textTransform: "capitalize" }}>{fechaMiembro}</span>
-                    </div>
-                  )}
-                  <div className="perfil-info-row">
-                    <span className="perfil-info-label"><i className="bi bi-chat-dots me-2" />Reseñas enviadas</span>
-                    <span className="perfil-info-value">{comentariosUsuario.length}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

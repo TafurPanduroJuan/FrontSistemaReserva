@@ -134,10 +134,11 @@ export function AuthProvider({ children }) {
       );
       const newSession = {
         ...user,
-        nombre:      updated.name || updated.nombre || user.nombre,
-        avatar:      updated.avatar    || user.avatar,
-        telefono:    updated.telefono  || user.telefono,
-        googleEmail: updated.googleEmail ?? user.googleEmail,
+        nombre:        updated.name || updated.nombre || user.nombre,
+        avatar:        updated.avatar !== undefined ? updated.avatar : user.avatar,
+        telefono:      updated.telefono  || user.telefono,
+        googleEmail:   updated.googleEmail ?? user.googleEmail,
+        fechaRegistro: user.fechaRegistro,
       };
       setUser(newSession);
       localStorage.setItem("comanda_session", JSON.stringify(newSession));
