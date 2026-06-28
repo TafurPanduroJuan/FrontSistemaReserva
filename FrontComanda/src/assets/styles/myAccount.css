@@ -27,7 +27,7 @@
 .cuenta-header {
   background: linear-gradient(120deg, #F4956A 0%, #f37500 100%);
   padding: 30px 40px 28px;
-  color: white;
+  color: rgb(0, 0, 0);
 }
 .cuenta-header-inner {
   max-width: 1100px;
