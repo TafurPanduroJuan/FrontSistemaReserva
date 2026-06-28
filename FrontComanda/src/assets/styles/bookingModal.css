@@ -246,6 +246,59 @@
   border-color: #ff4500;
   box-shadow: 0 4px 10px rgba(255, 69, 0, 0.2);
 }
+.time-chip.disabled {
+  background: #f3f3f3;
+  color: #ccc;
+  border-color: #eee;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Aviso día cerrado */
+.closed-day-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 10px 0 16px;
+  color: #c2410c;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.closed-day-alert .alert-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.closed-day-alert small {
+  display: block;
+  font-weight: 400;
+  color: #9a3412;
+  margin-top: 2px;
+}
+
+/* Horario del día en paso 2 */
+.day-schedule-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #15803d;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+/* Fecha formateada en confirmación */
+.summary-date-nice {
+  font-weight: 700;
+  color: #1a1a2e;
+}
 
 /* --- Vista de Confirmación --- */
 .confirmation-view { text-align: center; }
