@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import HorarioSemanalInput, { horarioVacio, horarioToPayload } from "../../components/HorarioSemanalInput";
 import { useRestaurants } from "../../context/RestaurantsContext";
 
 const tiposComida = [
@@ -15,7 +16,6 @@ const sugerenciasDistritos = [
 
 const initialForm = {
   nombre: "", tipo: "", distrito: "", direccion: "",
-  horarioApertura: "", horarioCierre: "",
   mesas: "", telefono: "", email: "",
   mensajePersonalizado: "", imagen: "",
 };
@@ -32,6 +32,7 @@ const fileToBase64 = (file) =>
 function NewRestaurant() {
   const { agregarRestaurante } = useRestaurants();
   const [form, setForm]           = useState(initialForm);
+  const [horarios, setHorarios]     = useState(horarioVacio());
   const [preview, setPreview]     = useState(null);
   const [imgFile, setImgFile]     = useState(null);
   const [submitted, setSubmitted] = useState(false);
@@ -94,8 +95,6 @@ function NewRestaurant() {
     if (!form.tipo)                    e.tipo             = "Selecciona un tipo de cocina";
     if (!form.distrito.trim())         e.distrito         = "Ingresa un distrito o zona";
     if (!form.direccion.trim())        e.direccion        = "La dirección exacta es requerida";
-    if (!form.horarioApertura.trim()) e.horarioApertura = "El horario de apertura es requerido";
-    if (!form.horarioCierre.trim())   e.horarioCierre   = "El horario de cierre es requerido";
     if (!form.email.trim())            e.email            = "El email es requerido";
     if (!form.telefono.trim()) {
       e.telefono = "El teléfono es requerido";
@@ -116,6 +115,7 @@ function NewRestaurant() {
     try {
       await agregarRestaurante({
         ...form,
+        ...horarioToPayload(horarios),
         mesas:    parseInt(form.mesas)    || 0,
         telefono: parseInt(form.telefono) || null,
       });
@@ -129,6 +129,7 @@ function NewRestaurant() {
 
   const resetAll = () => {
     setForm(initialForm);
+    setHorarios(horarioVacio());
     setPreview(null);
     setImgFile(null);
     setErrors({});
@@ -258,17 +259,12 @@ function NewRestaurant() {
               3. HORARIOS Y CAPACIDAD
             </p>
             <div className="row g-3">
-              <div className="col-md-4">
-                <label style={lbl}>Horario de Apertura *</label>
-                <input type="time" name="horarioApertura" value={form.horarioApertura} onChange={handle}
-                  style={inp("horarioApertura")} />
-                {errors.horarioApertura && <small style={{ color:"#ef4444" }}>{errors.horarioApertura}</small>}
-              </div>
-              <div className="col-md-4">
-                <label style={lbl}>Horario de Cierre *</label>
-                <input type="time" name="horarioCierre" value={form.horarioCierre} onChange={handle}
-                  style={inp("horarioCierre")} />
-                {errors.horarioCierre && <small style={{ color:"#ef4444" }}>{errors.horarioCierre}</small>}
+              <div className="col-12">
+                <HorarioSemanalInput
+                  value={horarios}
+                  onChange={setHorarios}
+                  inputStyle={inp}
+                />
               </div>
               <div className="col-md-4">
                 <label style={lbl}>N° de Mesas</label>
