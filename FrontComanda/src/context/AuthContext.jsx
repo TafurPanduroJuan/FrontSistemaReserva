@@ -12,15 +12,16 @@ export function AuthProvider({ children }) {
 
   function normalizeSession(data) {
     return {
-      id:          data.id,
-      nombre:      data.nombre || data.name,
-      email:       data.email,
-      rol:         (data.role || data.rol || "usuario").toLowerCase(),
-      token:       data.token,
-      restaurante: data.restaurant || data.restaurante || null,
-      avatar:      data.avatar     || null,
-      telefono:    data.telefono   || null,
-      googleEmail: data.googleEmail || null,
+      id:             data.id,
+      nombre:         data.nombre || data.name,
+      email:          data.email,
+      rol:            (data.role || data.rol || "usuario").toLowerCase(),
+      token:          data.token,
+      restaurante:    data.restaurant || data.restaurante || null,
+      avatar:         data.avatar     || null,
+      telefono:       data.telefono   || null,
+      googleEmail:    data.googleEmail || null,
+      fechaRegistro:  data.fechaRegistro || data.createdAt || null,
     };
   }
 
