@@ -11,31 +11,46 @@ const STEPS = [
   { label: "Confirmar" },
 ];
 
-// Mapeo día JS (0=Dom,1=Lun,...) → campo del restaurante
-const DIA_CAMPO = [
-  "horarioDomingo",   // 0 - domingo
-  "horarioLunes",     // 1 - lunes
-  "horarioMartes",    // 2 - martes
-  "horarioMiercoles", // 3 - miércoles
-  "horarioJueves",    // 4 - jueves
-  "horarioViernes",   // 5 - viernes
-  "horarioSabado",    // 6 - sábado
-];
+// horariosSemana viene del Catalog como array ordenado LUN→DOM (índice 0..6)
+// Internamente lo mapeamos al índice JS: Dom=0,Lun=1,...,Sáb=6
+// El array del catálogo es [LUN,MAR,MIÉ,JUE,VIE,SÁB,DOM] → índices 0..6
+// JS getDay():  0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
 
 const DIA_LABEL = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 
+// Convierte getDay() → índice en horariosSemana [LUN,MAR,MIÉ,JUE,VIE,SÁB,DOM]
+const JS_DAY_TO_SEMANA_IDX = [6, 0, 1, 2, 3, 4, 5]; // Dom→6, Lun→0, ..., Sáb→5
+
 /**
- * Dado un restaurante y una fecha ISO ("2026-06-29"),
- * devuelve { abierto, apertura, cierre, horarioStr }
+ * Dado un restaurante (con horariosSemana) y una fecha ISO,
+ * devuelve { abierto, apertura, cierre, horarioStr, diaNombre }
  */
 function getHorarioDia(restaurante, fechaISO) {
   if (!fechaISO || !restaurante) return { abierto: false };
-  const diaSemana = new Date(fechaISO + "T12:00:00").getDay(); // evitar UTC offset
-  const campo = DIA_CAMPO[diaSemana];
-  const val = restaurante[campo];
-  if (!val) return { abierto: false, diaNombre: DIA_LABEL[diaSemana] };
+  const jsDay = new Date(fechaISO + "T12:00:00").getDay();
+  const diaNombre = DIA_LABEL[jsDay];
+
+  // Leer desde horariosSemana (array del catálogo normalizado)
+  const semana = restaurante.horariosSemana;
+  if (semana && semana.length === 7) {
+    const idx = JS_DAY_TO_SEMANA_IDX[jsDay];
+    const dia = semana[idx];
+    if (!dia || !dia.apertura || !dia.cierre) return { abierto: false, diaNombre };
+    return {
+      abierto: true,
+      apertura: dia.apertura,
+      cierre: dia.cierre,
+      horarioStr: `${dia.apertura} – ${dia.cierre}`,
+      diaNombre,
+    };
+  }
+
+  // Fallback: leer campos directos si el objeto tiene camelCase
+  const CAMPOS = ["horarioDomingo","horarioLunes","horarioMartes","horarioMiercoles","horarioJueves","horarioViernes","horarioSabado"];
+  const val = restaurante[CAMPOS[jsDay]];
+  if (!val) return { abierto: false, diaNombre };
   const [apertura, cierre] = val.split("-");
-  return { abierto: true, apertura, cierre, horarioStr: `${apertura} – ${cierre}`, diaNombre: DIA_LABEL[diaSemana] };
+  return { abierto: true, apertura, cierre, horarioStr: `${apertura} – ${cierre}`, diaNombre };
 }
 
 /**
