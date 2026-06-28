@@ -27,6 +27,8 @@ import Users from './pages/intranet/Users';
 import NewRestaurant from './pages/intranet/NewRestaurant';
 import TableManagement from './pages/intranet/TableManagement';
 import Bookings from './pages/intranet/Bookings';
+import MyRestaurant from './pages/intranet/MyRestaurant';
+import MyProfile from './pages/intranet/MyProfile';
 import RegisteredRestaurants from './pages/intranet/RegisteredRestaurants';
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -126,7 +128,7 @@ function App() {
                   <Route
                     path="comments"
                     element={
-                      <ProtectedRoute allowedRoles={["administrador"]}>
+                      <ProtectedRoute allowedRoles={["administrador", "personal"]}>
                         <Comments />
                       </ProtectedRoute>
                     }
@@ -154,6 +156,22 @@ function App() {
                     element={
                       <ProtectedRoute allowedRoles={["administrador", "personal"]}>
                         <Bookings />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="my-restaurant"
+                    element={
+                      <ProtectedRoute allowedRoles={["personal"]}>
+                        <MyRestaurant />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="my-profile"
+                    element={
+                      <ProtectedRoute allowedRoles={["personal", "administrador"]}>
+                        <MyProfile />
                       </ProtectedRoute>
                     }
                   />

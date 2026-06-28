@@ -1,5 +1,3 @@
-
-
 import { useState } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -32,8 +30,16 @@ const PERSONAL_NAV = [
   {
     section: "MI RESTAURANTE",
     items: [
-      { path: "/intranet/tables",   label: "Gestión de Mesas", icon: "bi-grid-3x3-gap" },
-      { path: "/intranet/bookings", label: "Reservas",         icon: "bi-calendar-check" },
+      { path: "/intranet/my-restaurant", label: "Gestión de Restaurante", icon: "bi-shop-window" },
+      { path: "/intranet/tables",        label: "Gestión de Mesas",       icon: "bi-grid-3x3-gap" },
+      { path: "/intranet/bookings",      label: "Reservas",               icon: "bi-calendar-check" },
+      { path: "/intranet/comments",      label: "Comentarios",            icon: "bi-chat-square-text" },
+    ],
+  },
+  {
+    section: "MI CUENTA",
+    items: [
+      { path: "/intranet/my-profile", label: "Mi Perfil", icon: "bi-person-gear" },
     ],
   },
 ];
@@ -99,8 +105,14 @@ export default function IntranetLayout() {
             <i className={`bi ${rolIcon} me-1`} />
             {rolLabel}
           </span>
-          <div className="topbar-avatar" title={user?.nombre}>
-            <i className="bi bi-person-circle" />
+          <div className="topbar-avatar" title={user?.nombre}
+            onClick={() => navigate("/intranet/my-profile")}
+            style={{ cursor: "pointer" }}>
+            {user?.avatar
+              ? <img src={user.avatar} alt="avatar"
+                  style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.7)" }} />
+              : <i className="bi bi-person-circle" />
+            }
           </div>
           <button className="topbar-exit-btn" onClick={handleLogout}>
             <i className="bi bi-box-arrow-left" /> <span className="d-none d-sm-inline">Salir</span>
@@ -151,7 +163,11 @@ export default function IntranetLayout() {
           {(sidebarOpen || mobileMenuOpen) && (
             <div className="sidebar-user-info">
               <div className="sidebar-user-avatar">
-                <i className="bi bi-person-circle" />
+                {user?.avatar
+                  ? <img src={user.avatar} alt="avatar"
+                      style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid #F4956A" }} />
+                  : <i className="bi bi-person-circle" />
+                }
               </div>
               <div className="sidebar-user-details">
                 <span className="sidebar-user-name">{user?.nombre}</span>
