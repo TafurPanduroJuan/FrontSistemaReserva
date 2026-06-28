@@ -75,7 +75,25 @@ function normalizarRestaurante(r) {
     direccion:           r.direccion || null,
     horaApertura:        r.horarioApertura || "—",
     horaCierre:          r.horarioCierre   || "—",
-    horariosSemana:      r.horariosSemana  || null, // futuro campo del back
+    horariosSemana: (() => {
+      const map = [
+        { dia: "LUN", campo: "horarioLunes"     },
+        { dia: "MAR", campo: "horarioMartes"    },
+        { dia: "MIÉ", campo: "horarioMiercoles" },
+        { dia: "JUE", campo: "horarioJueves"    },
+        { dia: "VIE", campo: "horarioViernes"   },
+        { dia: "SÁB", campo: "horarioSabado"    },
+        { dia: "DOM", campo: "horarioDomingo"   },
+      ];
+      const tiene = map.some(({ campo }) => r[campo]);
+      if (!tiene) return null;
+      return map.map(({ dia, campo }) => {
+        const val = r[campo];
+        if (!val) return { dia, apertura: null, cierre: null };
+        const [apertura, cierre] = val.split("-");
+        return { dia, apertura: apertura || null, cierre: cierre || null };
+      });
+    })(),
     mesas:               r.mesas ?? 0,
     precio:              "$",
     tipo:                r.tipo || "Otro",
