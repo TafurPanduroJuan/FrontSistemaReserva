@@ -41,7 +41,14 @@ function RegisteredRestaurants() {
   };
 
   const abrirEditar = (res) => {
-    setEditData({ ...res, horarios: payloadToHorario(res) });
+    setEditData({
+      ...res,
+      // Bug 1: normalizar campo eslogan (backend puede devolver camelCase o snake_case)
+      mensaje_personalizado: res.mensaje_personalizado || res.mensajePersonalizado || "",
+      // Bug 2: convertir teléfono a string para que .length funcione correctamente
+      telefono: res.telefono != null ? String(res.telefono) : "",
+      horarios: payloadToHorario(res),
+    });
     setPreview(res.imagen);
     setShowModal(true);
   };
