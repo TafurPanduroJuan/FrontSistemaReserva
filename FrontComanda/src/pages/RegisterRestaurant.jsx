@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRestaurants } from "../context/RestaurantsContext";
+import HorarioSemanalInput, { horarioVacio, horarioToPayload } from "../components/HorarioSemanalInput";
 import { useNavigate } from "react-router-dom";
 
 const tiposComida = [
@@ -14,7 +15,7 @@ const sugerenciasDistritos = [
 
 const initialForm = {
   nombre: "", tipo: "", distrito: "", direccion: "",
-  horarioApertura: "", horarioCierre: "",
+  horarios: horarioVacio(),
   descripcion: "", telefono: "", email: "",
   propietario: "", mensajePersonalizado: "",
 };
@@ -113,8 +114,7 @@ function RegisterRestaurant() {
         telefono:            parseInt(form.telefono),
         descripcion:         form.descripcion.trim() || "Solicitud enviada desde el formulario público.",
         mensajePersonalizado: form.mensajePersonalizado.trim() || null,
-        horarioApertura:     form.horarioApertura || null,
-        horarioCierre:       form.horarioCierre || null,
+        ...horarioToPayload(form.horarios),
         imagen:              imagenBase64,
       };
     };
@@ -305,28 +305,15 @@ function RegisterRestaurant() {
                     style={inputStyle("direccion")} placeholder="Av. / Jr. / Calle y número" />
                   {errorMsg("direccion")}
                 </div>
-                <div className="col-md-3">
+                <div className="col-12" style={{ marginTop: 8 }}>
                   <label style={labelStyle}>
-                    Horario Apertura <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span>
+                    Horario de Atención por Día{" "}
+                    <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span>
                   </label>
-                  <input
-                    type="time"
-                    name="horarioApertura"
-                    value={form.horarioApertura}
-                    onChange={handle}
-                    style={inputStyle("horarioApertura")}
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label style={labelStyle}>
-                    Horario Cierre <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span>
-                  </label>
-                  <input
-                    type="time"
-                    name="horarioCierre"
-                    value={form.horarioCierre}
-                    onChange={handle}
-                    style={inputStyle("horarioCierre")}
+                  <HorarioSemanalInput
+                    value={form.horarios}
+                    onChange={(h) => setForm((prev) => ({ ...prev, horarios: h }))}
+                    inputStyle={inputStyle}
                   />
                 </div>
               </div>
