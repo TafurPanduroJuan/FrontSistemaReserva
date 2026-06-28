@@ -74,6 +74,20 @@ export default function MyAccount() {
 
   if (!user) { navigate("/login"); return null; }
 
+  // ── Banner de perfil incompleto ──────────────────────────────────────────
+  const camposFaltantes = [
+    !user.telefono    && { key: "telefono",    label: "Teléfono de contacto",      icon: "bi-telephone-fill" },
+    !user.googleEmail && { key: "googleEmail", label: "Correo de respaldo Google", icon: "bi-google" },
+  ].filter(Boolean);
+  const [bannerCerrado, setBannerCerrado] = useState(
+    () => sessionStorage.getItem("perfil_banner_cerrado") === "1"
+  );
+  const mostrarBanner = camposFaltantes.length > 0 && !bannerCerrado;
+  const cerrarBanner = () => {
+    setBannerCerrado(true);
+    sessionStorage.setItem("perfil_banner_cerrado", "1");
+  };
+
   const cargarReservas = async () => {
     if (!token) return;
     setCargandoReservas(true);
@@ -276,6 +290,61 @@ export default function MyAccount() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ── BANNER PERFIL INCOMPLETO ── */}
+        {mostrarBanner && (
+          <div style={{
+            background: "linear-gradient(135deg, #fff8ec 0%, #fff3e0 100%)",
+            border: "1.5px solid #f59e0b",
+            borderRadius: 14,
+            padding: "16px 20px",
+            marginBottom: 18,
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 14,
+            boxShadow: "0 2px 12px rgba(245,158,11,0.10)",
+          }}>
+            <div style={{ fontSize: "1.5rem", color: "#f59e0b", flexShrink: 0, marginTop: 2 }}>
+              <i className="bi bi-exclamation-circle-fill" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, color: "#92400e", fontSize: "0.93rem", marginBottom: 4 }}>
+                ¡Completa tu perfil para una mejor experiencia!
+              </div>
+              <div style={{ fontSize: "0.83rem", color: "#78350f", marginBottom: 10 }}>
+                Te falta agregar {camposFaltantes.length === 1 ? "este dato importante" : "estos datos importantes"}:
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                {camposFaltantes.map(c => (
+                  <span key={c.key} style={{
+                    background: "white", border: "1.5px solid #fcd34d",
+                    borderRadius: 20, padding: "4px 12px",
+                    fontSize: "0.79rem", fontWeight: 700, color: "#92400e",
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                  }}>
+                    <i className={`bi ${c.icon}`} /> {c.label}
+                  </span>
+                ))}
+              </div>
+              <button
+                onClick={() => { setTab("perfil"); setEditMode(true); setProfileForm({ nombre: user.nombre || "", telefono: user.telefono || "", googleEmail: user.googleEmail || "" }); cerrarBanner(); }}
+                style={{
+                  background: "#f59e0b", color: "white", border: "none",
+                  borderRadius: 9, padding: "7px 16px",
+                  fontSize: "0.82rem", fontWeight: 700, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
+                <i className="bi bi-pencil-fill" /> Completar ahora
+              </button>
+            </div>
+            <button
+              onClick={cerrarBanner}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#b45309", fontSize: "1rem", padding: 4, flexShrink: 0 }}
+              title="Cerrar">
+              <i className="bi bi-x-lg" />
+            </button>
           </div>
         )}
 
