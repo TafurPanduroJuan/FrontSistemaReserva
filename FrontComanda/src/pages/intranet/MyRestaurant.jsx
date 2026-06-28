@@ -276,9 +276,9 @@ function MyRestaurant() {
               <InfoItem icon="bi-envelope" label="Email" value={restaurante.email || "—"} />
             </div>
 
-            {restaurante.mensajePersonalizado && (
+            {(restaurante.mensaje_personalizado || restaurante.mensajePersonalizado) && (
               <div style={{ borderLeft: "3px solid #ff6b00", paddingLeft: 12, fontStyle: "italic", color: "#666", fontSize: "0.9rem" }}>
-                "{restaurante.mensajePersonalizado}"
+                "{restaurante.mensaje_personalizado || restaurante.mensajePersonalizado}"
               </div>
             )}
 
@@ -337,8 +337,8 @@ function MyRestaurant() {
                   <div className="col-12">
                     <label style={lbl}>Eslogan / Mensaje de bienvenida</label>
                     <input style={inp(false)}
-                      value={editData.mensajePersonalizado || ""}
-                      onChange={(e) => setEditData({ ...editData, mensajePersonalizado: e.target.value })} />
+                      value={editData.mensaje_personalizado || editData.mensajePersonalizado || ""}
+                      onChange={(e) => setEditData({ ...editData, mensaje_personalizado: e.target.value })} />
                   </div>
                 </div>
               </section>
