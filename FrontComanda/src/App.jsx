@@ -28,6 +28,7 @@ import NewRestaurant from './pages/intranet/NewRestaurant';
 import TableManagement from './pages/intranet/TableManagement';
 import Bookings from './pages/intranet/Bookings';
 import MyRestaurant from './pages/intranet/MyRestaurant';
+import MyProfile from './pages/intranet/MyProfile';              // ← NUEVO
 import RegisteredRestaurants from './pages/intranet/RegisteredRestaurants';
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -166,6 +167,17 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+
+                  {/* ── Mi Perfil (personal + administrador) ─────────── */}
+                  <Route
+                    path="my-profile"
+                    element={
+                      <ProtectedRoute allowedRoles={["personal", "administrador"]}>
+                        <MyProfile />
+                      </ProtectedRoute>
+                    }
+                  />
+
                 </Route>
 
               </Routes>

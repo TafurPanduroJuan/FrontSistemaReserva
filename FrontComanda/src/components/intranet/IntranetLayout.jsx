@@ -8,24 +8,30 @@ const ADMIN_NAV = [
   {
     section: "MENÚ PRINCIPAL",
     items: [
-      { path: "/intranet",                  label: "Panel Principal",    icon: "bi-speedometer2",    exact: true },
-      { path: "/intranet/restaurants",      label: "Restaurantes",       icon: "bi-shop" },
-      { path: "/intranet/restaurant-requests", label: "Solicitudes",     icon: "bi-shop-window" },
-      { path: "/intranet/comments",         label: "Comentarios",        icon: "bi-chat-square-text" },
-      { path: "/intranet/users",            label: "Usuarios",           icon: "bi-people" },
-      { path: "/intranet/new-restaurant",   label: "Nuevo Restaurante",  icon: "bi-plus-circle" },
+      { path: "/intranet",                     label: "Panel Principal",    icon: "bi-speedometer2",    exact: true },
+      { path: "/intranet/restaurants",         label: "Restaurantes",       icon: "bi-shop" },
+      { path: "/intranet/restaurant-requests", label: "Solicitudes",        icon: "bi-shop-window" },
+      { path: "/intranet/comments",            label: "Comentarios",        icon: "bi-chat-square-text" },
+      { path: "/intranet/users",               label: "Usuarios",           icon: "bi-people" },
+      { path: "/intranet/new-restaurant",      label: "Nuevo Restaurante",  icon: "bi-plus-circle" },
     ],
   },
   {
     section: "OPERACIONES",
     items: [
-      { path: "/intranet/tables",   label: "Gestión de Mesas",  icon: "bi-grid-3x3-gap" },
-      { path: "/intranet/bookings", label: "Reservas",          icon: "bi-calendar-check" },
+      { path: "/intranet/tables",   label: "Gestión de Mesas", icon: "bi-grid-3x3-gap" },
+      { path: "/intranet/bookings", label: "Reservas",         icon: "bi-calendar-check" },
+    ],
+  },
+  {
+    section: "MI CUENTA",
+    items: [
+      { path: "/intranet/my-profile", label: "Mi Perfil", icon: "bi-person-gear" },
     ],
   },
 ];
 
-// ── Menú de navegación del Personal ─────────────────────────────────────────
+// ── Menú de navegación del Personal ──────────────────────────────────────────
 const PERSONAL_NAV = [
   {
     section: "MI RESTAURANTE",
@@ -36,11 +42,16 @@ const PERSONAL_NAV = [
       { path: "/intranet/comments",      label: "Comentarios",            icon: "bi-chat-square-text" },
     ],
   },
+  {
+    section: "MI CUENTA",
+    items: [
+      { path: "/intranet/my-profile", label: "Mi Perfil", icon: "bi-person-gear" },
+    ],
+  },
 ];
 
 export default function IntranetLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,7 +73,6 @@ export default function IntranetLayout() {
     navigate("/login");
   }
 
-  
   function handleNavClick() {
     setMobileMenuOpen(false);
   }
@@ -79,13 +89,15 @@ export default function IntranetLayout() {
           >
             <i className={`bi ${sidebarOpen ? "bi-layout-sidebar" : "bi-layout-sidebar-reverse"}`} />
           </button>
-          
+
+          {/* Mobile toggle */}
           <button
             className="sidebar-toggle-btn d-flex d-md-none"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <i className={`bi ${mobileMenuOpen ? "bi-x-lg" : "bi-list"}`} />
           </button>
+
           <span className="topbar-brand">
             <span className="brand-icon">🍽️</span>
             <span className="brand-text">
@@ -99,16 +111,31 @@ export default function IntranetLayout() {
             <i className={`bi ${rolIcon} me-1`} />
             {rolLabel}
           </span>
-          <div className="topbar-avatar" title={user?.nombre}>
-            <i className="bi bi-person-circle" />
+
+          {/* Avatar clickeable → Mi Perfil */}
+          <div
+            className="topbar-avatar"
+            title={user?.nombre}
+            onClick={() => navigate("/intranet/my-profile")}
+            style={{ cursor: "pointer" }}
+          >
+            {user?.avatar
+              ? <img
+                  src={user.avatar}
+                  alt="avatar"
+                  style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.7)" }}
+                />
+              : <i className="bi bi-person-circle" />
+            }
           </div>
+
           <button className="topbar-exit-btn" onClick={handleLogout}>
             <i className="bi bi-box-arrow-left" /> <span className="d-none d-sm-inline">Salir</span>
           </button>
         </div>
       </header>
 
-      
+      {/* Overlay móvil */}
       {mobileMenuOpen && (
         <div
           className="intranet-mobile-overlay"
@@ -118,7 +145,6 @@ export default function IntranetLayout() {
 
       <div className="intranet-body">
         {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-        
         <aside className={`intranet-sidebar ${sidebarOpen ? "open" : "closed"} ${mobileMenuOpen ? "mobile-open" : ""}`}>
           <nav className="sidebar-nav">
             {navGroups.map((group) => (
@@ -132,9 +158,7 @@ export default function IntranetLayout() {
                     to={item.path}
                     onClick={handleNavClick}
                     className={`sidebar-link ${
-                      (item.exact ? isDashboard : isActive(item.path))
-                        ? "active"
-                        : ""
+                      (item.exact ? isDashboard : isActive(item.path)) ? "active" : ""
                     }`}
                   >
                     <i className={`bi ${item.icon} sidebar-link-icon`} />
@@ -151,7 +175,14 @@ export default function IntranetLayout() {
           {(sidebarOpen || mobileMenuOpen) && (
             <div className="sidebar-user-info">
               <div className="sidebar-user-avatar">
-                <i className="bi bi-person-circle" />
+                {user?.avatar
+                  ? <img
+                      src={user.avatar}
+                      alt="avatar"
+                      style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid #F4956A" }}
+                    />
+                  : <i className="bi bi-person-circle" />
+                }
               </div>
               <div className="sidebar-user-details">
                 <span className="sidebar-user-name">{user?.nombre}</span>
