@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import HorarioSemanalInput, { payloadToHorario, horarioToPayload } from "../../components/HorarioSemanalInput";
 import { useRestaurants } from "../../context/RestaurantsContext";
 
 const tiposComida = ["Criolla","Italiana","Japonesa","Mariscos","Vegana","Parrilla","Mexicana","Peruana","Francesa","Fusión","Moderna","Asiática","Postres"];
@@ -40,7 +41,7 @@ function RegisteredRestaurants() {
   };
 
   const abrirEditar = (res) => {
-    setEditData({ ...res });
+    setEditData({ ...res, horarios: payloadToHorario(res) });
     setPreview(res.imagen);
     setShowModal(true);
   };
@@ -70,7 +71,12 @@ function RegisteredRestaurants() {
       alert("Por favor, ingresa un número de teléfono válido (9 dígitos).");
       return;
     }
-    editarRestaurante({ ...editData, imagen: preview || editData.imagen });
+    const { horarios, ...restEditData } = editData;
+    editarRestaurante({
+      ...restEditData,
+      ...horarioToPayload(horarios || {}),
+      imagen: preview || editData.imagen,
+    });
     setShowModal(false);
   };
 
@@ -447,26 +453,11 @@ function RegisteredRestaurants() {
                 {/* Sección 4 */}
                 <div style={{ marginBottom: "22px" }}>
                   <p className="rr-section-label">4. HORARIO DE ATENCIÓN</p>
-                  <div className="row g-3">
-                    <div className="col-12 col-md-6">
-                      <label className="rr-label">Hora de apertura</label>
-                      <input
-                        type="time"
-                        className="rr-input"
-                        value={editData.horarioApertura || ""}
-                        onChange={e => setEditData({ ...editData, horarioApertura: e.target.value })}
-                      />
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="rr-label">Hora de cierre</label>
-                      <input
-                        type="time"
-                        className="rr-input"
-                        value={editData.horarioCierre || ""}
-                        onChange={e => setEditData({ ...editData, horarioCierre: e.target.value })}
-                      />
-                    </div>
-                  </div>
+                  <HorarioSemanalInput
+                    value={editData.horarios || {}}
+                    onChange={(h) => setEditData({ ...editData, horarios: h })}
+                    inputClassName="rr-input"
+                  />
                 </div>
 
                 <div className="rr-modal-actions">
