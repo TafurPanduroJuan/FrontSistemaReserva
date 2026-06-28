@@ -54,10 +54,11 @@ export default function MyAccount() {
   });
 
   // Avatar modal
-  const [avatarModal, setAvatarModal]   = useState(false);
-  const [avatarUrl, setAvatarUrl]       = useState(user?.avatar || "");
-  const [avatarSaving, setAvatarSaving] = useState(false);
-  const [uploadType, setUploadType]     = useState("local"); // 'local' o 'url'
+  const [avatarModal, setAvatarModal]     = useState(false);
+  const [avatarUrl, setAvatarUrl]         = useState(user?.avatar || ""); // Base64 o URL final (preview)
+  const [avatarUrlInput, setAvatarUrlInput] = useState("");               // solo el input de texto URL
+  const [avatarSaving, setAvatarSaving]   = useState(false);
+  const [uploadType, setUploadType]       = useState("local"); // 'local' o 'url'
 
   // Reservas
   const [reservas, setReservas]               = useState([]);
@@ -175,7 +176,11 @@ export default function MyAccount() {
                   type="button"
                   className={`cuenta-tab-btn ${uploadType === "local" ? "active" : ""}`}
                   style={{ flex: 1, justifyContent: "center" }}
-                  onClick={() => setUploadType("local")}
+                  onClick={() => {
+                    setUploadType("local");
+                    setAvatarUrlInput("");
+                    setAvatarUrl(user?.avatar || ""); // restaurar preview al avatar actual
+                  }}
                 >
                   <i className="bi bi-desktop" /> Subir Imagen
                 </button>
@@ -183,7 +188,10 @@ export default function MyAccount() {
                   type="button"
                   className={`cuenta-tab-btn ${uploadType === "url" ? "active" : ""}`}
                   style={{ flex: 1, justifyContent: "center" }}
-                  onClick={() => setUploadType("url")}
+                  onClick={() => {
+                    setUploadType("url");
+                    setAvatarUrl(user?.avatar || ""); // restaurar preview al avatar actual
+                  }}
                 >
                   <i className="bi bi-link-45deg" /> Enlace URL
                 </button>
@@ -220,8 +228,11 @@ export default function MyAccount() {
                     <input
                       type="url" className="auth-input"
                       placeholder="https://ejemplo.com/mi-foto.jpg"
-                      value={avatarUrl.startsWith("data:") ? "" : avatarUrl}
-                      onChange={e => setAvatarUrl(e.target.value)}
+                      value={avatarUrlInput}
+                      onChange={e => {
+                        setAvatarUrlInput(e.target.value);
+                        setAvatarUrl(e.target.value); // actualiza el preview en tiempo real
+                      }}
                     />
                   </div>
                   <small className="text-muted" style={{ fontSize: "0.77rem" }}>
@@ -272,13 +283,13 @@ export default function MyAccount() {
         <div className="cuenta-header">
           <div className="cuenta-header-inner">
             <div className="cuenta-avatar-wrap">
-              <div className="cuenta-avatar" onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarModal(true); }} title="Cambiar foto">
+              <div className="cuenta-avatar" onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarUrlInput(""); setUploadType("local"); setAvatarModal(true); }} title="Cambiar foto">
                 {user.avatar
                   ? <img src={user.avatar} alt="avatar" />
                   : <i className="bi bi-person-fill" />
                 }
               </div>
-              <div className="avatar-edit-hint" onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarModal(true); }}>
+              <div className="avatar-edit-hint" onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarUrlInput(""); setUploadType("local"); setAvatarModal(true); }}>
                 <i className="bi bi-pencil-fill" />
               </div>
             </div>
@@ -668,7 +679,7 @@ export default function MyAccount() {
                       </div>
                       <div>
                         <div style={{ fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>{user.nombre}</div>
-                        <button className="btn-primary-brand" style={{ fontSize: "0.77rem", padding: "5px 13px" }} onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarModal(true); }}>
+                        <button className="btn-primary-brand" style={{ fontSize: "0.77rem", padding: "5px 13px" }} onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarUrlInput(""); setUploadType("local"); setAvatarModal(true); }}>
                           <i className="bi bi-camera" /> Cambiar foto
                         </button>
                       </div>
