@@ -177,7 +177,7 @@ export default function MyAccount() {
                   style={{ flex: 1, justifyContent: "center" }}
                   onClick={() => setUploadType("local")}
                 >
-                  <i className="bi bi-desktop" /> Desde mi PC
+                  <i className="bi bi-desktop" /> Subir Imagen
                 </button>
                 <button 
                   type="button"
