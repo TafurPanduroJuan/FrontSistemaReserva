@@ -674,7 +674,20 @@ export default function MyAccount() {
                 ) : (
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "16px 0", borderBottom: "1px solid #f5f5f5" }}>
-                      <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#fdf0e8", border: "2px solid #F4956A", display: "flex", alignItems: "center", justifyCenter: "center", fontSize: "1.6rem", color: "#F4956A", overflow: "hidden", flexShrink: 0 }}>
+                      <div style={{ 
+                        width: 60, 
+                        height: 60, 
+                        borderRadius: "50%", 
+                        background: "#fdf0e8", 
+                        border: "2px solid #F4956A", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        fontSize: "1.6rem", 
+                        color: "#F4956A", 
+                        overflow: "hidden", 
+                        flexShrink: 0 
+                      }}>
                         {user.avatar ? <img src={user.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <i className="bi bi-person-fill" />}
                       </div>
                       <div>
