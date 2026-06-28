@@ -305,21 +305,10 @@ function RegisterRestaurant() {
                     style={inputStyle("direccion")} placeholder="Av. / Jr. / Calle y número" />
                   {errorMsg("direccion")}
                 </div>
-                <div className="col-12" style={{ marginTop: 8 }}>
-                  <label style={labelStyle}>
-                    Horario de Atención por Día{" "}
-                    <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span>
-                  </label>
-                  <HorarioSemanalInput
-                    value={form.horarios}
-                    onChange={(h) => setForm((prev) => ({ ...prev, horarios: h }))}
-                    inputStyle={inputStyle}
-                  />
-                </div>
               </div>
             </div>
 
-            {/* ═══ SECCIÓN 3: PROPIETARIO Y CONTACTO ═══ */}
+            {/* ═══ SECCIÓN 3: HORARIO DE ATENCIÓN ═══ */}
             <div style={{ padding: "32px 36px", borderBottom: "1px solid #f0ece6" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
                 <div style={{
@@ -328,6 +317,27 @@ function RegisterRestaurant() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "white", fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
                 }}>3</div>
+                <div>
+                  <p style={{ fontWeight: 700, color: "#1a1a2e", margin: 0, fontSize: "1rem" }}>Horario de Atención</p>
+                  <p style={{ color: "#aaa", margin: 0, fontSize: "0.8rem" }}>Días y horas en que atiende tu restaurante</p>
+                </div>
+              </div>
+              <HorarioSemanalInput
+                value={form.horarios}
+                onChange={(h) => setForm((prev) => ({ ...prev, horarios: h }))}
+                inputStyle={inputStyle}
+              />
+            </div>
+
+            {/* ═══ SECCIÓN 4: PROPIETARIO Y CONTACTO ═══ */}
+            <div style={{ padding: "32px 36px", borderBottom: "1px solid #f0ece6" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: "#F4956A",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "white", fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
+                }}>4</div>
                 <div>
                   <p style={{ fontWeight: 700, color: "#1a1a2e", margin: 0, fontSize: "1rem" }}>Datos del Propietario y Contacto</p>
                   <p style={{ color: "#aaa", margin: 0, fontSize: "0.8rem" }}>Información del responsable del restaurante</p>
@@ -372,7 +382,7 @@ function RegisterRestaurant() {
               </div>
             </div>
 
-            {/* ═══ SECCIÓN 4: IMAGEN ═══ */}
+            {/* ═══ SECCIÓN 5: IMAGEN ═══ */}
             <div style={{ padding: "32px 36px", borderBottom: "1px solid #f0ece6" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
                 <div style={{
@@ -380,7 +390,7 @@ function RegisterRestaurant() {
                   background: "#F4956A",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "white", fontSize: "0.85rem", fontWeight: 700, flexShrink: 0,
-                }}>4</div>
+                }}>5</div>
                 <div>
                   <p style={{ fontWeight: 700, color: "#1a1a2e", margin: 0, fontSize: "1rem" }}>Imagen del Restaurante</p>
                   <p style={{ color: "#aaa", margin: 0, fontSize: "0.8rem" }}>Foto de fachada o interior (opcional)</p>
