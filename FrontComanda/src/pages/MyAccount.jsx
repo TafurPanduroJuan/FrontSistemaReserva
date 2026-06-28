@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -58,6 +57,7 @@ export default function MyAccount() {
   const [avatarModal, setAvatarModal]   = useState(false);
   const [avatarUrl, setAvatarUrl]       = useState(user?.avatar || "");
   const [avatarSaving, setAvatarSaving] = useState(false);
+  const [uploadType, setUploadType]     = useState("local"); // 'local' o 'url'
 
   // Reservas
   const [reservas, setReservas]               = useState([]);
@@ -116,6 +116,24 @@ export default function MyAccount() {
     else { setSaveMsg("Error al guardar"); }
   };
 
+  // ── Procesar imagen local de la PC a Base64
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validación opcional de tamaño (ej: máximo 2MB para evitar saturar Base64)
+    if (file.size > 2 * 1024 * 1024) {
+      alert("La imagen es muy pesada. Elige una menor a 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarUrl(reader.result); // Esto guarda el string en Base64 listo para enviarse
+    };
+    reader.readAsDataURL(file);
+  };
+
   // ── Guardar avatar
   const handleSaveAvatar = async () => {
     if (!avatarUrl.trim()) return;
@@ -140,38 +158,78 @@ export default function MyAccount() {
 
   return (
     <>
-      {/* Navbar global */}
       <Navbar />
 
       <div className="mi-cuenta-page" style={{ paddingTop: 70 }}>
 
-        {/* ── MODAL AVATAR ── */}
+        {/* ── MODAL AVATAR MODIFICADO ── */}
         {avatarModal && (
           <div className="avatar-modal-overlay" onClick={() => setAvatarModal(false)}>
             <div className="avatar-modal" onClick={e => e.stopPropagation()}>
               <h4 className="avatar-modal-title">Cambiar foto de perfil</h4>
-              <p className="avatar-modal-sub">Ingresa la URL de tu imagen de perfil</p>
+              <p className="avatar-modal-sub">Elige cómo deseas actualizar tu avatar</p>
+              
+              {/* Selector de tipo de subida */}
+              <div style={{ display: "flex", gap: 10, marginBottom: 15 }}>
+                <button 
+                  type="button"
+                  className={`cuenta-tab-btn ${uploadType === "local" ? "active" : ""}`}
+                  style={{ flex: 1, justifyContent: "center" }}
+                  onClick={() => setUploadType("local")}
+                >
+                  <i className="bi bi-desktop" /> Desde mi PC
+                </button>
+                <button 
+                  type="button"
+                  className={`cuenta-tab-btn ${uploadType === "url" ? "active" : ""}`}
+                  style={{ flex: 1, justifyContent: "center" }}
+                  onClick={() => setUploadType("url")}
+                >
+                  <i className="bi bi-link-45deg" /> Enlace URL
+                </button>
+              </div>
+
               <div className="avatar-preview">
                 {avatarUrl
-                  ? <img src={avatarUrl} alt="preview" onError={e => e.target.style.display="none"} />
+                  ? <img src={avatarUrl} alt="preview" onError={e => { e.target.style.display="none"; }} />
                   : <i className="bi bi-person-fill" />
                 }
               </div>
-              <div className="auth-field">
-                <label className="auth-label">URL de la imagen</label>
-                <div className="auth-input-wrap">
-                  <i className="bi bi-link-45deg auth-input-icon" />
-                  <input
-                    type="url" className="auth-input"
-                    placeholder="https://ejemplo.com/mi-foto.jpg"
-                    value={avatarUrl}
-                    onChange={e => setAvatarUrl(e.target.value)}
-                  />
+
+              {uploadType === "local" ? (
+                <div className="auth-field">
+                  <label className="auth-label">Subir archivo de imagen</label>
+                  <div className="auth-input-wrap">
+                    <input
+                      type="file" 
+                      className="auth-input"
+                      accept="image/*"
+                      style={{ paddingLeft: 12, paddingTop: 8 }}
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                  <small className="text-muted" style={{ fontSize: "0.77rem" }}>
+                    Formatos soportados: JPG, PNG, WEBP. Máx 2MB.
+                  </small>
                 </div>
-                <small className="text-muted" style={{ fontSize: "0.77rem" }}>
-                  Puedes usar servicios como imgur.com o cualquier URL pública de imagen.
-                </small>
-              </div>
+              ) : (
+                <div className="auth-field">
+                  <label className="auth-label">URL de la imagen</label>
+                  <div className="auth-input-wrap">
+                    <i className="bi bi-link-45deg auth-input-icon" />
+                    <input
+                      type="url" className="auth-input"
+                      placeholder="https://ejemplo.com/mi-foto.jpg"
+                      value={avatarUrl.startsWith("data:") ? "" : avatarUrl}
+                      onChange={e => setAvatarUrl(e.target.value)}
+                    />
+                  </div>
+                  <small className="text-muted" style={{ fontSize: "0.77rem" }}>
+                    Puedes usar cualquier URL pública de imagen.
+                  </small>
+                </div>
+              )}
+
               <div className="avatar-modal-actions">
                 <button className="btn-avatar-cancel" onClick={() => setAvatarModal(false)}>Cancelar</button>
                 <button className="btn-avatar-save" onClick={handleSaveAvatar} disabled={avatarSaving}>
@@ -213,16 +271,14 @@ export default function MyAccount() {
         {/* ── HEADER ── */}
         <div className="cuenta-header">
           <div className="cuenta-header-inner">
-
-            {/* Avatar clickeable */}
             <div className="cuenta-avatar-wrap">
-              <div className="cuenta-avatar" onClick={() => setAvatarModal(true)} title="Cambiar foto">
+              <div className="cuenta-avatar" onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarModal(true); }} title="Cambiar foto">
                 {user.avatar
                   ? <img src={user.avatar} alt="avatar" />
                   : <i className="bi bi-person-fill" />
                 }
               </div>
-              <div className="avatar-edit-hint" onClick={() => setAvatarModal(true)}>
+              <div className="avatar-edit-hint" onClick={() => { setAvatarUrl(user.avatar || ""); setAvatarModal(true); }}>
                 <i className="bi bi-pencil-fill" />
               </div>
             </div>
@@ -254,11 +310,7 @@ export default function MyAccount() {
 
         {/* ── BODY ── */}
         <div className="cuenta-body">
-
-          {/* SIDEBAR */}
           <aside className="cuenta-sidebar">
-
-            {/* Información personal */}
             <div className="sidebar-card">
               <div className="sidebar-card-title">Información Personal</div>
               <div className="sidebar-info-row">
@@ -273,7 +325,6 @@ export default function MyAccount() {
               )}
             </div>
 
-            {/* Mis Reservas rápido */}
             <div className="sidebar-card">
               <div className="sidebar-card-title">Mis Reservas</div>
               <button className={`sidebar-nav-item ${tab === "proximas" ? "active" : ""}`} onClick={() => setTab("proximas")}>
@@ -306,7 +357,6 @@ export default function MyAccount() {
               </button>
             </div>
 
-            {/* Configuración */}
             <div className="sidebar-card">
               <div className="sidebar-card-title">Configuración</div>
               <button className={`sidebar-nav-item ${tab === "perfil" ? "active" : ""}`} onClick={() => setTab("perfil")}>
@@ -320,13 +370,9 @@ export default function MyAccount() {
                 <i className="bi bi-box-arrow-right sidebar-nav-icon" /> Cerrar Sesión
               </button>
             </div>
-
           </aside>
 
-          {/* CONTENIDO */}
           <main className="cuenta-main">
-
-            {/* Notif cancelaciones */}
             {canceladasRest.length > 0 && (
               <div className="notif-banner">
                 <div className="notif-banner-title"><i className="bi bi-bell-fill me-2" />
@@ -341,7 +387,6 @@ export default function MyAccount() {
               </div>
             )}
 
-            {/* Tabs */}
             <div className="cuenta-tabs">
               {TABS.map(t => (
                 <button key={t.id} className={`cuenta-tab-btn ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
@@ -354,7 +399,7 @@ export default function MyAccount() {
               ))}
             </div>
 
-            {/* ── PRÓXIMAS RESERVAS ── */}
+            {/* ── PRÓXIMAS RESERVAS MODIFICADO (Carga foto del restaurante) ── */}
             {tab === "proximas" && (
               <div className="seccion-card">
                 <div className="seccion-header">
@@ -377,9 +422,18 @@ export default function MyAccount() {
                 ) : proximasReservas.map(r => {
                   const cfg = ESTADO_CFG[r.estado] || { label: r.estado, icon: "bi-question-circle", cls: "" };
                   const cancelable = r.estado === "confirmada" && puedeCancel(r);
+                  // Evaluamos si el objeto reserva trae la propiedad de la imagen
+                  const rImagen = r.restaurant?.imagen || r.restaurant?.foto || r.imagen || r.foto;
+
                   return (
                     <div key={r.id} className="reserva-card">
-                      <div className="reserva-card-img"><i className="bi bi-shop" /></div>
+                      <div className="reserva-card-img">
+                        {rImagen ? (
+                          <img src={rImagen} alt="Restaurante" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                        ) : (
+                          <i className="bi bi-shop" />
+                        )}
+                      </div>
                       <div className="reserva-card-body">
                         <div className="reserva-rest-nombre">{r.restaurant?.nombre || r.restaurante}</div>
                         <span className={`estado-badge ${cfg.cls}`}>
@@ -509,7 +563,7 @@ export default function MyAccount() {
                   return (
                     <div key={c.id} className="com-card" style={{ borderLeftColor: cfg.color }}
                       onClick={() => setExpandCom(isOpen ? null : c.id)}>
-                      <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ display: "flex", justifySpaceBetween: "space-between", flexWrap: "wrap", gap: 8 }}>
                         <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
                           <span style={{ background: cfg.bg, color: cfg.color, padding: "3px 10px", borderRadius: 20, fontSize: "0.72rem", fontWeight: 700 }}>
                             <i className={`bi ${cfg.icon} me-1`} />{cfg.label}
@@ -608,9 +662,8 @@ export default function MyAccount() {
                   </form>
                 ) : (
                   <div>
-                    {/* Avatar editable dentro del perfil también */}
                     <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "16px 0", borderBottom: "1px solid #f5f5f5" }}>
-                      <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#fdf0e8", border: "2px solid #F4956A", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem", color: "#F4956A", overflow: "hidden", flexShrink: 0 }}>
+                      <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#fdf0e8", border: "2px solid #F4956A", display: "flex", alignItems: "center", justifyCenter: "center", fontSize: "1.6rem", color: "#F4956A", overflow: "hidden", flexShrink: 0 }}>
                         {user.avatar ? <img src={user.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <i className="bi bi-person-fill" />}
                       </div>
                       <div>
@@ -638,7 +691,6 @@ export default function MyAccount() {
                 )}
               </div>
             )}
-
           </main>
         </div>
       </div>
