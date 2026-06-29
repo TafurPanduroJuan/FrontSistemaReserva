@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNotifications } from "../context/NotificationContext";
-import "../assets/styles/notifications.css";
+import "../assets/styles/notification.css";
 
 const TIPO_ICON = {
   RESERVATION_CONFIRMED: "bi-calendar-check-fill text-success",
