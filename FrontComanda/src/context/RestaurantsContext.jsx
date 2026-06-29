@@ -79,10 +79,10 @@ export function RestaurantsProvider({ children }) {
     return actualizado;
   };
 
-  const toggleCierre = async (id, cerradoHoy, motivoCierre) => {
+  const toggleCierre = async (id, cerradoHoy, motivoCierre, fecha) => {
     const actualizado = await apiFetch(`/api/restaurants/${id}/cierre`, {
       method: "PUT",
-      body: JSON.stringify({ cerradoHoy, motivoCierre }),
+      body: JSON.stringify({ cerradoHoy, motivoCierre, fecha }),
     }, token);
     setRestaurantes((prev) =>
       prev.map((r) => (r.id === actualizado.id ? normalizeRestaurant(actualizado) : r))
