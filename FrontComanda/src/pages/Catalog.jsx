@@ -18,10 +18,11 @@ const precioNum = (p) => (p || "").length;
 
 /* Estrellitas de rating */
 function Stars({ rating }) {
+  const r = rating ?? 0;
   return (
-    <span className="cat-stars" aria-label={`Rating ${rating}`}>
+    <span className="cat-stars" aria-label={`Rating ${r}`}>
       {[1,2,3,4,5].map(i => (
-        <svg key={i} viewBox="0 0 20 20" className={i <= Math.round(rating) ? "star-filled" : "star-empty"}>
+        <svg key={i} viewBox="0 0 20 20" className={i <= Math.round(r) ? "star-filled" : "star-empty"}>
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118L5.2 11.969a1 1 0 00-.364-1.118L1.457 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69L9.049 2.927z"/>
         </svg>
       ))}
@@ -94,12 +95,12 @@ function normalizarRestaurante(r) {
         return { dia, apertura: apertura || null, cierre: cierre || null };
       });
     })(),
-    mesas:               r.mesas ?? 0,
+    mesas:               r.mesas   ?? 0,   // viene normalizado desde RestaurantsContext (stats reales)
     precio:              "$",
     tipo:                r.tipo || "Otro",
     img:                 r.imagen || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800",
-    rating:              r.rating ?? 4.0,
-    reseñas:             r.reseñas ?? 0,
+    rating:              r.rating  != null ? r.rating  : null,   // null = sin calificaciones aún
+    reseñas:             r.reseñas ?? 0,   // total de reseñas con calificación
     etiqueta:            r.cerradoHoy ? "Cerrado" : "Abierto hoy",
     cerrado:             r.cerradoHoy ?? false,
     motivoCierre:        r.motivoCierre || null,
@@ -399,8 +400,14 @@ function Catalog() {
                       </div>
                       <div className="cat-card-rating">
                         <Stars rating={rest.rating} />
-                        <span className="cat-rating-num">{rest.rating.toFixed(1)}</span>
-                        {rest.reseñas > 0 && <span className="cat-rating-reviews">({rest.reseñas})</span>}
+                        {rest.rating != null && rest.reseñas > 0 ? (
+                          <>
+                            <span className="cat-rating-num">{Number(rest.rating).toFixed(1)}</span>
+                            <span className="cat-rating-reviews">({rest.reseñas} {rest.reseñas === 1 ? "reseña" : "reseñas"})</span>
+                          </>
+                        ) : (
+                          <span className="cat-rating-num" style={{ color: "#bbb", fontSize: "0.78rem" }}>Sin reseñas</span>
+                        )}
                       </div>
                     </div>
 
