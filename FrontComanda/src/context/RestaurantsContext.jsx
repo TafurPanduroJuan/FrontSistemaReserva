@@ -27,8 +27,10 @@ export function RestaurantsProvider({ children }) {
     ...r,
     img:      r.img      || r.imagen   || null,
     lugar:    r.lugar    || r.distrito  || r.direccion || "",
-    rating:   r.rating   != null ? r.rating   : null,
-    reseñas:  r.reseñas  != null ? r.reseñas  : 0,
+    // Stats reales del backend (prefijo _ para diferenciar de campos del backend)
+    rating:   r._rating   != null ? r._rating   : (r.rating   ?? null),
+    reseñas:  r._totalResenas != null ? r._totalResenas : (r.reseñas ?? 0),
+    mesas:    r._totalMesas   != null ? r._totalMesas   : (r.mesas   ?? 0),
     precio:   r.precio   || null,
   });
 
@@ -37,7 +39,18 @@ export function RestaurantsProvider({ children }) {
     setError(null);
     try {
       const data = await apiFetch("/api/restaurants");
-      setRestaurantes(data.map(normalizeRestaurant));
+      // Enriquecer cada restaurante con sus stats (mesas reales + rating calculado)
+      const enriched = await Promise.all(
+        data.map(async (r) => {
+          try {
+            const stats = await apiFetch(`/api/restaurants/${r.id}/stats`);
+            return { ...r, _totalMesas: stats.totalMesas, _rating: stats.rating, _totalResenas: stats.totalResenas };
+          } catch {
+            return { ...r, _totalMesas: r.mesas ?? 0, _rating: null, _totalResenas: 0 };
+          }
+        })
+      );
+      setRestaurantes(enriched.map(normalizeRestaurant));
     } catch (err) {
       setError(err.message);
       console.error("Error cargando restaurantes:", err);
