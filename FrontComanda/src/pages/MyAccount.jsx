@@ -633,7 +633,7 @@ export default function MyAccount() {
                   canceladasRest.map(r => (
                     <div key={r.id} style={{ border: "1.5px solid #fca5a5", borderRadius: 12, padding: 16, marginBottom: 12, background: "#fff5f5" }}>
                       <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                        <i className="bi bi-shop me-2" />{r.restauranteNombre || r.restaurante?.nombre || "Restaurante"}
+                        <i className="bi bi-shop me-2" />{r.restaurant?.nombre || "Restaurante"}
                       </div>
                       <div style={{ fontSize: "0.9rem", color: "#555", marginBottom: 4 }}>
                         <i className="bi bi-calendar3 me-1" />{r.fecha} · <i className="bi bi-clock me-1" />{r.hora} · <i className="bi bi-people me-1" />{r.personas} personas
