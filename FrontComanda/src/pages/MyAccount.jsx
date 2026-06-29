@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../services/api";
@@ -90,13 +90,15 @@ export default function MyAccount() {
     sessionStorage.setItem("perfil_banner_cerrado", "1");
   };
 
-  const cargarReservas = async () => {
+  const reservasIntervalRef = useRef(null);
+
+  const cargarReservas = useCallback(async () => {
     if (!token) return;
-    setCargandoReservas(true);
-    try { setReservas(await apiFetch("/api/reservations/me", {}, token)); }
-    catch (e) { console.error(e); }
-    finally { setCargandoReservas(false); }
-  };
+    try {
+      const data = await apiFetch("/api/reservations/me", {}, token);
+      setReservas(data);
+    } catch (e) { console.error(e); }
+  }, [token]);
 
   const cargarComentarios = async () => {
     if (!token) return;
@@ -108,7 +110,15 @@ export default function MyAccount() {
     finally { setCargandoComs(false); }
   };
 
-  useEffect(() => { cargarReservas(); }, [token]);
+  // Carga inicial con spinner, luego polling silencioso cada 5s para tiempo real
+  useEffect(() => {
+    if (!token) return;
+    setCargandoReservas(true);
+    cargarReservas().finally(() => setCargandoReservas(false));
+    reservasIntervalRef.current = setInterval(cargarReservas, 5_000);
+    return () => clearInterval(reservasIntervalRef.current);
+  }, [token, cargarReservas]);
+
   useEffect(() => { cargarComentarios(); }, [token]);
 
   const proximasReservas = reservas.filter(r => ["confirmada","pendiente"].includes(r.estado));
