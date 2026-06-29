@@ -73,6 +73,9 @@ export default function MyAccount() {
   const [cargandoComs, setCargandoComs]             = useState(false);
   const [expandCom, setExpandCom]                   = useState(null);
   const [filtrocom, setFiltrocom]                   = useState("todos");
+  // Notificaciones en-app
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [cargandoNotifs, setCargandoNotifs] = useState(false);
 
   if (!user) { navigate("/login"); return null; }
 
@@ -120,6 +123,25 @@ export default function MyAccount() {
   }, [token, cargarReservas]);
 
   useEffect(() => { cargarComentarios(); }, [token]);
+
+  const cargarNotificaciones = async () => {
+    if (!token) return;
+    setCargandoNotifs(true);
+    try {
+      const data = await apiFetch("/api/notifications/me", {}, token);
+      setNotificaciones(data.filter(n => !n.leida));
+    } catch (e) { console.error(e); }
+    finally { setCargandoNotifs(false); }
+  };
+
+  const marcarNotifLeida = async (id) => {
+    try {
+      await apiFetch(`/api/notifications/${id}/read`, { method: "POST" }, token);
+      setNotificaciones(prev => prev.filter(n => n.id !== id));
+    } catch (e) { console.error("Error marcando notif:", e); }
+  };
+
+  useEffect(() => { cargarNotificaciones(); }, [token]);
 
   const proximasReservas = reservas.filter(r => ["confirmada","pendiente"].includes(r.estado));
   const historialReservas = reservas.filter(r => !["confirmada","pendiente"].includes(r.estado));
@@ -464,9 +486,9 @@ export default function MyAccount() {
               </button>
               <button className="sidebar-nav-item" onClick={() => setTab("notificaciones")}>
                 <i className="bi bi-bell sidebar-nav-icon" /> Notificaciones
-                {canceladasRest.length > 0 && (
+                {notificaciones.length > 0 && (
                   <span style={{ marginLeft: "auto", background: "#dc2626", color: "white", borderRadius: "50%", width: 18, height: 18, fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
-                    {canceladasRest.length}
+                    {notificaciones.length}
                   </span>
                 )}
               </button>
@@ -625,34 +647,79 @@ export default function MyAccount() {
 
             {/* ── RESEÑAS ── */}
             {tab === "notificaciones" && (
-              <div>
-                <h5 style={{ fontWeight: 700, marginBottom: 16 }}>Notificaciones</h5>
-                {canceladasRest.length === 0 ? (
-                  <p style={{ color: "#aaa" }}>No tenés notificaciones pendientes.</p>
+              <div className="seccion-card">
+                <div className="seccion-header">
+                  <h3 className="seccion-title">Notificaciones</h3>
+                  {notificaciones.length > 0 && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          await apiFetch("/api/notifications/me/read-all", { method: "POST" }, token);
+                          setNotificaciones([]);
+                        } catch (e) { console.error(e); }
+                      }}
+                      style={{ fontSize: "0.8rem", color: "#888", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+                      Marcar todas como leídas
+                    </button>
+                  )}
+                </div>
+
+                {cargandoNotifs ? (
+                  <div className="text-center py-4">
+                    <div className="spinner-border" style={{ color: "#ff6b00" }} role="status" />
+                    <p className="mt-2 text-muted" style={{ fontSize: "0.84rem" }}>Cargando notificaciones…</p>
+                  </div>
+                ) : notificaciones.length === 0 ? (
+                  <div className="cuenta-empty">
+                    <i className="bi bi-bell-slash" />
+                    <p>No tienes notificaciones pendientes.</p>
+                  </div>
                 ) : (
-                  canceladasRest.map(r => (
-                    <div key={r.id} style={{ border: "1.5px solid #fca5a5", borderRadius: 12, padding: 16, marginBottom: 12, background: "#fff5f5" }}>
-                      <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                        <i className="bi bi-shop me-2" />{r.restauranteNombre || r.restaurante?.nombre || "Restaurante"}
-                      </div>
-                      <div style={{ fontSize: "0.9rem", color: "#555", marginBottom: 4 }}>
-                        <i className="bi bi-calendar3 me-1" />{r.fecha} · <i className="bi bi-clock me-1" />{r.hora} · <i className="bi bi-people me-1" />{r.personas} personas
-                      </div>
-                      <div style={{ fontSize: "0.9rem", color: "#dc2626", fontWeight: 600, marginBottom: 12 }}>
-                        <i className="bi bi-info-circle me-1" />Motivo: {r.motivoCancelacion}
-                      </div>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button onClick={() => setTab("proximas")}
-                          style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #f97316", background: "white", color: "#f97316", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem" }}>
-                          <i className="bi bi-calendar-check me-1" /> Reprogramar
-                        </button>
-                        <button onClick={() => { setReservaACancelar(r); setModalCancelar(true); }}
-                          style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #e0e0e0", background: "white", color: "#666", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem" }}>
-                          <i className="bi bi-trash me-1" /> Eliminar notificación
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {notificaciones.map(n => {
+                      const esCancelada = n.tipo === "RESERVATION_CANCELLED";
+                      const esReapertura = n.tipo === "RESTAURANT_REOPENED";
+
+                      const cfg = esCancelada ? { border: "#fca5a5", bg: "#fff5f5", iconColor: "#dc2626", icon: "bi-x-circle-fill" }
+                        : esReapertura ? { border: "#86efac", bg: "#f0fdf4", iconColor: "#15803d", icon: "bi-door-open-fill" }
+                          : n.tipo === "RESERVATION_CONFIRMED"
+                            ? { border: "#93c5fd", bg: "#eff6ff", iconColor: "#1d4ed8", icon: "bi-check-circle-fill" }
+                            : { border: "#d8b4fe", bg: "#faf5ff", iconColor: "#7c3aed", icon: "bi-chat-left-text-fill" };
+
+                      return (
+                        <div key={n.id} style={{
+                          border: `1.5px solid ${cfg.border}`, borderRadius: 14,
+                          padding: "14px 16px", background: cfg.bg,
+                          display: "flex", flexDirection: "column", gap: 10,
+                        }}>
+                          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                            <i className={`bi ${cfg.icon}`} style={{ fontSize: "1.3rem", color: cfg.iconColor, flexShrink: 0, marginTop: 2 }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: "0.88rem", color: "#333", lineHeight: 1.5 }}>
+                                {n.mensaje}
+                              </div>
+                              <div style={{ fontSize: "0.75rem", color: "#aaa", marginTop: 4 }}>
+                                {n.fecha ? n.fecha.replace("T", " ").slice(0, 16) : ""}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            {(esCancelada || esReapertura) && (
+                              <Link to="/catalog"
+                                style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #f97316", background: "white", color: "#f97316", fontWeight: 600, fontSize: "0.82rem", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                                <i className="bi bi-calendar-check" /> Reprogramar
+                              </Link>
+                            )}
+                            <button onClick={() => marcarNotifLeida(n.id)}
+                              style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #e0e0e0", background: "white", color: "#888", fontWeight: 600, cursor: "pointer", fontSize: "0.82rem", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                              <i className="bi bi-check2" /> Marcar como leída
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             )}
