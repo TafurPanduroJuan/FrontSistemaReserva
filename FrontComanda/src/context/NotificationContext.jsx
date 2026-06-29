@@ -22,7 +22,8 @@ export function NotificationProvider({ children }) {
     }
   }, [user, token]);
 
-  // Carga inicial y polling cada 30 segundos
+  // ✅ FIX: Polling reducido a 5 segundos para actualización casi en tiempo real.
+  // Cuando se acepta/cancela una reserva el usuario lo verá en max 5s sin recargar.
   useEffect(() => {
     if (!user || !token) {
       setNotifications([]);
@@ -32,7 +33,7 @@ export function NotificationProvider({ children }) {
     }
     setLoading(true);
     fetchNotifications().finally(() => setLoading(false));
-    intervalRef.current = setInterval(fetchNotifications, 30_000);
+    intervalRef.current = setInterval(fetchNotifications, 5_000); // ← era 30_000
     return () => clearInterval(intervalRef.current);
   }, [user, token, fetchNotifications]);
 

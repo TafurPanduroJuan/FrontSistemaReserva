@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
 import "../App.css"
+
 export default function Navbar() {
   const { user, logout, isAdmin, isPersonal } = useAuth();
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export default function Navbar() {
                 <i className="bi bi-grid" /> Catálogo
               </Link>
             </li>
-             <li className="nav-item">
+            <li className="nav-item">
               <Link className="nav-link" to="/form">
                 <i className="bi bi-info-circle" /> Formulario
               </Link>
@@ -64,7 +65,6 @@ export default function Navbar() {
                     style={{
                       background: "#F4956A",
                       borderRadius: "20px",
-                      
                     }}
                   >
                     Registrarse
@@ -82,14 +82,8 @@ export default function Navbar() {
               </li>
             )}
 
-            {/* Usuario regular → Mi cuenta */}
-            {user && !isAdmin && !isPersonal && (
-              <li className="nav-item">
-                <Link className="nav-link" to="/my-account">
-                  <i className="bi bi-person-circle" /> Mi cuenta
-                </Link>
-              </li>
-            )}
+            {/* ✅ FIX: Se eliminó el enlace "Mi cuenta" redundante del navbar.
+                Ahora solo aparece dentro del menú desplegable del botón con el nombre. */}
 
             {/* Campana de notificaciones (solo usuario autenticado) */}
             {user && (
