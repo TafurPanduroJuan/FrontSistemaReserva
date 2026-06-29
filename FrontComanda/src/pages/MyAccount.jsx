@@ -698,7 +698,7 @@ export default function MyAccount() {
                     </button>
                   )}
                 </div>
-                {saveMsg && (
+                {saveMsg && !fieldError && (
                   <div style={{
                     background: saveMsg.startsWith("✓") ? "#f0fdf4" : "#fef2f2",
                     border: `1px solid ${saveMsg.startsWith("✓") ? "#86efac" : "#fca5a5"}`,
