@@ -54,6 +54,7 @@ function MyRestaurant() {
   /* ── estados del modal de cierre ── */
   const [modalCierre, setModalCierre]   = useState(false);
   const [motivoCierre, setMotivoCierre] = useState("");
+  const [fechaCierre, setFechaCierre] = useState("");
   const [cerrando, setCerrando]         = useState(false);
   const [reabriendo, setReabriendo]     = useState(false);
 
@@ -115,12 +116,13 @@ function MyRestaurant() {
 
   /* ── cierre temporal ── */
   const confirmarCierre = async () => {
-    if (!motivoCierre.trim()) return;
+    if (!motivoCierre.trim() || !fechaCierre) return;
     setCerrando(true);
     try {
-      await toggleCierre(restaurante.id, true, motivoCierre.trim());
+      await toggleCierre(restaurante.id, true, motivoCierre.trim(), fechaCierre);
       setModalCierre(false);
       setMotivoCierre("");
+      setFechaCierre("");
     } catch (err) {
       alert("Error al cerrar: " + err.message);
     } finally {
@@ -199,7 +201,7 @@ function MyRestaurant() {
                 fontWeight: 700, cursor: "pointer", fontSize: "0.85rem",
                 display: "flex", alignItems: "center", gap: 6,
               }}>
-                <i className="bi bi-door-closed" /> Cerrar hoy
+                <i className="bi bi-calendar-x" /> Programar cierre
               </button>
             )}
           </div>
@@ -441,8 +443,21 @@ function MyRestaurant() {
               Cerrar restaurante hoy
             </h4>
             <p style={{ fontSize: "0.83rem", color: "#666", textAlign: "center", marginBottom: 20 }}>
-              Se notificará automáticamente a los clientes con reservas para hoy.
+              {fechaCierre && motivoCierre.trim()
+                ? `Se notificará a los clientes con reservas para el ${fechaCierre}.`
+                : "Completá la fecha y el motivo para ver el aviso de notificación."}
             </p>
+            
+            <label style={{ fontWeight: 600, fontSize: "0.82rem", color: "#444", marginBottom: 4, display: "block" }}>
+              FECHA DE CIERRE *
+            </label>
+            <input
+              type="date"
+              min={new Date().toISOString().split("T")[0]}
+              value={fechaCierre}
+              onChange={e => setFechaCierre(e.target.value)}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e0e0e0", fontSize: "0.95rem", marginBottom: 16, outline: "none" }}
+            />
 
             <label style={lbl}>Motivo del cierre <span style={{ color: "#ef4444" }}>*</span></label>
             <textarea
