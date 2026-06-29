@@ -47,6 +47,7 @@ export default function MyAccount() {
   const [tab, setTab]           = useState("proximas");
   const [editMode, setEditMode] = useState(false);
   const [saveMsg, setSaveMsg]   = useState("");
+  const [fieldError, setFieldError] = useState("");
   const [profileForm, setProfileForm] = useState({
     nombre:      user?.nombre      || "",
     telefono:    user?.telefono    || "",
@@ -127,8 +128,16 @@ export default function MyAccount() {
       telefono:    profileForm.telefono ? parseInt(profileForm.telefono) : null,
       googleEmail: profileForm.googleEmail || "",
     });
-    if (result.ok) { setSaveMsg("Perfil actualizado"); setEditMode(false); setTimeout(() => setSaveMsg(""), 3000); }
-    else { setSaveMsg("Error al guardar"); }
+    if (result.ok) {
+      setSaveMsg("✓ Perfil actualizado correctamente");
+      setFieldError("");
+      setEditMode(false);
+      setTimeout(() => setSaveMsg(""), 3500);
+    } else {
+      const msg = result.error || "Error al guardar. Intenta de nuevo.";
+      if (msg.toLowerCase().includes("google")) setFieldError(msg);
+      setSaveMsg(msg);
+    }
   };
 
   // ── Procesar imagen local de la PC a Base64
@@ -684,14 +693,22 @@ export default function MyAccount() {
                 <div className="seccion-header">
                   <h3 className="seccion-title">Mi Perfil</h3>
                   {!editMode && (
-                    <button className="btn-primary-brand" onClick={() => { setEditMode(true); setProfileForm({ nombre: user.nombre || "", telefono: user.telefono || "", googleEmail: user.googleEmail || "" }); }}>
+                    <button className="btn-primary-brand" onClick={() => { setEditMode(true); setFieldError(""); setProfileForm({ nombre: user.nombre || "", telefono: user.telefono || "", googleEmail: user.googleEmail || "" }); }}>
                       <i className="bi bi-pencil" /> Editar
                     </button>
                   )}
                 </div>
                 {saveMsg && (
-                  <div className="auth-success-box" style={{ marginBottom: 16 }}>
-                    <i className="bi bi-check-circle me-2" />{saveMsg}
+                  <div style={{
+                    background: saveMsg.startsWith("✓") ? "#f0fdf4" : "#fef2f2",
+                    border: `1px solid ${saveMsg.startsWith("✓") ? "#86efac" : "#fca5a5"}`,
+                    color: saveMsg.startsWith("✓") ? "#16a34a" : "#dc2626",
+                    borderRadius: 10, padding: "11px 16px", marginBottom: 16,
+                    fontSize: "0.85rem", fontWeight: 600,
+                    display: "flex", alignItems: "center", gap: 8,
+                  }}>
+                    <i className={`bi ${saveMsg.startsWith("✓") ? "bi-check-circle-fill" : "bi-x-circle-fill"}`} />
+                    {saveMsg}
                   </div>
                 )}
                 {editMode ? (
@@ -726,10 +743,18 @@ export default function MyAccount() {
                       <label className="auth-label">Correo Google (recuperación)</label>
                       <div className="auth-input-wrap">
                         <i className="bi bi-envelope auth-input-icon" />
-                        <input type="email" className="auth-input" placeholder="tu@gmail.com"
+                        <input type="email"
+                          className="auth-input"
+                          placeholder="tu@gmail.com"
+                          style={fieldError ? { borderColor: "#ef4444" } : {}}
                           value={profileForm.googleEmail}
-                          onChange={e => setProfileForm({ ...profileForm, googleEmail: e.target.value })} />
+                          onChange={e => { setProfileForm({ ...profileForm, googleEmail: e.target.value }); setFieldError(""); }} />
                       </div>
+                      {fieldError && (
+                        <small style={{ color: "#ef4444", fontWeight: 600 }}>
+                          <i className="bi bi-exclamation-circle me-1" />{fieldError}
+                        </small>
+                      )}
                     </div>
                     <div style={{ display: "flex", gap: 10 }}>
                       <button type="submit" className="auth-submit-btn" style={{ flex: 1 }}>
