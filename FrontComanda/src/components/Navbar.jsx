@@ -1,6 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "../App.css"
+import NotificationBell from "./NotificationBell";
+import "../App.css";
+
 export default function Navbar() {
   const { user, logout, isAdmin, isPersonal } = useAuth();
   const navigate = useNavigate();
@@ -47,6 +49,13 @@ export default function Navbar() {
                 <i className="bi bi-info-circle" /> Nosotros
               </Link>
             </li>
+
+            {/* Notificaciones (solo usuario logueado) */}
+            {user && (
+              <li className="nav-item me-2">
+                <NotificationBell />
+              </li>
+            )}
 
             {/* Usuario no autenticado */}
             {!user && (
