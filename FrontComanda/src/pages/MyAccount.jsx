@@ -36,6 +36,7 @@ const TABS = [
   { id: "proximas",  icon: "bi-calendar2-check",  label: "Próximas Reservas" },
   { id: "historial", icon: "bi-clock-history",     label: "Historial" },
   { id: "favoritos", icon: "bi-heart",             label: "Favoritos" },
+  { id: "notificaciones", icon: "bi-bell", label: "Notificaciones" },
   { id: "resenas",   icon: "bi-chat-left-dots",    label: "Reseñas" },
   { id: "perfil",    icon: "bi-person-gear",        label: "Perfil" },
 ];
@@ -451,8 +452,13 @@ export default function MyAccount() {
               <button className={`sidebar-nav-item ${tab === "perfil" ? "active" : ""}`} onClick={() => setTab("perfil")}>
                 <i className="bi bi-gear sidebar-nav-icon" /> Configuración
               </button>
-              <button className="sidebar-nav-item" onClick={() => setTab("resenas")}>
+              <button className="sidebar-nav-item" onClick={() => setTab("notificaciones")}>
                 <i className="bi bi-bell sidebar-nav-icon" /> Notificaciones
+                {canceladasRest.length > 0 && (
+                  <span style={{ marginLeft: "auto", background: "#dc2626", color: "white", borderRadius: "50%", width: 18, height: 18, fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
+                    {canceladasRest.length}
+                  </span>
+                )}
               </button>
               <hr className="sidebar-divider" />
               <button className="sidebar-nav-item danger" onClick={() => { logout(); navigate("/login"); }}>
@@ -462,20 +468,6 @@ export default function MyAccount() {
           </aside>
 
           <main className="cuenta-main">
-            {canceladasRest.length > 0 && (
-              <div className="notif-banner">
-                <div className="notif-banner-title"><i className="bi bi-bell-fill me-2" />
-                  {canceladasRest.length === 1 ? "Una reserva fue cancelada por el restaurante" : `${canceladasRest.length} reservas canceladas por el restaurante`}
-                </div>
-                {canceladasRest.map(r => (
-                  <div className="notif-item" key={r.id}>
-                    <div className="notif-rest"><i className="bi bi-shop me-1" />{r.restaurant?.nombre || r.restaurante} · {r.fecha} a las {r.hora}</div>
-                    <div className="notif-motivo"><i className="bi bi-info-circle me-1" />Motivo: {r.motivoCancelacion}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-
             <div className="cuenta-tabs">
               {TABS.map(t => (
                 <button key={t.id} className={`cuenta-tab-btn ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
@@ -622,6 +614,38 @@ export default function MyAccount() {
             )}
 
             {/* ── RESEÑAS ── */}
+            {tab === "notificaciones" && (
+              <div>
+                <h5 style={{ fontWeight: 700, marginBottom: 16 }}>Notificaciones</h5>
+                {canceladasRest.length === 0 ? (
+                  <p style={{ color: "#aaa" }}>No tenés notificaciones pendientes.</p>
+                ) : (
+                  canceladasRest.map(r => (
+                    <div key={r.id} style={{ border: "1.5px solid #fca5a5", borderRadius: 12, padding: 16, marginBottom: 12, background: "#fff5f5" }}>
+                      <div style={{ fontWeight: 700, marginBottom: 4 }}>
+                        <i className="bi bi-shop me-2" />{r.restauranteNombre || r.restaurante?.nombre || "Restaurante"}
+                      </div>
+                      <div style={{ fontSize: "0.9rem", color: "#555", marginBottom: 4 }}>
+                        <i className="bi bi-calendar3 me-1" />{r.fecha} · <i className="bi bi-clock me-1" />{r.hora} · <i className="bi bi-people me-1" />{r.personas} personas
+                      </div>
+                      <div style={{ fontSize: "0.9rem", color: "#dc2626", fontWeight: 600, marginBottom: 12 }}>
+                        <i className="bi bi-info-circle me-1" />Motivo: {r.motivoCancelacion}
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button onClick={() => setTab("proximas")}
+                          style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #f97316", background: "white", color: "#f97316", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem" }}>
+                          <i className="bi bi-calendar-check me-1" /> Reprogramar
+                        </button>
+                        <button onClick={() => { setReservaACancelar(r); setModalCancelar(true); }}
+                          style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #e0e0e0", background: "white", color: "#666", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem" }}>
+                          <i className="bi bi-trash me-1" /> Eliminar notificación
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
             {tab === "resenas" && (
               <div className="seccion-card">
                 <div className="seccion-header">
