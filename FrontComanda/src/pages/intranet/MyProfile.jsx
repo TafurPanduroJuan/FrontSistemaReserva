@@ -104,7 +104,14 @@ export default function MyProfile() {
     });
     setSaving(false);
     if (result.ok) { setEditMode(false); flashMsg("ok", "Perfil guardado correctamente"); }
-    else { flashMsg("error", "Error al guardar. Intenta de nuevo."); }
+    else {
+      const msg = result.error || "Error al guardar. Intenta de nuevo.";
+      // Si el error es de google_email duplicado, marcar el campo visualmente
+      if (msg.toLowerCase().includes("google")) {
+        setErrors(prev => ({ ...prev, googleEmail: msg }));
+      }
+      flashMsg("error", msg);
+    }
   };
 
   const openEdit = () => {
