@@ -95,12 +95,12 @@ function normalizarRestaurante(r) {
         return { dia, apertura: apertura || null, cierre: cierre || null };
       });
     })(),
-    mesas:               r.mesas   ?? 0,   // viene normalizado desde RestaurantsContext (stats reales)
+    mesas:               r.mesas   ?? 0,   // viene de /stats: totalMesas
     precio:              "$",
     tipo:                r.tipo || "Otro",
     img:                 r.imagen || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800",
-    rating:              r.rating  != null ? r.rating  : null,   // null = sin calificaciones aún
-    reseñas:             r.reseñas ?? 0,   // total de reseñas con calificación
+    rating:              r.rating  != null ? r.rating  : null,   // viene de /stats: rating (null = sin calificaciones)
+    reseñas:             r.reseñas ?? 0,   // viene de /stats: totalResenas
     etiqueta:            r.cerradoHoy ? "Cerrado" : "Abierto hoy",
     cerrado:             r.cerradoHoy ?? false,
     motivoCierre:        r.motivoCierre || null,
@@ -119,9 +119,30 @@ function Catalog() {
   const { user }                    = useAuth();
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/restaurants`)
+    const BASE = import.meta.env.VITE_API_URL;
+    fetch(`${BASE}/api/restaurants`)
       .then(r => r.json())
-      .then(setRestaurantesBackend)
+      .then(async (lista) => {
+        // Enriquecer cada restaurante con sus stats reales (mesas + rating + reseñas)
+        const enriquecidos = await Promise.all(
+          lista.map(async (r) => {
+            try {
+              const statsRes = await fetch(`${BASE}/api/restaurants/${r.id}/stats`);
+              if (!statsRes.ok) return r;
+              const stats = await statsRes.json();
+              return {
+                ...r,
+                mesas:   stats.totalMesas   ?? 0,
+                rating:  stats.rating       > 0 ? stats.rating   : null,
+                reseñas: stats.totalResenas ?? 0,
+              };
+            } catch {
+              return r;
+            }
+          })
+        );
+        setRestaurantesBackend(enriquecidos);
+      })
       .catch(console.error);
   }, []);
 
