@@ -28,13 +28,15 @@ import NewRestaurant from './pages/intranet/NewRestaurant';
 import TableManagement from './pages/intranet/TableManagement';
 import Bookings from './pages/intranet/Bookings';
 import MyRestaurant from './pages/intranet/MyRestaurant';
-import MyProfile from './pages/intranet/MyProfile';              // ← NUEVO
+import MyProfile from './pages/intranet/MyProfile';      
 import RegisteredRestaurants from './pages/intranet/RegisteredRestaurants';
 
 // ── Context ───────────────────────────────────────────────────────────────────
 import { RestaurantsProvider } from './context/RestaurantsContext';
 import { TablesProvider } from './context/TablesContext';
 import { CommentsProvider } from './context/CommentsContext';
+import { NotificationProvider } from './context/NotificationContext';
+
 
 function App() {
   return (
@@ -42,8 +44,9 @@ function App() {
       <RestaurantsProvider>
         <TablesProvider>
           <CommentsProvider>
-            <Router>
-              <Routes>
+            <NotificationProvider>
+              <Router>
+                <Routes>
 
                 {/* ── Auth ─────────────────────────────────────────────── */}
                 <Route path="/login" element={<Login />} />
@@ -182,6 +185,7 @@ function App() {
 
               </Routes>
             </Router>
+            </NotificationProvider>
           </CommentsProvider>
         </TablesProvider>
       </RestaurantsProvider>
