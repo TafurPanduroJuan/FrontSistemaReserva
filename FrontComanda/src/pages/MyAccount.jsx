@@ -642,10 +642,10 @@ export default function MyAccount() {
                         <i className="bi bi-info-circle me-1" />Motivo: {r.motivoCancelacion}
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
-                        <button onClick={() => setTab("proximas")}
-                          style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #f97316", background: "white", color: "#f97316", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem" }}>
+                        <Link to="/catalog"
+                          style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #f97316", background: "white", color: "#f97316", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
                           <i className="bi bi-calendar-check me-1" /> Reprogramar
-                        </button>
+                        </Link>
                         <button onClick={() => setModalCancel(r)}
                           style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #e0e0e0", background: "white", color: "#666", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem" }}>
                           <i className="bi bi-trash me-1" /> Eliminar notificación
