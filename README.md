@@ -43,7 +43,7 @@ src/
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/TafurPanduroJuan/BackSistemaReserva.git
+git clone https://github.com/TafurPanduroJuan/FrontSistemaReserva.git
 cd FrontSistemaReserva/FrontComanda
 
 # 2. Instalar dependencias
