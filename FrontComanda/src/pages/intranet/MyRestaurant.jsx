@@ -5,6 +5,7 @@ import HorarioSemanalInput, {
   payloadToHorario,
   horarioToPayload,
 } from "../../components/HorarioSemanalInput";
+import { PRICE_RANGES, formatPrecio } from "../../data/priceRanges";
 
 const tiposComida = [
   "Criolla","Italiana","Japonesa","Mariscos","Vegana",
@@ -276,6 +277,7 @@ function MyRestaurant() {
               <InfoItem icon="bi-map" label="Dirección" value={restaurante.direccion || "—"} />
               <InfoItem icon="bi-telephone" label="Teléfono" value={telefonoStr} />
               <InfoItem icon="bi-envelope" label="Email" value={restaurante.email || "—"} />
+              <InfoItem icon="bi-cash-stack" label="Rango de precios" value={formatPrecio(restaurante.precio)} />
             </div>
 
             {(restaurante.mensaje_personalizado || restaurante.mensajePersonalizado) && (
@@ -341,6 +343,32 @@ function MyRestaurant() {
                     <input style={inp(false)}
                       value={editData.mensaje_personalizado || editData.mensajePersonalizado || ""}
                       onChange={(e) => setEditData({ ...editData, mensaje_personalizado: e.target.value })} />
+                  </div>
+                  <div className="col-12">
+                    <label style={lbl}>Rango de precios</label>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {PRICE_RANGES.map((p) => (
+                        <button
+                          key={p.value}
+                          type="button"
+                          onClick={() => setEditData({ ...editData, precio: p.value })}
+                          style={{
+                            flex: "1 1 120px",
+                            padding: "8px 12px",
+                            borderRadius: 10,
+                            border: `1.5px solid ${editData.precio === p.value ? "#ff6b00" : "#e8e0d8"}`,
+                            background: editData.precio === p.value ? "#fff4ec" : "white",
+                            cursor: "pointer",
+                            textAlign: "left",
+                          }}
+                          title={p.rango}
+                        >
+                          <div style={{ fontWeight: 800, fontSize: "0.88rem", color: "#1a1a2e" }}>
+                            {p.value} <span style={{ fontWeight: 600, fontSize: "0.78rem", color: "#666" }}>· {p.label}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>
