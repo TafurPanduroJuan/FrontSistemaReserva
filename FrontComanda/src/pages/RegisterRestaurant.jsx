@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useRestaurants } from "../context/RestaurantsContext";
 import HorarioSemanalInput, { horarioVacio, horarioToPayload } from "../components/HorarioSemanalInput";
 import { useNavigate } from "react-router-dom";
+import { PRICE_RANGES } from "../data/priceRanges";
 
 const tiposComida = [
   "Criolla", "Italiana", "Japonesa", "Mariscos", "Vegana",
@@ -17,7 +18,7 @@ const initialForm = {
   nombre: "", tipo: "", distrito: "", direccion: "",
   horarios: horarioVacio(),
   descripcion: "", telefono: "", email: "",
-  propietario: "", mensajePersonalizado: "",
+  propietario: "", mensajePersonalizado: "", precio: "$",
 };
 
 // Solo letras, tildes y espacios
@@ -114,6 +115,7 @@ function RegisterRestaurant() {
         telefono:            parseInt(form.telefono),
         descripcion:         form.descripcion.trim() || "Solicitud enviada desde el formulario público.",
         mensajePersonalizado: form.mensajePersonalizado.trim() || null,
+        precio:              form.precio || "$",
         ...horarioToPayload(form.horarios),
         imagen:              imagenBase64,
       };
@@ -258,6 +260,33 @@ function RegisterRestaurant() {
                     {tiposComida.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                   {errorMsg("tipo")}
+                </div>
+                <div className="col-12">
+                  <label style={labelStyle}>Rango de Precios <span style={{ color: "#ef4444" }}>*</span></label>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {PRICE_RANGES.map((p) => (
+                      <button
+                        key={p.value}
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, precio: p.value }))}
+                        style={{
+                          flex: "1 1 130px",
+                          padding: "10px 14px",
+                          borderRadius: 10,
+                          border: `1.5px solid ${form.precio === p.value ? "#F4956A" : "#e8e0d8"}`,
+                          background: form.precio === p.value ? "#fff4ec" : "white",
+                          cursor: "pointer",
+                          textAlign: "left",
+                          transition: "border-color 0.2s, background 0.2s",
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, color: "#1a1a2e", fontSize: "0.95rem" }}>
+                          {p.value} <span style={{ fontWeight: 600, fontSize: "0.82rem", color: "#666" }}>· {p.label}</span>
+                        </div>
+                        <div style={{ fontSize: "0.72rem", color: "#aaa", marginTop: 2 }}>{p.rango}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="col-12">
                   <label style={labelStyle}>Eslogan o mensaje de bienvenida <span style={{ color: "#bbb", fontWeight: 400 }}>(opcional)</span></label>
