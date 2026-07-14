@@ -240,6 +240,40 @@
   color: var(--col-white);
 }
 
+/* Chips de precio: signo + etiqueta profesional */
+.cat-chips-precio {
+  flex-direction: column;
+  gap: 6px;
+}
+.cat-chip-precio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 13px;
+  border-radius: 10px;
+  text-align: left;
+}
+.cat-chip-precio-signo {
+  font-weight: 800;
+  min-width: 34px;
+  letter-spacing: .05em;
+}
+.cat-chip-precio-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.cat-chip-precio-label {
+  font-size: .82rem;
+  font-weight: 700;
+}
+.cat-chip-precio-rango {
+  font-size: .72rem;
+  font-weight: 500;
+  opacity: .65;
+}
+
 /* Select distrito */
 .cat-select {
   width: 100%;
@@ -720,6 +754,17 @@
   font-size: 1rem;
   font-weight: 700;
   color: var(--col-dark);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.cat-precio-label {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--col-muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
 }
 
 .cat-mesas {
