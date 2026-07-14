@@ -3,8 +3,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import "../assets/styles/catalog.css";
 import BookingModal from "../components/BookingModal";
 import { useAuth } from "../context/AuthContext";
+import { PRICE_RANGES, getPriceLabel, getPriceRango } from "../data/priceRanges";
 
-const PRECIOS   = ["$", "$$", "$$$", "$$$$"];
 const DIAS_LABEL = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
 const ORDENAR   = [
   { value: "default",     label: "Destacados"           },
@@ -96,7 +96,7 @@ function normalizarRestaurante(r) {
       });
     })(),
     mesas:               r.mesas   ?? 0,   // viene de /stats: totalMesas
-    precio:              "$",
+    precio:              r.precio || "$",
     tipo:                r.tipo || "Otro",
     img:                 r.imagen || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800",
     rating:              r.rating  != null ? r.rating  : null,   // viene de /stats: rating (null = sin calificaciones)
@@ -274,14 +274,18 @@ function Catalog() {
           {/* Precio */}
           <div className="cat-filter-section">
             <p className="cat-filter-label">Precio</p>
-            <div className="cat-chips">
-              {PRECIOS.map(p => (
+            <div className="cat-chips cat-chips-precio">
+              {PRICE_RANGES.map(p => (
                 <button
-                  key={p}
-                  className={`cat-chip ${preciosSeleccionados.includes(p) ? "active" : ""}`}
-                  onClick={() => togglePrecio(p)}
+                  key={p.value}
+                  className={`cat-chip cat-chip-precio ${preciosSeleccionados.includes(p.value) ? "active" : ""}`}
+                  onClick={() => togglePrecio(p.value)}
                 >
-                  {p}
+                  <span className="cat-chip-precio-signo">{p.value}</span>
+                  <span className="cat-chip-precio-texto">
+                    <span className="cat-chip-precio-label">{p.label}</span>
+                    <span className="cat-chip-precio-rango">{p.rango}</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -360,7 +364,7 @@ function Catalog() {
               ))}
               {preciosSeleccionados.map(p => (
                 <span key={p} className="cat-tag">
-                  {p}<button onClick={() => togglePrecio(p)}><i className="bi bi-x"></i></button>
+                  {p} · {getPriceLabel(p)}<button onClick={() => togglePrecio(p)}><i className="bi bi-x"></i></button>
                 </span>
               ))}
               {distritoSeleccionado && (
@@ -473,7 +477,10 @@ function Catalog() {
                     {/* Footer */}
                     <div className="cat-card-footer">
                       <div className="cat-card-footer-left">
-                        <span className="cat-precio">{rest.precio}</span>
+                        <span className="cat-precio" title={getPriceRango(rest.precio)}>
+                          {rest.precio}
+                          <span className="cat-precio-label">{getPriceLabel(rest.precio)}</span>
+                        </span>
                         <span className="cat-mesas">
                           <i className="bi bi-people-fill"></i>
                           {rest.mesas} {rest.mesas === 1 ? "mesa" : "mesas"}

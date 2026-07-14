@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import HorarioSemanalInput, { horarioVacio, horarioToPayload } from "../../components/HorarioSemanalInput";
 import { useRestaurants } from "../../context/RestaurantsContext";
+import { PRICE_RANGES } from "../../data/priceRanges";
 
 const tiposComida = [
   "Criolla","Italiana","Japonesa","Mariscos","Vegana",
@@ -17,7 +18,7 @@ const sugerenciasDistritos = [
 const initialForm = {
   nombre: "", tipo: "", distrito: "", direccion: "",
   mesas: "", telefono: "", email: "",
-  mensajePersonalizado: "", imagen: "",
+  mensajePersonalizado: "", imagen: "", precio: "$",
 };
 
 /* ── Convierte File a base64 data-URL ── */
@@ -270,6 +271,32 @@ function NewRestaurant() {
                 <label style={lbl}>N° de Mesas</label>
                 <input type="number" name="mesas" value={form.mesas} onChange={handle}
                   min="0" style={inp("mesas")} placeholder="Ej: 20" />
+              </div>
+              <div className="col-md-8">
+                <label style={lbl}>Rango de Precios</label>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {PRICE_RANGES.map((p) => (
+                    <button
+                      key={p.value}
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, precio: p.value }))}
+                      style={{
+                        flex: "1 1 120px",
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        border: `1.5px solid ${form.precio === p.value ? "#ff6b00" : "#e8e0d8"}`,
+                        background: form.precio === p.value ? "#fff4ec" : "white",
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                      title={p.rango}
+                    >
+                      <div style={{ fontWeight: 800, fontSize: "0.88rem", color: "#1a1a2e" }}>
+                        {p.value} <span style={{ fontWeight: 600, fontSize: "0.78rem", color: "#666" }}>· {p.label}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </section>
