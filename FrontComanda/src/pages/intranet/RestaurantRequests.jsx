@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRestaurants } from "../../context/RestaurantsContext";
+import { formatPrecio } from "../../data/priceRanges";
 
 function RestaurantRequests() {
   const { solicitudes, aceptarSolicitud, rechazarSolicitud } = useRestaurants();
@@ -149,6 +150,7 @@ function RestaurantRequests() {
                   <div><i className="bi bi-envelope me-1"></i>{s.email}</div>
                   <div><i className="bi bi-telephone me-1"></i>{s.telefono}</div>
                   <div><i className="bi bi-calendar3 me-1"></i>Enviado: {s.fecha}</div>
+                  <div><i className="bi bi-cash-stack me-1"></i>{formatPrecio(s.precio)}</div>
                 </div>
 
                 <p style={{ fontSize: "0.83rem", color: "#666", fontStyle: "italic", margin: "10px 0 14px" }}>
