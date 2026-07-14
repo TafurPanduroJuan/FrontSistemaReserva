@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import HorarioSemanalInput, { payloadToHorario, horarioToPayload } from "../../components/HorarioSemanalInput";
 import { useRestaurants } from "../../context/RestaurantsContext";
+import { PRICE_RANGES, formatPrecio } from "../../data/priceRanges";
 
 const tiposComida = ["Criolla","Italiana","Japonesa","Mariscos","Vegana","Parrilla","Mexicana","Peruana","Francesa","Fusión","Moderna","Asiática","Postres"];
 const sugerenciasDistritos = ["Miraflores","San Isidro","Barranco","Surco","La Molina","Chorrillos","Lince","Jesús María","Pueblo Libre","Magdalena"];
@@ -328,6 +329,7 @@ function RegisteredRestaurants() {
                   <h4 className="rr-nombre">{res.nombre}</h4>
                   <p className="rr-distrito">
                     <i className="bi bi-geo-alt me-1"></i>{res.distrito}
+                    {res.precio && <span style={{ marginLeft: 8, fontWeight: 700, color: "#F4956A" }}>· {formatPrecio(res.precio)}</span>}
                   </p>
                   
                   {res.cerradoHoy && (
@@ -397,6 +399,32 @@ function RegisteredRestaurants() {
                       <label className="rr-label">Eslogan / Mensaje del restaurante</label>
                       <input className="rr-input" value={editData.mensaje_personalizado || ""}
                         onChange={e => setEditData({ ...editData, mensaje_personalizado: e.target.value })} />
+                    </div>
+                    <div className="col-12">
+                      <label className="rr-label">Rango de precios</label>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {PRICE_RANGES.map((p) => (
+                          <button
+                            key={p.value}
+                            type="button"
+                            onClick={() => setEditData({ ...editData, precio: p.value })}
+                            style={{
+                              flex: "1 1 120px",
+                              padding: "8px 12px",
+                              borderRadius: 10,
+                              border: `1.5px solid ${editData.precio === p.value ? "#ff6b00" : "#e8e0d8"}`,
+                              background: editData.precio === p.value ? "#fff4ec" : "white",
+                              cursor: "pointer",
+                              textAlign: "left",
+                            }}
+                            title={p.rango}
+                          >
+                            <div style={{ fontWeight: 800, fontSize: "0.88rem", color: "#1a1a2e" }}>
+                              {p.value} <span style={{ fontWeight: 600, fontSize: "0.78rem", color: "#666" }}>· {p.label}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
