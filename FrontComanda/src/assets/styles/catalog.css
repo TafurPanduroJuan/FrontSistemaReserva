@@ -736,9 +736,10 @@
 /* Footer */
 .cat-card-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px 12px;
   padding-top: 12px;
   border-top: 1px solid var(--col-border);
   margin-top: auto;
@@ -747,7 +748,10 @@
 .cat-card-footer-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .cat-precio {
@@ -757,6 +761,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .cat-precio-label {
@@ -765,6 +770,7 @@
   color: var(--col-muted);
   text-transform: uppercase;
   letter-spacing: .03em;
+  white-space: nowrap;
 }
 
 .cat-mesas {
@@ -774,6 +780,7 @@
   font-size: .8rem;
   color: var(--col-muted);
   font-weight: 500;
+  white-space: nowrap;
 }
 .cat-mesas i { color: var(--col-accent); }
 
@@ -791,6 +798,8 @@
   transition: background var(--transition), transform var(--transition);
   white-space: nowrap;
   letter-spacing: .02em;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 .cat-btn-reservar:hover:not(:disabled) {
   background: #C96A2A;
